@@ -1,0 +1,3 @@
+code,name,amount,weight_pct,cost,holding_profit_rate,theme
+000001,合成示例基金A,1200,60%,1000,20%,示例主题A
+000002,合成示例基金B,800,40%,1000,-20%,示例主题B

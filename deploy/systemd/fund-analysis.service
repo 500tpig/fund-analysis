@@ -1,0 +1,27 @@
+[Unit]
+Description=Fund analysis localhost workbench
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=fund-analysis
+Group=fund-analysis
+WorkingDirectory=/opt/fund-analysis/current
+Environment=TZ=Asia/Shanghai
+Environment=PYTHONDONTWRITEBYTECODE=1
+EnvironmentFile=-/etc/fund-analysis.env
+ExecStart=/opt/fund-analysis/current/.venv/bin/fund-analysis web --host 127.0.0.1 --port 8765 --db-path /var/lib/fund-analysis/fund_analysis.db
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=660
+StateDirectory=fund-analysis
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/fund-analysis
+
+[Install]
+WantedBy=multi-user.target

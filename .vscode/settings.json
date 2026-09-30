@@ -1,0 +1,12 @@
+{
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+  "css.lint.unknownAtRules": "ignore",
+  "cSpell.words": [
+    "intraday",
+    "Intraday",
+    "qdii",
+    "QDII",
+    "clsx",
+    "vue-tsc"
+  ]
+}

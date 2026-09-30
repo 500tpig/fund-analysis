@@ -1,0 +1,302 @@
+# Fund Valuation
+
+本地优先的基金估值工具，只保留三个页面：
+
+- `估值`：查看第三方盘中估值、官方净值、估算收益和数据新鲜度。
+- `持仓`：新增、修改和删除持仓。
+- `录入`：从持仓截图识别候选，人工核对后批量写入。
+
+当前版本不包含 AI 分析、新闻、交易流水、定投、投资推荐、研究或报告功能，
+也不会连接券商或执行交易。
+后续产品阶段见 [`docs/project-roadmap.md`](docs/project-roadmap.md)。
+
+## 环境
+
+- Python 3.11+
+- Node.js 20+
+- pnpm 10+
+
+## 安装
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -e .
+
+pnpm --dir frontend install
+pnpm --dir frontend build
+```
+
+## 截图录入
+
+打开 <http://127.0.0.1:8765/import>，可从相册选择最多 5 张 JPG、PNG 或 WebP，
+也可在手机端拍照或在桌面端粘贴图片。识别只生成页面内候选，修正代码、名称、金额和
+可选份额后，需再次预览并确认才会写入 SQLite。
+
+默认采用「合并更新」，未出现在截图中的持仓保持不变。切换为「替换全部」时，页面会列出
+待删除持仓，并要求单独确认。批量写入使用一个 SQLite 事务，任一写入失败会整批回滚。
+
+识图服务使用 OpenAI 兼容的 `/chat/completions` 接口，由启动进程提供以下环境变量：
+
+```bash
+export FUND_ANALYSIS_OCR_STRUCTURED_BASE_URL=https://example.invalid/v1
+export FUND_ANALYSIS_OCR_STRUCTURED_API_KEY=replace-with-api-key
+export FUND_ANALYSIS_OCR_STRUCTURED_MODEL=replace-with-vision-model
+```
+
+可选配置包括 `FUND_ANALYSIS_OCR_STRUCTURED_TIMEOUT`（默认 `180` 秒）和
+`FUND_ANALYSIS_OCR_STRUCTURED_MAX_TOKENS`（默认 `4096`）。任一必需变量缺失时，
+服务不会发送图片，并返回「未配置持仓识图服务」。截图只用于当次请求；服务端压缩为
+最长边 1600 px 的 JPEG 后发送，不写入 SQLite，识别结束后关闭上传文件且不保留原图。
+
+## CSV 迁移
+
+```bash
+fund-analysis import \
+  --db-path data/fund_analysis.db \
+  --portfolio examples/portfolio.csv
+```
+
+CSV 至少需要 `code`、`name`，以及完整的 `amount` 或 `weight_pct`。支持中文表头。常用可选字段包括 `cost`、`holding_profit_rate`、`daily_profit`、`cumulative_profit`、`year_profit`、`theme` 和 `amount_nav_date`。`amount_nav_date` 为空时保持未知，不按导入当天回填。
+
+CSV 不再出现在 Web 主界面，只保留 CLI 迁移入口。导入会在完整解析成功后一次性替换持仓；
+解析失败时不会修改现有持仓。
+
+## 启动
+
+```bash
+fund-analysis web --db-path data/fund_analysis.db
+```
+
+打开 <http://127.0.0.1:8765/valuation>。
+
+默认数据库是 `data/fund_analysis.db`。应用只会增量创建估值 MVP 所需的 SQLite 表，不会删除旧数据库里的其他表或历史数据。
+
+## 数据口径
+
+- 官方净值来自 Eastmoney 公共基金接口。
+- 盘中估值优先使用 Eastmoney `FundCoreDiyNew` 批量接口；主源整体失败时使用
+  `FundValuationLast`，缺失代码再由新浪基金估值逐只补充。第三方估值仅供参考，
+  不是官方净值或成交价格。
+- 估值页主指标按「展示日」取值（`summary.today.display_session`）。当日有有效估值或官方净值时为今天：
+  按当前金额 × 北京时间当日有效基金估值涨跌幅计算，标「今日预估」；同日官方净值披露后该基金改按官方涨跌幅，
+  未披露基金继续预估，每只只计一次，全部为官方时标「今日收益」。金额基准日期缺失不阻止预估展示。
+  国内当日完整源估值可用于预估，即使前值未能核验，仍不升级为可核对收益；
+  已知基准冲突、前值日期异常、字段缺失、失败或跨日估值不参与。
+- 当日没有任何可用数据（周末、节假日、盘前）时，展示日回退到最近官方净值日，标「MM-DD 当日收益」，
+  只合计净值日等于展示日的基金；单只优先取 `fund_official_daily_profit` 记录，否则按当前金额 × 官方涨跌幅。
+  覆盖不全时标「已更新 n/总数」；净值日期较早的基金（如 QDII）照常显示数值并带「MM-DD」标记，不计入合计。
+- 基金行只在异常时显示标记：净值日期早于展示日显示「MM-DD」；展示日为今天时，估值过期显示「延迟」、
+  交易时段无估值显示「无估值」，官方与预估混合时预估行显示「估」。完整来源与时间在行提示和详情中。
+- 海外归属不明的最近估值直接显示在基金行，不计入今日预估；同日官方数据可单独参与官方测算。
+- 主指标不是实际结算收益。详情中的可核对收益继续按北京时间日期 `D` 选择，并区分三种口径：
+  - `official_measurement`：官方净值日恰为 `D`，且金额基准日恰为 `D` 前一自然日时，按
+    `amount × official_return_pct / 100` 纳入可核对小计，标「已披露净值测算」。
+    当前官方快照没有涨跌前基准日；跨周末、节假日或更早的金额保留为情景，不猜交易日。
+  - `estimate`：当日尚无官方净值、盘中估值完整且归属 `D`、来源前值日期早于 `D`、
+    净值比与涨跌幅校验通过，且金额日期与来源前值日期一致时，
+    按 `amount × estimated_return_pct / 100` 纳入预估小计，标「未披露预估」。
+  - `unknown`：日期、金额基准或来源基准无法确认时，可核对收益为空。
+- 已披露 `D` 的官方净值但金额基准未知或不匹配时，不把旧估值当成已确认收益；
+  仍可查看「按当前金额情景测算」，且官方情景与预估情景分栏，不把混合净额标成全账户实际收益。
+- 汇总的官方情景仅含未纳入可核对的官方测算；未披露预估情景仅含未纳入可核对、且当日尚未披露
+  官方净值的基金。详情仍保留官方和预估对照值，因此详情情景字段不能不加筛选地相加作为首页小计。
+- 来源前值缺失、前值日期等于或晚于估值日、估值净值缺失或基准冲突时，预估不进入可核对合计。
+- 无日期的导入 `daily_profit` 只作为「历史导入收益，日期未记录」，跨日也不进入今日值或今日合计。
+- 部分覆盖只显示已覆盖部分的小计和覆盖范围；全部缺失显示「无法确认全账户当日收益」，不显示为 `0`。
+  真正可用且基准确认的 `0%` 才显示 `0.00`。
+- 可选 `amount_nav_date` 表示持仓金额对应的净值日期。旧数据保持为空，不猜测、不自动回填今天；
+  修改金额时若未同时确认该日期，旧确认失效。日期存在也不等于已满足实际收益计算的全部条件。
+- 海外估值不把 `pre_date` 当作收益归属日；净值比与来源涨跌幅不一致时保留源率并标记原因，不覆盖源字段。
+- 新浪估值固定使用 `pre_nav` 与 `nav_pct` 同一组字段，按来源交易时段（含跨午夜）取最后一个分钟点。
+  海外最近估值直接显示在基金行的「当日涨跌」列，带来源日期时间和涨跌基准日，
+  不计入今日合计；基准冲突单独标出。
+- 官方净值状态区分披露与市场交易：境内基金按国内交易日；QDII 净值日为国内与海外同时开市的日期，
+  于下一个国内交易日晚间披露，国内休市顺延不判滞后。行内始终显示官方净值日期，详情显示下次披露日。
+- 估值页的浏览器轮询只在页面可见时自动刷新（服务器部署另有独立采集 timer，见下文）：初次加载时补拉一次最近交易日数据（带 3 分钟冷却，跨标签页与重新进入页面不重复请求；后台加载时保留首次补拉待处理状态，首次切换为可见时先同步服务端最近运行时间，数据就绪后执行一次判断）；页面可见期间交易时段按 5 分钟、国内披露窗口 10 分钟轮询，其余时段仅对逾期或源失败做一次性补刷，不把首次补拉条件带入常规 30 秒轮询；非今日收盘估值保留来源真实日期并标为过期，绝不计入今日预估收益；连续失败退避，3 次后暂停直到手动刷新或重新可见。多个标签页同时刷新时后端合并为一次。状态行区分「已刷新」与来源是否真的有新数据，刷新失败保留原数据和阅读位置。
+- 历史官方日收益保留首次观察金额，标「按首次观察金额测算」；累计是已记录日期合计，不补齐缺失日期。
+- 持有收益继续区分「按记录成本测算」和「导入持有收益率」；冲突时展示来源，不改 `cost`。今日计算不读 `cost`。
+- 市场概览使用 Eastmoney 延时行情，固定展示中证全指、黄金 9999 和 Nasdaq-100；
+  只保存最近成功快照，不参与基金估值或收益计算。黄金夜盘按上金所 20:00-02:30 计，
+  周五夜盘持续到周六 02:30。板块或指数涨跌不替代基金涨跌幅。
+- `amount` 是持仓规模和估值计算的唯一主字段；金额解析使用十进制口径，不根据净值反推份额。
+- `shares` 只保存截图识别或人工确认的真实份额，使用 SQLite `TEXT`；缺失时保持为空，
+  不参与默认估值公式。
+- 可在持仓页手工维护成本和金额基准日期；截图候选可以保留当日收益、累计收益等可选字段，
+  截图流程不推断金额基准日期。
+
+## 检查
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m unittest discover -s tests
+PYTHONPATH=src .venv/bin/python -m compileall -q src tests
+pnpm --dir frontend check:routes
+node frontend/scripts/check-today-profit.mjs
+node frontend/scripts/check-refresh-policy.mjs
+pnpm --dir frontend typecheck
+pnpm --dir frontend lint
+pnpm --dir frontend build
+```
+
+## 服务器部署与后台采集
+
+服务器 `ocvps` 使用 Python venv + systemd，监听 `127.0.0.1:8765`。不使用 Docker，
+不修改现有 OpenResty、DNS 或其他服务。整个站点通过 SSH 隧道访问；没有认证时不得开放公网接口。
+本地 Web 默认端口也为 `8765`，Vite 开发代理使用该端口。
+
+```bash
+ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:18765:127.0.0.1:8765 ocvps
+```
+
+隧道运行期间打开 <http://127.0.0.1:18765/valuation>。关闭隧道、浏览器或本机休眠只会停止本机访问，
+服务器采集继续运行。服务器数据库从部署日起独立维护；本地原库保留，后续更新代码不再覆盖服务器库。
+没有支付宝账户同步，采集不会更新持仓金额、成本或金额基准日，也不代表真实账户结算收益。
+
+| 项目 | 位置或名称 |
+| --- | --- |
+| 代码与各版本独立 venv | `/opt/fund-analysis/releases/<release-id>` |
+| 当前 / 上一个版本 | `/opt/fund-analysis/current`、`/opt/fund-analysis/previous` |
+| 持久数据库 | `/var/lib/fund-analysis/fund_analysis.db` |
+| 一致性备份 | `/var/lib/fund-analysis/backups/` |
+| 常驻服务 | `fund-analysis.service` |
+| 定时任务 | `fund-analysis-collect.timer` → `fund-analysis-collect.service` |
+| 服务账户 | `fund-analysis`，无登录 shell，数据目录 `0700`、数据库 `0600` |
+| 可选敏感配置 | `/etc/fund-analysis.env`，由 root 管理，权限 `0600`，不写 Git |
+
+Web 和 timer 进程设置 `TZ=Asia/Shanghai`，系统时区仍为 UTC。Web 保持单进程；采集命令向
+localhost 的既有刷新 API 发请求，网页和后台共用一把锁。不要另起直接写库的采集进程或多个 Web worker。
+`POST /api/funds/refresh?scheduled=true` 在锁内判断交易日和时间槽；已运行的槽依据数据库记录跳过，
+重启仍能去重。默认 POST 与不带 `--scheduled` 的 CLI 都保留手动立即刷新行为。
+
+### 采集安排（北京时间）
+
+Timer 每 5 分钟检查一次，窗口外不访问行情上游。
+
+| 窗口 | 采集频率与用途 |
+| --- | --- |
+| 国内交易日 09:30–11:30、13:00–15:30 | 每 5 分钟；含午间收盘点与 15:00、15:05…15:30 收盘重试 |
+| 国内交易日 16:00、17:00、18:00 | 每小时一次补刷，兼顾早披露与收盘源延迟 |
+| 国内交易日 19:00–23:50 | 每 10 分钟刷新官方净值并对账 |
+| 国内交易日 08:00 | 昨晚迟披露补刷 |
+| 前一天为国内交易日的次日 00:10 | 跨日披露补刷，含周六及长假第一天 |
+| 香港交易时段 / 美股常规交易时段 | 上述窗口外每 30 分钟；美股复用现有日历与纽约时区，自动处理夏令时 |
+
+定时采集参考包括网页刷新在内的运行记录去重；手动刷新仍立即执行。盘中最后一次刷新不会跳过新的收盘槽。失败保留原快照，
+写入来源失败记录，CLI 以非零退出码报告部分失败；下一采集槽继续尝试。Timer 的 `Persistent=true`
+在重启后补做当前窗口判断，不伪造停机期间漏掉的分钟行情或历史收盘样本。
+每日每基金仍只保留更新的来源估值；境内收盘归属按原有规则确认，QDII 未确认的归属继续为空。
+交易日历只覆盖 2025–2026 年，未覆盖年份报错停止自动采集，不猜工作日；年底前需依据官方公告更新日历。
+
+### 检查与手动采集
+
+以下命令在服务器执行（先 `ssh ocvps`）：
+
+```bash
+systemctl is-enabled fund-analysis.service fund-analysis-collect.timer
+systemctl is-active fund-analysis.service fund-analysis-collect.timer
+TZ=Asia/Shanghai systemctl list-timers --all fund-analysis-collect.timer
+sudo journalctl -u fund-analysis.service -u fund-analysis-collect.service --since today --no-pager
+curl --fail --silent --connect-timeout 2 --max-time 5 http://127.0.0.1:8765/api/funds > /dev/null
+
+# 与 timer 完全相同的任务；窗口外或本槽已采集时跳过。
+sudo systemctl start fund-analysis-collect.service
+# 无浏览器立即采集；部分上游失败时退出码为 1，成功部分仍入库。
+sudo -u fund-analysis env TZ=Asia/Shanghai \
+  /opt/fund-analysis/current/.venv/bin/fund-analysis collect --port 8765
+```
+
+`journalctl` 中的来源错误与 API / SQLite 中的 `data_source_runs` 相对应。
+确认时间更新可只读取运行记录，不需打开页面或修改持仓：
+
+```bash
+sudo -u fund-analysis python3 - <<'PY'
+import sqlite3
+with sqlite3.connect('file:/var/lib/fund-analysis/fund_analysis.db?mode=ro', uri=True) as db:
+    for row in db.execute('SELECT job_type,status,started_at,completed_at,row_count,error_message FROM data_source_runs ORDER BY id DESC LIMIT 3'):
+        print(row)
+PY
+```
+
+### 更新
+
+在已审阅的本地 checkout / worktree 中构建并上传代码。包内不包含数据库、`.env`、本机 venv 或 Node 依赖。
+每次使用唯一版本号，安装脚本拒绝覆盖已有版本；首次安装联网解析依赖，后续更新默认沿用上一版
+`requirements-installed.txt` 中的依赖版本。需要升级依赖时先单独核验并调整约束。
+
+```bash
+pnpm --dir frontend install --frozen-lockfile
+pnpm --dir frontend build
+release_id=$(date +%Y%m%d-%H%M%S)
+COPYFILE_DISABLE=1 tar --no-xattrs --exclude=__pycache__ \
+  -czf "/tmp/fund-analysis-$release_id.tar.gz" \
+  src frontend/dist pyproject.toml README.md AGENTS.md deploy tests
+scp "/tmp/fund-analysis-$release_id.tar.gz" deploy/install-release.sh ocvps:/tmp/
+ssh ocvps "bash /tmp/install-release.sh /tmp/fund-analysis-$release_id.tar.gz $release_id"
+```
+
+脚本先安装新版本 venv、检查依赖与 SPA 文件、预检 systemd 配置，再检查当前版本健康状态并做 SQLite backup。
+然后只停止本项目任务和服务、切换版本链接、安装本项目 unit、启动 Web；HTTP 检查通过后才启用 timer。
+更新期间有短暂停机。HTTP 检查的连接超时为 2 秒、单次总超时为 5 秒，启动检查最多尝试 30 次。
+启动检查失败时 timer 保持停止，查日志后按下节回滚；当前版本不健康时再次发布会被拒绝，`previous` 保持不变。
+备份文件为 `backups/pre-<release-id>.db`。初次真实库迁移已完成；后续更新不得重复上传本地旧库。
+
+### 备份与回滚
+
+运行中可执行一致性备份，不直接复制活跃的 `.db` 或 `.db-wal`：
+
+```bash
+ssh ocvps
+backup_id=$(date +%Y%m%d-%H%M%S)
+sudo -u fund-analysis python3 /opt/fund-analysis/current/deploy/backup.py \
+  /var/lib/fund-analysis/fund_analysis.db \
+  "/var/lib/fund-analysis/backups/manual-$backup_id.db"
+```
+
+备份脚本独占创建目标、通过 SQLite backup 包含 WAL 已提交数据，再做 `integrity_check`；
+目标已存在时拒绝覆盖。当前提供手动和更新前备份，未配置自动备份、异机副本或自动清理。
+
+只回滚代码，保留新采集数据。在服务器执行：
+
+```bash
+set -e
+rollback_release=$(readlink -f /opt/fund-analysis/previous)
+test -x "$rollback_release/.venv/bin/fund-analysis"
+sudo systemctl stop fund-analysis-collect.timer fund-analysis-collect.service fund-analysis.service
+ln -s "$rollback_release" /opt/fund-analysis/current.rollback
+mv -Tf /opt/fund-analysis/current.rollback /opt/fund-analysis/current
+sudo install -m 644 "$rollback_release"/deploy/systemd/* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl start fund-analysis.service
+for attempt in $(seq 1 30); do
+  if curl --fail --silent --connect-timeout 2 --max-time 5 http://127.0.0.1:8765/api/funds > /dev/null; then break; fi
+  sleep 1
+done
+curl --fail --silent --connect-timeout 2 --max-time 5 http://127.0.0.1:8765/api/funds > /dev/null
+sudo systemctl start fund-analysis-collect.timer
+```
+
+本次无 schema 变化，代码回滚无需恢复数据库。将来若确需恢复备份，必须先停服务、另做当前库的一致性快照，
+核验选定备份后再替换；这会丢失备份之后的数据，属于需单独确认的操作，本次未执行。
+若需离机备份，可通过 `ssh ocvps 'sudo cat <已核验快照路径>'` 保存到本机，权限设为 `0600`；
+不将原库、快照或敏感配置写入 Git。
+
+### 本次真实验证（2026-09-30）
+
+当前版本为 `20260930-collection-6`，上一个可回滚版本为 `20260930-collection-5`。
+本机与服务器 ARM Python 3.12 的后端 230 项测试均通过；前端构建、类型、lint、路由和两项策略回归通过。
+服务与 timer 为 active / enabled；11:40、11:45、11:50 自动任务日志证明时间槽去重实际执行。
+验收最后检查为北京时间 11:50:37：下一次 timer 检查是 11:55，下一新采集槽为 12:00（香港午间收盘点），
+境内下午从 13:00 恢复，收盘 15:00–15:30 重试、官方披露 19:00–23:50 采集。
+关闭浏览器后 11:44:51–11:45:01 手动采集官方净值和估值各 18 只成功，数据库写入真实运行时间；
+当前持仓的官方日期为 09-28–09-29，估值来源时间为 09-30 04:00–11:43。
+来源日期不会因今天采集而改成今天；当天 18 只样本已积累，收盘归属和后续对账尚未发生。
+
+SQLite 完整性与持仓指纹核对通过，本地原库未变。更新前备份、手动在线备份、回滚到版本 5
+并恢复版本 6 均实际执行且 HTTP 检查通过；没有恢复数据库或修改持仓。
+SSH 隧道中的三个 SPA 页面均能加载，估值页渲染 18 行且无浏览器错误。
+
+市场概览域名 DNS / TLS 可通，接口间歇出现 `502` 或关闭连接；11:29 曾成功 2 项，11:45 为 3 项失败，
+失败状态与错误写入运行记录，最近成功行情仍保留。未换源、填默认价或伪装成全量成功。
+截图识别凭据未迁移，服务器识图功能暂未配置；可在 `/etc/fund-analysis.env` 中配置既有 OCR 环境变量。
+未开放公网或配置自动 / 异机备份。真实收盘自动采样、晚间披露和跨日对账尚未等到对应时段，
+不能由模拟测试替代；QDII 收益归属仍未知，日历仍需补 2027 年。

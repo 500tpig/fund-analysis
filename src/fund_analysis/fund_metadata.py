@@ -1,0 +1,318 @@
+"""Minimal fund metadata registry and schemas for portfolio holdings.
+
+Maintains official name, fund type, market, calendar, and NAV disclosure rules
+for holdings without constructing a full-market database.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any, Mapping
+
+from fund_analysis.trading_calendar import (
+    CALENDAR_CN_STOCK,
+    CALENDAR_HK_STOCK,
+    CALENDAR_US_STOCK,
+)
+
+# Disclosure rules
+RULE_CN_SAME_DAY_NIGHT = "cn_same_day_night"  # T-day night (approx. 19:00 - 24:00)
+RULE_QDII_NEXT_DAY_NIGHT = "qdii_next_day_night"  # T+1 day night for T-day market close
+RULE_CASH_DAILY = "cash_daily"  # Daily dividend / interest, no market delay
+RULE_UNKNOWN = "unknown_rule"
+
+
+@dataclass(frozen=True)
+class FundMetadata:
+    code: str
+    name: str
+    fund_type: str
+    fund_type_label: str
+    market: str
+    calendar: str
+    nav_disclosure_rule: str
+    benchmark_name: str | None = None
+    benchmark_code: str | None = None
+    source_url: str | None = None
+    verified_at: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+# Pre-verified metadata for all 18 portfolio funds and cash asset
+INITIAL_FUND_METADATA: Mapping[str, FundMetadata] = {
+    "009860": FundMetadata(
+        code="009860",
+        name="易方达中证银行ETF联接(LOF)C",
+        fund_type="domestic_index",
+        fund_type_label="指数型-股票",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中证银行指数收益率*95%+银行活期存款利率(税后)*5%",
+        benchmark_code="399986",
+        source_url="https://fund.eastmoney.com/009860.html",
+        verified_at="2026-09-04",
+    ),
+    "024481": FundMetadata(
+        code="024481",
+        name="财通品质甄选混合C",
+        fund_type="domestic_hybrid",
+        fund_type_label="偏股混合型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="沪深300指数收益率*70%+恒生指数收益率*10%+中债综合指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/024481.html",
+        verified_at="2026-09-02",
+    ),
+    "021528": FundMetadata(
+        code="021528",
+        name="财通成长优选混合C",
+        fund_type="domestic_hybrid",
+        fund_type_label="偏股混合型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="沪深300指数收益率*75%+上证国债指数收益率*25%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/021528.html",
+        verified_at="2026-09-02",
+    ),
+    "006503": FundMetadata(
+        code="006503",
+        name="财通集成电路产业股票C",
+        fund_type="domestic_equity",
+        fund_type_label="普通股票型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中证全指半导体产品与设备指数收益率*80%+上证国债指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/006503.html",
+        verified_at="2026-09-02",
+    ),
+    "015060": FundMetadata(
+        code="015060",
+        name="华夏节能环保股票C",
+        fund_type="domestic_equity",
+        fund_type_label="普通股票型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中证环保产业指数收益率*80%+上证国债指数收益率*20%",
+        benchmark_code="000827",
+        source_url="https://fund.eastmoney.com/015060.html",
+        verified_at="2026-09-03",
+    ),
+    "011452": FundMetadata(
+        code="011452",
+        name="华泰柏瑞质量成长C",
+        fund_type="domestic_hybrid",
+        fund_type_label="偏股混合型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="沪深300指数收益率*60%+中证港股通综合指数(人民币)收益率*20%+中债综合全价指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/011452.html",
+        verified_at="2026-09-02",
+    ),
+    "027138": FundMetadata(
+        code="027138",
+        name="广发中证红利低波指数发起式C",
+        fund_type="domestic_index",
+        fund_type_label="指数型-股票",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中证红利低波动指数收益率*95%+银行活期存款利率(税后)*5%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/027138.html",
+        verified_at="2026-09-02",
+    ),
+    "014674": FundMetadata(
+        code="014674",
+        name="富国中证港股通互联网ETF发起式联接C",
+        fund_type="hk_connect",
+        fund_type_label="ETF联接-港股通",
+        market="HK",
+        calendar=CALENDAR_HK_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中证港股通互联网指数收益率*95%+银行活期存款利率(税后)*5%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/014674.html",
+        verified_at="2026-09-02",
+    ),
+    "016702": FundMetadata(
+        code="016702",
+        name="银华海外数字经济量化选股混合发起式(QDII)C",
+        fund_type="qdii_hybrid",
+        fund_type_label="QDII偏股混合型",
+        market="US",
+        calendar=CALENDAR_US_STOCK,
+        nav_disclosure_rule=RULE_QDII_NEXT_DAY_NIGHT,
+        benchmark_name="纳斯达克100指数收益率(使用估值汇率折算)*80%+中债综合全价指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/016702.html",
+        verified_at="2026-09-02",
+    ),
+    "021842": FundMetadata(
+        code="021842",
+        name="国富全球科技互联混合(QDII)人民币C",
+        fund_type="qdii_hybrid",
+        fund_type_label="QDII偏股混合型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="彭博全球科技指数收益率(经汇率估值调整)*80%+银行人民币活期存款利率(税后)*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/021842.html",
+        verified_at="2026-09-02",
+    ),
+    "017731": FundMetadata(
+        code="017731",
+        name="嘉实全球产业升级股票发起式(QDII)C",
+        fund_type="qdii_equity",
+        fund_type_label="QDII普通股票型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="MSCI全球指数收益率(经汇率估值调整)*80%+中债综合指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/017731.html",
+        verified_at="2026-09-02",
+    ),
+    "002207": FundMetadata(
+        code="002207",
+        name="前海开源金银珠宝混合C",
+        fund_type="domestic_hybrid",
+        fund_type_label="偏股混合型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="沪深300指数收益率*50%+中证全债指数收益率*50%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/002207.html",
+        verified_at="2026-09-02",
+    ),
+    "021740": FundMetadata(
+        code="021740",
+        name="前海开源黄金ETF联接C",
+        fund_type="domestic_commodity",
+        fund_type_label="ETF联接-商品",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="国内黄金现货合约日终结算价收益率*95%+银行活期存款利率(税后)*5%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/021740.html",
+        verified_at="2026-09-02",
+    ),
+    "018036": FundMetadata(
+        code="018036",
+        name="长城全球新能源车股票发起式(QDII)C",
+        fund_type="qdii_equity",
+        fund_type_label="QDII普通股票型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="恒生新浪智能电动汽车指数收益率(经汇率调整)*80%+中债综合财富指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/018036.html",
+        verified_at="2026-09-02",
+    ),
+    "012922": FundMetadata(
+        code="012922",
+        name="易方达全球成长精选混合(QDII)人民币C",
+        fund_type="qdii_hybrid",
+        fund_type_label="QDII偏股混合型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="MSCI全球成长指数收益率(使用估值汇率折算)*80%+中债总指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/012922.html",
+        verified_at="2026-09-02",
+    ),
+    "022184": FundMetadata(
+        code="022184",
+        name="富国全球科技互联网股票(QDII)C",
+        fund_type="qdii_equity",
+        fund_type_label="QDII普通股票型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="恒生全球科技指数收益率(使用估值汇率调整)*85%+人民币活期存款利率(税后)*15%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/022184.html",
+        verified_at="2026-09-02",
+    ),
+    "021277": FundMetadata(
+        code="021277",
+        name="广发全球精选股票(QDII)人民币C",
+        fund_type="qdii_equity",
+        fund_type_label="QDII普通股票型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="MSCI全球指数收益率(经汇率估值调整)*80%+金融机构人民币活期存款基准利率(税后)*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/021277.html",
+        verified_at="2026-09-02",
+    ),
+    "016665": FundMetadata(
+        code="016665",
+        name="天弘全球高端制造混合(QDII)C",
+        fund_type="qdii_hybrid",
+        fund_type_label="QDII偏股混合型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="纳斯达克100指数收益率(经汇率调整)*70%+恒生指数收益率(经汇率调整)*10%+中债综合全价(总值)指数收益率*20%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/016665.html",
+        verified_at="2026-09-02",
+    ),
+    "014002": FundMetadata(
+        code="014002",
+        name="浦银全球智能科技(QDII)C",
+        fund_type="qdii_equity",
+        fund_type_label="QDII普通股票型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="MSCI All Country World Index(MSCI ACWI指数)总收益",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/014002.html",
+        verified_at="2026-09-26",
+    ),
+    "540010": FundMetadata(
+        code="540010",
+        name="汇丰晋信科技先锋股票",
+        fund_type="domestic_equity",
+        fund_type_label="普通股票型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中证TMT指数*90%+同业存款利率(税后)*10%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/540010.html",
+        verified_at="2026-09-26",
+    ),
+    "CASH": FundMetadata(
+        code="CASH",
+        name="现金资产",
+        fund_type="cash",
+        fund_type_label="现金资产",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CASH_DAILY,
+        benchmark_name="银行活期存款利率",
+        benchmark_code=None,
+        source_url=None,
+        verified_at="2026-09-03",
+    ),
+}
