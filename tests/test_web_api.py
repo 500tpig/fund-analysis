@@ -266,9 +266,17 @@ class WebApiTest(unittest.TestCase):
                 "/api/holdings/entry/recognize",
                 "/api/holdings/entry/preview",
                 "/api/holdings/entry/confirm",
+                "/api/simulation/accounts",
+                "/api/simulation/accounts/{account_id}",
+                "/api/simulation/accounts/{account_id}/positions",
+                "/api/simulation/accounts/{account_id}/orders",
+                "/api/simulation/accounts/{account_id}/pause",
+                "/api/simulation/accounts/{account_id}/resume",
+                "/api/simulation/orders/{order_id}",
+                "/api/simulation/orders/{order_id}/cancel",
             },
         )
-        self.assertEqual(sum(len(operations) for operations in paths.values()), 14)
+        self.assertEqual(sum(len(operations) for operations in paths.values()), 23)
 
     def test_funds_payload_embeds_latest_market_quotes(self) -> None:
         empty = self.client.get("/api/funds").json()["market_quotes"]

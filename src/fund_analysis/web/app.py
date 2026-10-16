@@ -29,6 +29,7 @@ from ..portfolio_analysis import (
     build_portfolio_risk,
     fetch_nav_histories,
 )
+from ..simulation.api import router as simulation_router
 from .api_payloads import (
     build_data_freshness_api_payload,
     build_holdings_api_payload,
@@ -683,10 +684,15 @@ def create_app(
     curve_provider: Any | None = None,
     fund_searcher: Any | None = None,
     holdings_recognizer: Any | None = None,
+    simulation_db_path: Path | str | None = None,
+    simulation_service: Any | None = None,
 ) -> FastAPI:
     web_app = FastAPI(title="基金估值")
     web_app.state.db_path = Path(db_path)
     web_app.state.storage = storage
+    # 模拟库独立于真实库，首次访问 /api/simulation 时才打开。
+    web_app.state.simulation_db_path = simulation_db_path
+    web_app.state.simulation_service = simulation_service
     web_app.state.market_provider = market_provider or EastmoneyFundDataProvider()
     web_app.state.estimate_provider = estimate_provider or CompositeFundEstimateProvider()
     web_app.state.market_quote_provider = (
@@ -700,6 +706,7 @@ def create_app(
     if storage is None and not lazy_storage:
         web_app.state.storage = LocalStorage(web_app.state.db_path)
     web_app.include_router(router)
+    web_app.include_router(simulation_router)
     index_path = DIST_DIR / "index.html"
 
     @web_app.post("/api/import", include_in_schema=False)

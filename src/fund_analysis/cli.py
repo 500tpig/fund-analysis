@@ -10,6 +10,8 @@ from urllib.request import ProxyHandler, Request, build_opener
 
 from .csv_loader import read_portfolio_csv
 from .models import PortfolioInputError
+from .simulation.cli import register as register_simulation_commands
+from .simulation.cli import run as run_simulation
 from .web.defaults import DEFAULT_DB_PATH
 
 
@@ -24,6 +26,11 @@ def build_parser() -> argparse.ArgumentParser:
     web.add_argument("--host", default="127.0.0.1")
     web.add_argument("--port", type=int, default=8765)
     web.add_argument("--db-path", default=str(DEFAULT_DB_PATH))
+    web.add_argument(
+        "--simulation-db-path",
+        default=None,
+        help="模拟库路径；默认读取 FUND_ANALYSIS_SIMULATION_DB_PATH 或 data/simulation.db",
+    )
 
     collect = commands.add_parser("collect", help="通过 localhost 服务采集并对账。")
     collect.add_argument("--port", type=int, default=8765)
@@ -32,6 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
     import_cmd = commands.add_parser("import", help="导入持仓 CSV。")
     import_cmd.add_argument("--db-path", default=str(DEFAULT_DB_PATH))
     import_cmd.add_argument("--portfolio", required=True, help="持仓 CSV 路径。")
+    register_simulation_commands(commands)
     return parser
 
 
@@ -44,7 +52,11 @@ def _run_web(args: argparse.Namespace) -> int:
         print(f"error: Web dependencies are unavailable: {exc}", file=sys.stderr)
         return 2
     uvicorn.run(
-        create_app(Path(args.db_path), lazy_storage=False),
+        create_app(
+            Path(args.db_path),
+            lazy_storage=False,
+            simulation_db_path=args.simulation_db_path,
+        ),
         host=args.host,
         port=args.port,
     )
@@ -93,5 +105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_import(args)
     if args.command == "collect":
         return _run_collect(args)
+    if args.command == "simulation":
+        return run_simulation(args)
     parser.print_help()
     return 1
