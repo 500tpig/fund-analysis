@@ -50,6 +50,22 @@ export const appShellChildren = [
       iconKey: 'import',
     },
   },
+  {
+    path: 'simulation',
+    name: 'simulation',
+    component: () => import('@/views/SimulationView.vue'),
+    meta: {
+      section: 'simulation',
+      navLevel: 'primary',
+      label: '模拟',
+      title: '模拟账户',
+      description: '独立虚拟账户的资金、持仓与订单，与真实持仓分开记账',
+      order: 40,
+      breadcrumb: '模拟',
+      sourceOwner: 'simulation',
+      iconKey: 'simulation',
+    },
+  },
   { path: ':pathMatch(.*)*', redirect: { name: 'valuation' } },
 ] satisfies RouteRecordRaw[]
 export const appRoutes = [

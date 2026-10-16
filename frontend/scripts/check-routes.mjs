@@ -14,6 +14,7 @@ const expectedRoutes = [
   ["valuation", "valuation"],
   ["holdings", "holdings"],
   ["import", "import"],
+  ["simulation", "simulation"],
 ]
 
 const errors = []
@@ -23,11 +24,11 @@ if (JSON.stringify(actualRoutes) !== JSON.stringify(expectedRoutes)) {
   errors.push(`canonical routes differ: expected ${JSON.stringify(expectedRoutes)}, got ${JSON.stringify(actualRoutes)}`)
 }
 const actualLabels = [...routeSource.matchAll(/label: '([^']+)'/g)].map((match) => match[1])
-if (JSON.stringify(actualLabels) !== JSON.stringify(['估值', '持仓', '录入'])) {
+if (JSON.stringify(actualLabels) !== JSON.stringify(['估值', '持仓', '录入', '模拟'])) {
   errors.push(`primary navigation labels differ: got ${JSON.stringify(actualLabels)}`)
 }
-if ((routeSource.match(/navLevel: 'primary'/g) ?? []).length !== 3) {
-  errors.push('primary navigation must contain exactly three routes')
+if ((routeSource.match(/navLevel: 'primary'/g) ?? []).length !== 4) {
+  errors.push('primary navigation must contain exactly four routes')
 }
 for (const removed of ['today-decisions', 'assets-research', 'trans-records', 'review-reports']) {
   if (routeSource.includes(`name: '${removed}'`)) {
@@ -75,4 +76,4 @@ if (errors.length) {
   process.exit(1)
 }
 
-console.log('Route smoke check passed: 3 canonical routes and valuation MVP redirects')
+console.log('Route smoke check passed: 4 canonical routes and valuation MVP redirects')

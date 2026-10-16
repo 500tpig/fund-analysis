@@ -609,3 +609,161 @@ export interface HoldingsEntryConfirmResponse {
     message: string
   }
 }
+
+// ---- 模拟账户（/api/simulation）：金额、份额、净值均为十进制字符串 ----
+
+export type SimulationAccountStatus = 'active' | 'paused' | 'risk_paused' | 'archived'
+export type SimulationOrderStatus =
+  | 'rejected'
+  | 'accepted'
+  | 'awaiting_nav'
+  | 'awaiting_confirmation'
+  | 'awaiting_payment'
+  | 'settled'
+  | 'cancelled'
+  | 'failed'
+
+export interface SimulationMissingItem {
+  code: string
+  reason: string
+  nav_date?: string
+  expected_nav_date?: string
+  detail?: string
+}
+
+export interface SimulationAccountSummary {
+  id: string
+  experiment_id: string
+  status: SimulationAccountStatus
+  created_at: string
+  archived_at: string | null
+}
+
+export interface SimulationAccountsResponse {
+  environment: 'fixture' | 'production'
+  items: SimulationAccountSummary[]
+}
+
+export interface SimulationAccount {
+  id: string
+  experiment_id: string
+  environment: 'fixture' | 'production'
+  status: SimulationAccountStatus
+  pause_reason: string | null
+  version: number
+  created_at: string
+  archived_at: string | null
+  initial_cash: string
+  as_of: string
+  balances: {
+    available: string
+    frozen: string
+    receivable: string
+    dividend_receivable: string
+    holdings_value: string | null
+    total: string | null
+  }
+  profit: string | null
+  profit_rate: string | null
+  peak: string
+  drawdown: string | null
+  quality: 'complete' | 'incomplete'
+  missing: SimulationMissingItem[]
+  nav_date_range: { min: string | null; max: string | null }
+  pending_order_count: number
+  latest_valuation: { observed_at: string; quality: string } | null
+}
+
+export interface SimulationPosition {
+  code: string
+  name: string
+  shares: string
+  frozen_shares: string
+  available_shares: string
+  net_cost: string
+  lot_count: number
+  nav: string | null
+  nav_date: string | null
+  value: string | null
+  rule_id: string | null
+  rule_status: string
+  issues: SimulationMissingItem[]
+}
+
+export interface SimulationOrder {
+  id: string
+  account_id: string
+  side: 'buy' | 'sell'
+  code: string
+  name: string | null
+  status: SimulationOrderStatus
+  reason_code: string | null
+  reason_detail: string | null
+  blocked_reason: string | null
+  version: number
+  requested_amount: string | null
+  accepted_amount: string | null
+  requested_shares: string | null
+  confirmed_shares: string | null
+  nav_date: string | null
+  nav_value: string | null
+  fee: string | null
+  gross_amount: string | null
+  net_amount: string | null
+  rounding_delta: string | null
+  submitted_at: string
+  cancel_deadline_at: string | null
+  confirmation_due_date: string | null
+  confirmation_due_at: string | null
+  confirmed_at: string | null
+  payment_due_date: string | null
+  payment_due_at: string | null
+  paid_at: string | null
+  nav_observed_at: string | null
+  run_id: string | null
+  rule_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SimulationOrderDetail extends SimulationOrder {
+  cancellable: boolean
+  events: Array<{
+    from_status: string | null
+    to_status: string
+    occurred_at: string
+    effective_date: string | null
+    reason: string | null
+  }>
+  allocations: Array<{ lot_id: string; shares: string; lot_confirmed_date: string }>
+  ledger: Array<{
+    event_type: string
+    cash_available_delta: string
+    cash_frozen_delta: string
+    receivable_delta: string
+    shares_delta: string
+    fee: string
+    effective_date: string
+    recorded_at: string
+  }>
+  rule: {
+    id: string
+    environment: string
+    status: string
+    evidence: { source_url?: string | null; evidence_ref?: string | null; assumptions?: string[] } | null
+  } | null
+  snapshots: Array<{
+    id: string
+    kind: string
+    code: string | null
+    nav_date: string | null
+    value: string | null
+    source: string
+    observed_at: string
+  }>
+}
+
+export interface SimulationOrdersResponse {
+  items: SimulationOrder[]
+  next_cursor: string | null
+}

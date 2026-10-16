@@ -13,18 +13,30 @@ import type {
   IntradayCurveResponse,
   OfficialDailyProfitResponse,
   PortfolioRiskResponse,
+  SimulationAccount,
+  SimulationAccountsResponse,
+  SimulationOrderDetail,
+  SimulationOrdersResponse,
+  SimulationPosition,
 } from './types'
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init)
   const payload = await response.json().catch(() => null) as unknown
   if (!response.ok) {
-    const detail = payload && typeof payload === 'object' && 'detail' in payload
-      ? String((payload as { detail: unknown }).detail)
-      : `请求失败（${response.status}）`
-    throw new Error(detail)
+    throw new Error(errorDetail(payload) ?? `请求失败（${response.status}）`)
   }
   return payload as T
+}
+
+function errorDetail(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object' || !('detail' in payload)) return null
+  const detail = (payload as { detail: unknown }).detail
+  // 模拟接口返回 {code, message, fields}；其余接口仍是字符串。
+  if (detail && typeof detail === 'object' && 'message' in detail) {
+    return String((detail as { message: unknown }).message)
+  }
+  return String(detail)
 }
 
 export function fetchHoldings(): Promise<HoldingsResponse> {
@@ -122,4 +134,37 @@ export function confirmHoldingsEntry(payload: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
+}
+
+export function fetchSimulationAccounts(): Promise<SimulationAccountsResponse> {
+  return requestJson('/api/simulation/accounts')
+}
+
+export function createSimulationAccount(idempotencyKey: string): Promise<SimulationAccount> {
+  return requestJson('/api/simulation/accounts', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
+  })
+}
+
+export function fetchSimulationAccount(id: string): Promise<SimulationAccount> {
+  return requestJson(`/api/simulation/accounts/${encodeURIComponent(id)}`)
+}
+
+export function fetchSimulationPositions(id: string): Promise<{ items: SimulationPosition[] }> {
+  return requestJson(`/api/simulation/accounts/${encodeURIComponent(id)}/positions`)
+}
+
+export function fetchSimulationOrders(
+  id: string,
+  options: { cursor?: string | null; limit?: number; status?: string[] } = {},
+): Promise<SimulationOrdersResponse> {
+  const params = new URLSearchParams({ limit: String(options.limit ?? 20) })
+  if (options.cursor) params.set('cursor', options.cursor)
+  if (options.status?.length) params.set('status', options.status.join(','))
+  return requestJson(`/api/simulation/accounts/${encodeURIComponent(id)}/orders?${params.toString()}`)
+}
+
+export function fetchSimulationOrder(id: string): Promise<SimulationOrderDetail> {
+  return requestJson(`/api/simulation/orders/${encodeURIComponent(id)}`)
 }

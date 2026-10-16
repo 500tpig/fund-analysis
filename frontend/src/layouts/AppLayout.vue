@@ -5,6 +5,7 @@ import {
   Activity,
   Wallet,
   ScanLine,
+  FlaskConical,
   ChevronLeft,
 } from '@lucide/vue'
 
@@ -35,6 +36,7 @@ const iconMap = {
   valuation: Activity,
   holdings: Wallet,
   import: ScanLine,
+  simulation: FlaskConical,
 } satisfies Record<AppIconKey, unknown>
 
 const navItems = getPrimaryNavItems()

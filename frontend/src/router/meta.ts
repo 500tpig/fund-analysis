@@ -1,6 +1,6 @@
 import 'vue-router'
 
-export type AppSectionKey = 'valuation' | 'holdings' | 'import'
+export type AppSectionKey = 'valuation' | 'holdings' | 'import' | 'simulation'
 export type AppRouteName = AppSectionKey
 export type AppNavLevel = 'primary'
 export type RouteSourceOwner = AppSectionKey
