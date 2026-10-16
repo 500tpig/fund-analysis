@@ -164,7 +164,7 @@ A × (1 + r) = q × Ne
 
 禁止用 `FUND_ANALYSIS_OCR_MODEL=deepseek-ai/DeepSeek-OCR` 做结构化持仓解析。
 该变量若存在，只表示历史文本 OCR 配置，阶段 3 不读取。
-`FUND_ANALYSIS_LLM_*` 留给阶段 5 / 6，本阶段不接入。
+`FUND_ANALYSIS_LLM_*` 留给 roadmap 中的 AI 阶段，本阶段不接入。
 
 未配置判定：`BASE_URL`、`API_KEY`、`MODEL` 任一为空即视为未配置。
 
