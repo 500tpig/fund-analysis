@@ -1,12 +1,13 @@
 # Fund Valuation
 
-本地优先的基金估值工具，只保留三个页面：
+本地优先的基金估值工具，包含四个页面：
 
 - `估值`：查看第三方盘中估值、官方净值、估算收益和数据新鲜度。
 - `持仓`：新增、修改和删除持仓。
 - `录入`：从持仓截图识别候选，人工核对后批量写入。
+- `模拟`：查看独立模拟账户的资金、持仓和订单（只读，不提供手动下单）。
 
-当前版本不包含 AI 分析、新闻、交易流水、定投、投资推荐、研究或报告功能，
+当前版本不包含 AI 分析、新闻、定投调度、投资推荐、研究或报告功能，
 也不会连接券商或执行交易。
 后续产品阶段见 [`docs/project-roadmap.md`](docs/project-roadmap.md)。
 
@@ -48,6 +49,43 @@ export FUND_ANALYSIS_OCR_STRUCTURED_MODEL=replace-with-vision-model
 `FUND_ANALYSIS_OCR_STRUCTURED_MAX_TOKENS`（默认 `4096`）。任一必需变量缺失时，
 服务不会发送图片，并返回「未配置持仓识图服务」。截图只用于当次请求；服务端压缩为
 最长边 1600 px 的 JPEG 后发送，不写入 SQLite，识别结束后关闭上传文件且不保留原图。
+
+## 模拟账本
+
+模拟账户使用独立 SQLite 文件，默认 `data/simulation.db`，可用 `--sim-db` 或
+`FUND_ANALYSIS_SIMULATION_DB_PATH` 指定；路径指向真实库、其 WAL/SHM 文件、硬链接或符号链接时拒绝启动。
+模拟模块只以只读方式读取真实库中的官方净值，不读取持仓金额，也不修改真实持仓。
+
+- 每个模拟库在创建时固定为 `fixture`（隔离样例）或 `production` 环境。生产库拒绝 fixture 规则、
+  手工净值、指定时间和命令行下单；当前没有已核验的生产规则，生产库不会产生订单。
+- 金额、份额、净值以十进制字符串存储和返回；余额由 `ledger_events` 重放得到，账本、规则和快照只追加。
+- 规则按基金代码、渠道与份额类别建立不可变版本，有效区间为左闭右开。同一代码的版本必须共用渠道与份额类别，
+  且不能同日生效或穿入已声明的结束日；修订须新增更晚的 `effective_from`，不修改已导入版本。
+- 订单只由服务层受理（阶段 6 为 fixture 验收命令，阶段 7 为固定策略），没有 HTTP 下单接口。
+  `/api/simulation` 提供账户、持仓、订单查询，以及撤单、暂停和恢复；写请求需要 `Idempotency-Key`。
+
+```bash
+# 隔离验收：在新的空目录里跑 C01–C16 与日期算例，逐项打印预期与实际
+fund-analysis simulation acceptance --output-dir /tmp/sim-acceptance
+
+# 在页面查看某个样例库（真实库可指向一个临时空库）
+fund-analysis web --db-path /tmp/empty-main.db --simulation-db-path /tmp/sim-acceptance/C16.db
+
+# 常用管理命令（均需 --sim-db；默认 --main-db 为 data/fund_analysis.db，仅用于防误配和只读净值）
+fund-analysis simulation --sim-db data/simulation.db init            # 新库默认 production，幂等初始化 200,000 元
+fund-analysis simulation --sim-db data/simulation.db show --account <id>
+fund-analysis simulation --sim-db data/simulation.db settle --account <id>
+fund-analysis simulation --sim-db data/simulation.db verify          # 账本重放核对
+fund-analysis simulation --sim-db data/simulation.db backup --target data/backups/sim-<时间>.db
+fund-analysis simulation --sim-db data/simulation.db restore --backup <备份> --target <新路径>
+fund-analysis simulation --sim-db data/simulation.db archive --account <id> --confirm <id> --operator <名字> --reason <原因>
+```
+
+备份通过 SQLite backup 生成并做完整性检查与账本重放，目标已存在时拒绝。恢复只写入尚不存在的新路径，
+恢复后所有未归档账户保持暂停；替换正在使用的模拟库须先停服务并人工移走原文件。
+「重置」即归档旧实验并新建账户：账户须先暂停，且没有待处理订单、冻结资金或应收款，旧记录全部保留。
+规则、费用与到账日期的假设见 [`docs/simulation-plan.md`](docs/simulation-plan.md) 第 2.5 节；
+fixture 结果不代表支付宝实际交易规则。
 
 ## CSV 迁移
 
