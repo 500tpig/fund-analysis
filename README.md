@@ -5,10 +5,11 @@
 - `估值`：查看第三方盘中估值、官方净值、估算收益和数据新鲜度。
 - `持仓`：新增、修改和删除持仓。
 - `录入`：从持仓截图识别候选，人工核对后批量写入。
-- `模拟`：查看独立模拟账户的资金、持仓和订单（只读，不提供手动下单）。
+- `模拟`：查看独立模拟账户的资金、持仓、订单、固定策略运行记录与费用后指标，
+  并可暂停或恢复新增买入（不提供手动下单）。
 
-当前版本不包含 AI 分析、新闻、定投调度、投资推荐、研究或报告功能，
-也不会连接券商或执行交易。
+当前版本不包含 AI 分析、新闻、投资推荐、研究或报告功能，也不会连接券商或执行交易。
+固定策略与调度代码已实现，但未安装 timer、未启用自动运行，生产库当前也不会产生订单；
 后续产品阶段见 [`docs/project-roadmap.md`](docs/project-roadmap.md)。
 
 ## 环境
@@ -62,7 +63,9 @@ export FUND_ANALYSIS_OCR_STRUCTURED_MODEL=replace-with-vision-model
 - 规则按基金代码、渠道与份额类别建立不可变版本，有效区间为左闭右开。同一代码的版本必须共用渠道与份额类别，
   且不能同日生效或穿入已声明的结束日；修订须新增更晚的 `effective_from`，不修改已导入版本。
 - 订单只由服务层受理（阶段 6 为 fixture 验收命令，阶段 7 为固定策略），没有 HTTP 下单接口。
-  `/api/simulation` 提供账户、持仓、订单查询，以及撤单、暂停和恢复；写请求需要 `Idempotency-Key`。
+  `/api/simulation` 提供账户、持仓、订单、运行记录、指标查询，以及撤单、暂停和恢复；写请求需要 `Idempotency-Key`。
+- 固定策略首版只有一种：每周三北京时间 14:00、按基金代码升序、每只固定金额买入，执行窗口至 14:10（不含结束）。
+  策略版本不可覆盖，修订须新增更晚的 `effective_from`。运行记录（`runs`/`run_items`）为账户 + 周期唯一，重启不重复下单。
 
 ```bash
 # 隔离验收：在新的空目录里跑 C01–C16 与日期算例，逐项打印预期与实际
@@ -80,6 +83,26 @@ fund-analysis simulation --sim-db data/simulation.db backup --target data/backup
 fund-analysis simulation --sim-db data/simulation.db restore --backup <备份> --target <新路径>
 fund-analysis simulation --sim-db data/simulation.db archive --account <id> --confirm <id> --operator <名字> --reason <原因>
 ```
+
+固定策略与调度命令（阶段 7 已实现，尚未部署自动运行）：
+
+```bash
+# 导入固定策略版本（fixture 库用 --fixture；生产库只接受已核验规则对应的 --file）
+fund-analysis simulation --sim-db data/simulation.db strategy-import --account <id> --effective-from 2026-10-21 --fixture
+
+# 手动处理到期周期：窗口内受理，窗口已过补记 missed；显式 --at 仅 fixture 库可用
+fund-analysis simulation --sim-db data/simulation.db run-cycle --account <id> --at 2026-10-21T14:05:00+08:00
+
+# 每日调度入口：结算检查与 23:30 日终快照；生产库不传 --at，取服务端时钟
+fund-analysis simulation --sim-db data/simulation.db tick
+
+fund-analysis simulation --sim-db data/simulation.db runs --account <id>       # 运行记录
+fund-analysis simulation --sim-db data/simulation.db run --run <run_id>        # 单次运行详情
+fund-analysis simulation --sim-db data/simulation.db metrics --account <id>    # 费用后指标
+```
+
+`deploy/systemd/fund-analysis-simulation.{service,timer}` 已随仓库提供，但**尚未安装或启用**；
+启用前须先完成渠道规则核验与 P0-B，否则生产库只会持续记录 `rule_incomplete` 跳过。
 
 备份通过 SQLite backup 生成并做完整性检查与账本重放，目标已存在时拒绝。恢复只写入尚不存在的新路径，
 恢复后所有未归档账户保持暂停；替换正在使用的模拟库须先停服务并人工移走原文件。
@@ -338,3 +361,7 @@ SSH 隧道中的三个 SPA 页面均能加载，估值页渲染 18 行且无浏�
 截图识别凭据未迁移，服务器识图功能暂未配置；可在 `/etc/fund-analysis.env` 中配置既有 OCR 环境变量。
 未开放公网或配置自动 / 异机备份。真实收盘自动采样、晚间披露和跨日对账尚未等到对应时段，
 不能由模拟测试替代；QDII 收益归属仍未知，日历仍需补 2027 年。
+
+阶段 7 的固定策略、调度命令、systemd unit 与 `/simulation` 运行控制已在隔离 fixture 库通过后端测试与浏览器检查，
+但**未部署服务器、未安装 timer、未做真机验收**。7.5 真实周期验收需要先完成渠道规则核验（当前生产库无已核验规则）
+与 P0-B；生产净值来源只覆盖真实持有的基金，模拟基金可能取不到申请日净值。
