@@ -9,8 +9,9 @@
   并可暂停或恢复新增买入（不提供手动下单）。
 
 当前版本不包含 AI 分析、新闻、投资推荐、研究或报告功能，也不会连接券商或执行交易。
-固定策略与调度代码已实现，但未安装 timer、未启用自动运行，生产库当前也不会产生订单；
-后续产品阶段见 [`docs/project-roadmap.md`](docs/project-roadmap.md)。
+固定策略调度已部署服务器（2026-10-18）：模拟 timer 每 5 分钟运行 `simulation tick`，生产白名单
+当前只有 016665（天弘全球高端制造混合(QDII)C），每周三 14:00 按 500.00 元模拟买入，首个周期
+2026-10-21；7.5 真实周期验收进行中。后续产品阶段见 [`docs/project-roadmap.md`](docs/project-roadmap.md)。
 
 ## 环境
 
@@ -55,10 +56,11 @@ export FUND_ANALYSIS_OCR_STRUCTURED_MODEL=replace-with-vision-model
 
 模拟账户使用独立 SQLite 文件，默认 `data/simulation.db`，可用 `--sim-db` 或
 `FUND_ANALYSIS_SIMULATION_DB_PATH` 指定；路径指向真实库、其 WAL/SHM 文件、硬链接或符号链接时拒绝启动。
-模拟模块只以只读方式读取真实库中的官方净值，不读取持仓金额，也不修改真实持仓。
+结算净值来自东财 lsjz 历史接口（单位净值 DWJZ，按基金代码与净值日精确查询，与是否持仓无关），
+取不到时只读回退真实库官方净值；不读取持仓金额，也不修改真实持仓。
 
 - 每个模拟库在创建时固定为 `fixture`（隔离样例）或 `production` 环境。生产库拒绝 fixture 规则、
-  手工净值、指定时间和命令行下单；当前没有已核验的生产规则，生产库不会产生订单。
+  手工净值、指定时间和命令行下单；当前已导入一条已核验生产规则（016665），生产库只为它产生订单。
 - 金额、份额、净值以十进制字符串存储和返回；余额由 `ledger_events` 重放得到，账本、规则和快照只追加。
 - 规则按基金代码、渠道与份额类别建立不可变版本，有效区间为左闭右开。同一代码的版本必须共用渠道与份额类别，
   且不能同日生效或穿入已声明的结束日；修订须新增更晚的 `effective_from`，不修改已导入版本。
@@ -84,7 +86,7 @@ fund-analysis simulation --sim-db data/simulation.db restore --backup <备份> -
 fund-analysis simulation --sim-db data/simulation.db archive --account <id> --confirm <id> --operator <名字> --reason <原因>
 ```
 
-固定策略与调度命令（阶段 7 已实现，尚未部署自动运行）：
+固定策略与调度命令（阶段 7 已实现并部署，模拟 timer 已启用）：
 
 ```bash
 # 导入固定策略版本（fixture 库用 --fixture；生产库只接受已核验规则对应的 --file）
@@ -101,8 +103,8 @@ fund-analysis simulation --sim-db data/simulation.db run --run <run_id>        #
 fund-analysis simulation --sim-db data/simulation.db metrics --account <id>    # 费用后指标
 ```
 
-`deploy/systemd/fund-analysis-simulation.{service,timer}` 已随仓库提供，但**尚未安装或启用**；
-启用前须先完成渠道规则核验与 P0-B，否则生产库只会持续记录 `rule_incomplete` 跳过。
+`deploy/systemd/fund-analysis-simulation.{service,timer}` 已安装并启用（2026-10-18），
+渠道规则核验与 P0-B 采集与备份恢复证据已就绪；未导入规则的基金仍会记录 `rule_incomplete` 跳过。
 
 备份通过 SQLite backup 生成并做完整性检查与账本重放，目标已存在时拒绝。恢复只写入尚不存在的新路径，
 恢复后所有未归档账户保持暂停；替换正在使用的模拟库须先停服务并人工移走原文件。
@@ -362,6 +364,20 @@ SSH 隧道中的三个 SPA 页面均能加载，估值页渲染 18 行且无浏�
 未开放公网或配置自动 / 异机备份。真实收盘自动采样、晚间披露和跨日对账尚未等到对应时段，
 不能由模拟测试替代；QDII 收益归属仍未知，日历仍需补 2027 年。
 
-阶段 7 的固定策略、调度命令、systemd unit 与 `/simulation` 运行控制已在隔离 fixture 库通过后端测试与浏览器检查，
-但**未部署服务器、未安装 timer、未做真机验收**。7.5 真实周期验收需要先完成渠道规则核验（当前生产库无已核验规则）
-与 P0-B；生产净值来源只覆盖真实持有的基金，模拟基金可能取不到申请日净值。
+### 阶段 7 模拟部署（2026-10-18）
+
+版本 `20261018-025612` 已部署（上一版 `20260930-collection-6`）。本次新建
+`/etc/fund-analysis.env`（root `0600`，`FUND_ANALYSIS_SIMULATION_DB_PATH=/var/lib/fund-analysis/simulation.db`），
+补齐 web 单元读取模拟库的路径；真实库无 schema 变化，更新前备份 `backups/pre-20261018-025612.db`。
+
+服务器已初始化生产模拟库并启用 timer（`fund-analysis-simulation.timer`，每 5 分钟判断一次）：
+账户 `acct_57e3deb6871f420c9e98`（200,000.00 元）、规则 `prod_016665_alipay_20261018`
+（支付宝交易规则截图与东财费率页交叉核对，截图存档于 `deploy/rules/evidence/`）、
+策略 `strat_42f234003fbb83ba`（每周三 14:00、016665 每期 500.00 元，2026-10-21 生效）。
+备份 `backups/sim-20261018-pre-timer.db` 与恢复演练 `backups/sim-restore-drill-20261018.db`
+通过账本重放核对（P0-B 完成）；手动 settle 实测经 lsjz 取得 016665 官方净值 2.2806（10-15）
+写入模拟库，timer 5 分钟触发与窗口跳过已在 journal 验证。
+
+7.5 验收等待真实周期：2026-10-21 受理买入、10-22 晚间取得官方净值、10-23 确认后完成逐笔复算。
+剩余风险：2027 年日历需在 12 月前补；手机远程为 P0-A，以 Cloudflare 隧道接入时须同时启用
+Zero Trust 认证——当前 web 无认证，不得直接公开。
