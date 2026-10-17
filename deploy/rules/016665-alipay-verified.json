@@ -11,7 +11,7 @@
   "effective_to": null,
   "evidence": {
     "source_url": "https://fundf10.eastmoney.com/jjfl_016665.html",
-    "evidence_ref": "支付宝 App「交易规则」页截图（买入规则、卖出规则，2026-10-17 由用户提供；买入截图 SHA-256 920b1ec2…、卖出截图 eb0bb534…）；东财费率页 2026-10-18 抓取交叉核对（申购起点 10.00 元、日累计申购限额 1000.00 元、最小赎回 0.10 份、买入/卖出确认 T+2）；份额取整与持有期条款沿用天弘招募说明书转载（SHA-256 223b11d2a76b4efb63884e7f152d808b32537ed9d015407bbc07d26db198aca4）",
+    "evidence_ref": "支付宝 App「交易规则」页截图 2026-10-17 由用户提供，存档于 deploy/rules/evidence/016665-alipay-buy-rules.png（SHA-256 920b1ec2669b2f216664e4698665be733c05a59af2ae1e370143c9cc84740b9c）与 016665-alipay-sell-rules.png（SHA-256 eb0bb534aeb1b8aa9043fec6e6c629141e89df3ed3b5ed7cfcee8ccad6e4fed8）；东财费率页 2026-10-18 抓取交叉核对（申购起点 10.00 元、日累计申购限额 1000.00 元、最小赎回 0.10 份、买入/卖出确认 T+2）；份额取整与持有期条款沿用天弘招募说明书转载（SHA-256 223b11d2a76b4efb63884e7f152d808b32537ed9d015407bbc07d26db198aca4）",
     "published_at": null,
     "checked_at": "2026-10-18",
     "assumptions": [

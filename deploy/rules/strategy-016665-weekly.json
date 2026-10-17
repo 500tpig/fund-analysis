@@ -1,0 +1,9 @@
+{
+  "effective_from": "2026-10-21",
+  "timezone": "Asia/Shanghai",
+  "weekday": 3,
+  "time": "14:00",
+  "window_end": "14:10",
+  "amounts": {"016665": "500.00"},
+  "rule_set": "prod_016665_alipay_20261018"
+}
