@@ -1,4 +1,4 @@
-import type { SimulationAccountStatus, SimulationOrderStatus } from '@/api/types'
+import type { SimulationAccountStatus, SimulationOrderStatus, SimulationRunItemStatus, SimulationRunStatus } from '@/api/types'
 import type { StatusTone } from '@/shared/dataStatus'
 
 /** 十进制字符串按千分位展示，不转成浮点数，避免金额显示误差。 */
@@ -79,6 +79,37 @@ export const ORDER_FILTERS: Array<{ key: string; label: string; statuses: Simula
   { key: 'settled', label: '已完成', statuses: ['settled'] },
   { key: 'closed', label: '未成交', statuses: ['rejected', 'cancelled', 'failed'] },
 ]
+
+export const RUN_STATUS: Record<SimulationRunStatus, { label: string; tone: StatusTone }> = {
+  running: { label: '执行中', tone: 'info' },
+  completed: { label: '已完成', tone: 'muted' },
+  partial: { label: '部分失败', tone: 'warning' },
+  failed: { label: '整轮失败', tone: 'error' },
+  missed: { label: '已错过', tone: 'warning' },
+}
+
+export const RUN_ITEM_STATUS: Record<SimulationRunItemStatus, { label: string; tone: StatusTone }> = {
+  accepted: { label: '已受理', tone: 'info' },
+  skipped: { label: '已跳过', tone: 'muted' },
+  failed: { label: '失败', tone: 'error' },
+}
+
+const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+
+/** ISO 星期（1=周一…7=周日）转中文，超出范围原样返回。 */
+export function weekdayLabel(value: number): string {
+  return WEEKDAYS[value - 1] ?? String(value)
+}
+
+/** 运行周期日期 `YYYY-MM-DD` 转 `MM-DD 周三`，与策略星期对应。 */
+export function formatCycleDate(value: string | null | undefined, fallback = '—'): string {
+  if (!value) return fallback
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return value
+  const day = new Date(`${value}T00:00:00Z`)
+  const weekday = Number.isNaN(day.getTime()) ? '' : WEEKDAYS[day.getUTCDay() === 0 ? 6 : day.getUTCDay() - 1]
+  return `${match[2]}-${match[3]}${weekday ? ` ${weekday}` : ''}`
+}
 
 const REASONS: Record<string, string> = {
   account_paused: '账户已暂停新增买入',

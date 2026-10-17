@@ -1,21 +1,28 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, RefreshCw } from '@lucide/vue'
+import { AlertCircle, Pause, Play, RefreshCw } from '@lucide/vue'
 
 import {
   createSimulationAccount,
   fetchSimulationAccount,
   fetchSimulationAccounts,
+  fetchSimulationMetrics,
   fetchSimulationOrder,
   fetchSimulationOrders,
   fetchSimulationPositions,
+  fetchSimulationRun,
+  fetchSimulationRuns,
+  setSimulationPause,
 } from '@/api/client'
 import type {
   SimulationAccount,
   SimulationAccountsResponse,
+  SimulationMetrics,
   SimulationOrder,
   SimulationOrderDetail,
   SimulationPosition,
+  SimulationRun,
+  SimulationRunDetail,
 } from '@/api/types'
 import EmptyState from '@/components/EmptyState.vue'
 import HeroMetrics, { type HeroMetric } from '@/components/HeroMetrics.vue'
@@ -28,13 +35,17 @@ import {
   ACCOUNT_STATUS,
   ORDER_FILTERS,
   ORDER_STATUS,
+  RUN_ITEM_STATUS,
+  RUN_STATUS,
   decimalSign,
   formatBeijing,
+  formatCycleDate,
   formatDay,
   formatDecimal,
   formatRatio,
   formatSignedDecimal,
   reasonLabel,
+  weekdayLabel,
 } from '@/shared/simulation'
 
 const CREATE_KEY_STORAGE = 'fundpilot.simulation.create-key'
@@ -45,15 +56,25 @@ const positions = ref<SimulationPosition[]>([])
 const orders = ref<SimulationOrder[]>([])
 const nextCursor = ref<string | null>(null)
 const orderFilter = ref('all')
+const metrics = ref<SimulationMetrics | null>(null)
+const runs = ref<SimulationRun[]>([])
+const runsNextCursor = ref<string | null>(null)
+const loadingRunsMore = ref(false)
 const loading = ref(true)
 const loadingMore = ref(false)
 const creating = ref(false)
+const pausing = ref(false)
 const error = ref<string | null>(null)
 
 const drawerOpen = ref(false)
 const detail = ref<SimulationOrderDetail | null>(null)
 const detailLoading = ref(false)
 const detailError = ref<string | null>(null)
+
+const runDrawerOpen = ref(false)
+const runDetail = ref<SimulationRunDetail | null>(null)
+const runDetailLoading = ref(false)
+const runDetailError = ref<string | null>(null)
 
 const currentAccountId = computed(() => {
   const items = accounts.value?.items ?? []
@@ -62,6 +83,8 @@ const currentAccountId = computed(() => {
 const hasActiveAccount = computed(() => (accounts.value?.items ?? []).some((item) => item.status !== 'archived'))
 const statusMeta = computed(() => (account.value ? ACCOUNT_STATUS[account.value.status] : null))
 const filterStatuses = computed(() => ORDER_FILTERS.find((item) => item.key === orderFilter.value)?.statuses ?? [])
+const canPause = computed(() => account.value?.status === 'active')
+const canResume = computed(() => account.value?.status === 'paused' || account.value?.status === 'risk_paused')
 
 function messageOf(caught: unknown, fallback: string): string {
   return caught instanceof Error ? caught.message : fallback
@@ -78,6 +101,16 @@ async function loadOrders(reset: boolean) {
   nextCursor.value = page.next_cursor
 }
 
+async function loadRuns(reset: boolean) {
+  const id = currentAccountId.value
+  if (!id) return
+  const page = await fetchSimulationRuns(id, {
+    cursor: reset ? null : runsNextCursor.value,
+  })
+  runs.value = reset ? page.items : [...runs.value, ...page.items]
+  runsNextCursor.value = page.next_cursor
+}
+
 async function loadAll() {
   loading.value = true
   error.value = null
@@ -88,19 +121,39 @@ async function loadAll() {
       account.value = null
       positions.value = []
       orders.value = []
+      runs.value = []
+      metrics.value = null
       return
     }
-    const [loadedAccount, loadedPositions] = await Promise.all([
+    const [loadedAccount, loadedPositions, loadedMetrics] = await Promise.all([
       fetchSimulationAccount(id),
       fetchSimulationPositions(id),
+      fetchSimulationMetrics(id),
       loadOrders(true),
+      loadRuns(true),
     ])
     account.value = loadedAccount
     positions.value = loadedPositions.items
+    metrics.value = loadedMetrics
   } catch (caught) {
     error.value = messageOf(caught, '加载模拟账户失败')
   } finally {
     loading.value = false
+  }
+}
+
+async function togglePause() {
+  const current = account.value
+  if (!current) return
+  pausing.value = true
+  error.value = null
+  const action = canPause.value ? 'pause' : 'resume'
+  try {
+    account.value = await setSimulationPause(current.id, action, current.version, `web-${crypto.randomUUID()}`)
+  } catch (caught) {
+    error.value = messageOf(caught, action === 'pause' ? '暂停失败' : '恢复失败')
+  } finally {
+    pausing.value = false
   }
 }
 
@@ -124,6 +177,17 @@ async function loadMore() {
   }
 }
 
+async function loadMoreRuns() {
+  loadingRunsMore.value = true
+  try {
+    await loadRuns(false)
+  } catch (caught) {
+    error.value = messageOf(caught, '加载运行记录失败')
+  } finally {
+    loadingRunsMore.value = false
+  }
+}
+
 async function createAccount() {
   creating.value = true
   error.value = null
@@ -144,7 +208,9 @@ async function createAccount() {
   }
 }
 
-async function openOrder(order: SimulationOrder) {
+async function openOrder(order: SimulationOrder | { id: string }) {
+  // 从运行详情跳转时先收起运行 Drawer，避免两个 aria-modal 面板叠加。
+  runDrawerOpen.value = false
   drawerOpen.value = true
   detail.value = null
   detailError.value = null
@@ -155,6 +221,20 @@ async function openOrder(order: SimulationOrder) {
     detailError.value = messageOf(caught, '加载订单详情失败')
   } finally {
     detailLoading.value = false
+  }
+}
+
+async function openRun(run: SimulationRun) {
+  runDrawerOpen.value = true
+  runDetail.value = null
+  runDetailError.value = null
+  runDetailLoading.value = true
+  try {
+    runDetail.value = await fetchSimulationRun(run.id)
+  } catch (caught) {
+    runDetailError.value = messageOf(caught, '加载运行详情失败')
+  } finally {
+    runDetailLoading.value = false
   }
 }
 
@@ -209,6 +289,85 @@ const balanceItems = computed(() => {
 function orderQuantity(order: SimulationOrder): string {
   if (order.side === 'buy') return `¥${formatDecimal(order.accepted_amount ?? order.requested_amount)}`
   return `${formatDecimal(order.confirmed_shares ?? order.requested_shares)} 份`
+}
+
+const metricItems = computed(() => {
+  const item = metrics.value
+  if (!item) return []
+  const coverage = `${item.complete_snapshots} 个完整快照`
+  const range = item.valuation_range
+  return [
+    {
+      key: 'cash_ratio',
+      label: '现金占比',
+      value: formatRatio(item.cash_ratio),
+      hint: '可用 + 冻结，分母为总资产',
+    },
+    {
+      key: 'max_drawdown',
+      label: '最大回撤',
+      value: item.max_drawdown === null ? '—' : formatRatio(item.max_drawdown),
+      hint: range.min ? `自 ${formatBeijing(range.min)} 起 ${coverage}` : '暂无完整快照',
+    },
+    {
+      key: 'turnover',
+      label: '累计换手',
+      value: item.turnover === null ? '—' : formatRatio(item.turnover),
+      hint: item.turnover_inputs.daily_close_samples
+        ? `${item.turnover_inputs.daily_close_samples} 个日终样本`
+        : '无日终样本',
+    },
+    {
+      key: 'total_fees',
+      label: '累计费用',
+      value: `¥${formatDecimal(item.total_fees)}`,
+      hint: item.runs.count ? `已运行 ${item.runs.count} 个周期` : '尚未运行周期',
+    },
+  ]
+})
+
+const runItems = computed(() => runs.value)
+
+function runAmount(run: SimulationRun): string {
+  const parts: string[] = []
+  if (run.accepted_count) parts.push(`${run.accepted_count} 受理`)
+  if (run.skipped_count) parts.push(`${run.skipped_count} 跳过`)
+  if (run.failed_count) parts.push(`${run.failed_count} 失败`)
+  return parts.length ? parts.join(' · ') : '无执行项'
+}
+
+function runItemAmount(item: SimulationRunDetail['items'][number]): string {
+  if (item.status === 'accepted') {
+    const accepted = `¥${formatDecimal(item.accepted_amount)}`
+    const partial = item.skipped_amount !== null && item.skipped_amount !== '0.00'
+    return partial ? `${accepted}，未执行 ¥${formatDecimal(item.skipped_amount)}` : accepted
+  }
+  return `计划 ¥${formatDecimal(item.requested_amount)}`
+}
+
+const runDetailRows = computed(() => {
+  const item = runDetail.value
+  if (!item) return []
+  const strategy = item.strategy
+  return [
+    { label: '周期', value: formatCycleDate(item.cycle_date) },
+    { label: '开始', value: formatBeijing(item.started_at) },
+    { label: '结束', value: item.finished_at ? formatBeijing(item.finished_at) : '—' },
+    {
+      label: '策略',
+      value: strategy
+        ? `每${weekdayLabel(strategy.weekday)} ${strategy.time} · 窗口至 ${strategy.window_end}`
+        : '—',
+    },
+    { label: '规则集', value: strategy?.rule_set ?? '—' },
+    { label: '证据截止', value: formatBeijing(item.evidence_cutoff) },
+  ]
+})
+
+function runItemReason(item: SimulationRunDetail['items'][number]): string {
+  if (item.error) return item.error
+  if (item.reason_detail) return item.reason_detail
+  return reasonLabel(item.reason_code)
 }
 
 function orderReason(order: SimulationOrder): string {
@@ -285,6 +444,28 @@ onMounted(() => {
         </div>
       </template>
       <template #actions>
+        <Button
+          v-if="account && !account.archived_at && (canPause || canResume)"
+          :variant="canResume ? 'secondary' : 'ghost'"
+          size="sm"
+          :loading="pausing"
+          :aria-label="canPause ? '暂停新增买入' : '恢复新增买入'"
+          @click="togglePause"
+        >
+          <template #icon>
+            <Pause
+              v-if="canPause"
+              class="h-3.5 w-3.5"
+              :stroke-width="1.75"
+            />
+            <Play
+              v-else
+              class="h-3.5 w-3.5"
+              :stroke-width="1.75"
+            />
+          </template>
+          {{ canPause ? '暂停买入' : '恢复买入' }}
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -375,6 +556,33 @@ onMounted(() => {
           </template>
         </template>
       </p>
+
+      <section
+        v-if="metrics"
+        class="sim-section"
+        aria-labelledby="sim-metrics-title"
+      >
+        <h2
+          id="sim-metrics-title"
+          class="sim-section__title"
+        >
+          费用后指标
+          <span>{{ metrics.runs.count }} 个周期</span>
+        </h2>
+        <dl class="sim-balances">
+          <div
+            v-for="item in metricItems"
+            :key="item.key"
+            class="sim-balances__item"
+          >
+            <dt>{{ item.label }}</dt>
+            <dd class="font-numeric tabular-nums">
+              {{ item.value }}
+            </dd>
+            <span class="sim-metric__hint">{{ item.hint }}</span>
+          </div>
+        </dl>
+      </section>
 
       <section
         class="sim-section"
@@ -496,6 +704,70 @@ onMounted(() => {
           </Button>
         </div>
       </section>
+
+      <section
+        class="sim-section"
+        aria-labelledby="sim-runs-title"
+      >
+        <h2
+          id="sim-runs-title"
+          class="sim-section__title"
+        >
+          运行记录
+          <span>每周三 14:00 定投周期</span>
+        </h2>
+        <p
+          v-if="!runs.length"
+          class="sim-note"
+        >
+          暂无运行记录。定时任务触发后在此显示本期逐基金结果。
+        </p>
+        <ul
+          v-else
+          class="sim-list"
+        >
+          <li
+            v-for="run in runItems"
+            :key="run.id"
+          >
+            <button
+              type="button"
+              class="sim-row sim-row--button"
+              :aria-label="`周期 ${run.cycle_date}，${RUN_STATUS[run.status].label}，查看逐基金结果`"
+              @click="openRun(run)"
+            >
+              <span class="sim-row__identity">
+                <span class="sim-row__name">{{ formatCycleDate(run.cycle_date) }}</span>
+                <span class="sim-row__meta">{{ runAmount(run) }}</span>
+              </span>
+              <span class="sim-row__value">
+                <span class="font-numeric">{{ run.order_count }} 单</span>
+                <span>{{ formatBeijing(run.started_at) }}</span>
+              </span>
+              <span class="sim-row__value">
+                <StatusBadge
+                  :tone="RUN_STATUS[run.status].tone"
+                  :label="RUN_STATUS[run.status].label"
+                />
+                <span class="sim-row__reason">{{ reasonLabel(run.reason_code) || ' ' }}</span>
+              </span>
+            </button>
+          </li>
+        </ul>
+        <div
+          v-if="runsNextCursor"
+          class="sim-more"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            :loading="loadingRunsMore"
+            @click="loadMoreRuns"
+          >
+            加载更多
+          </Button>
+        </div>
+      </section>
     </template>
 
     <Drawer
@@ -604,6 +876,95 @@ onMounted(() => {
             </template>
           </p>
         </template>
+      </div>
+    </Drawer>
+
+    <Drawer
+      v-model:show="runDrawerOpen"
+      :title="runDetail ? `定投周期 · ${formatCycleDate(runDetail.cycle_date)}` : '运行详情'"
+    >
+      <div
+        v-if="runDetailLoading"
+        class="sim-skeleton"
+      >
+        <span class="skeleton w-40" />
+        <span class="skeleton w-56" />
+      </div>
+      <p
+        v-else-if="runDetailError"
+        class="sim-note sim-note--warn"
+      >
+        {{ runDetailError }}
+      </p>
+      <div
+        v-else-if="runDetail"
+        class="sim-detail"
+      >
+        <div class="sim-detail__status">
+          <StatusBadge
+            :tone="RUN_STATUS[runDetail.status].tone"
+            :label="RUN_STATUS[runDetail.status].label"
+          />
+          <span v-if="runDetail.reason_detail">{{ runDetail.reason_detail }}</span>
+        </div>
+
+        <h3 class="sim-detail__heading">
+          周期与策略
+        </h3>
+        <dl class="sim-detail__grid">
+          <template
+            v-for="row in runDetailRows"
+            :key="row.label"
+          >
+            <dt>{{ row.label }}</dt>
+            <dd class="font-numeric">
+              {{ row.value }}
+            </dd>
+          </template>
+        </dl>
+
+        <h3 class="sim-detail__heading">
+          逐基金结果
+        </h3>
+        <p
+          v-if="!runDetail.items.length"
+          class="sim-note"
+        >
+          本期没有执行项。
+        </p>
+        <ul
+          v-else
+          class="sim-detail__items"
+        >
+          <li
+            v-for="item in runDetail.items"
+            :key="item.id"
+            class="sim-detail__item"
+          >
+            <span class="sim-detail__item-head">
+              <span class="sim-detail__item-name">{{ item.name ?? item.code }}</span>
+              <StatusBadge
+                :tone="RUN_ITEM_STATUS[item.status].tone"
+                :label="RUN_ITEM_STATUS[item.status].label"
+              />
+            </span>
+            <span class="sim-detail__item-line">
+              <span class="font-numeric">{{ runItemAmount(item) }}</span>
+              <span
+                v-if="runItemReason(item)"
+                class="sim-detail__note"
+              >{{ runItemReason(item) }}</span>
+            </span>
+            <button
+              v-if="item.order_id"
+              type="button"
+              class="sim-detail__link"
+              @click="openOrder({ id: item.order_id })"
+            >
+              查看订单
+            </button>
+          </li>
+        </ul>
       </div>
     </Drawer>
   </div>
@@ -859,6 +1220,77 @@ onMounted(() => {
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 18px;
+}
+
+.sim-metric__hint {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-detail__items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sim-detail__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sim-detail__item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sim-detail__item-name {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 540;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-detail__item-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.sim-detail__link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-accent);
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.sim-detail__link:hover,
+.sim-detail__link:focus-visible {
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

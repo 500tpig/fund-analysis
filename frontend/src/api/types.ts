@@ -767,3 +767,85 @@ export interface SimulationOrdersResponse {
   items: SimulationOrder[]
   next_cursor: string | null
 }
+
+// ---- 阶段 7：固定策略运行记录与费用后指标 ----
+
+export type SimulationRunStatus = 'running' | 'completed' | 'partial' | 'failed' | 'missed'
+export type SimulationRunItemStatus = 'accepted' | 'skipped' | 'failed'
+
+export interface SimulationRun {
+  id: string
+  account_id: string
+  cycle_date: string
+  status: SimulationRunStatus
+  strategy_version: string
+  reason_code: string | null
+  reason_detail: string | null
+  started_at: string
+  finished_at: string | null
+  accepted_count: number
+  skipped_count: number
+  failed_count: number
+  order_count: number
+}
+
+export interface SimulationRunsResponse {
+  items: SimulationRun[]
+  next_cursor: string | null
+}
+
+export interface SimulationRunItem {
+  id: string
+  code: string
+  name: string | null
+  status: SimulationRunItemStatus
+  requested_amount: string | null
+  accepted_amount: string | null
+  skipped_amount: string | null
+  reason_code: string | null
+  reason_detail: string | null
+  order_id: string | null
+  rule_id: string | null
+  error: string | null
+}
+
+export interface SimulationStrategy {
+  id: string
+  account_id: string
+  effective_from: string
+  timezone: string
+  weekday: number
+  time: string
+  window_end: string
+  amounts: Record<string, string>
+  rule_set: string
+  created_at: string
+}
+
+export interface SimulationRunDetail extends SimulationRun {
+  evidence_cutoff: string
+  snapshot_ids: string[]
+  strategy: SimulationStrategy | null
+  items: SimulationRunItem[]
+}
+
+export interface SimulationMetrics {
+  account_id: string
+  as_of: string
+  cash_ratio: string | null
+  receivable: string
+  dividend_receivable: string
+  max_drawdown: string | null
+  valuation_range: { min: string | null; max: string | null }
+  complete_snapshots: number
+  incomplete_snapshots: number
+  total_fees: string
+  turnover: string | null
+  turnover_inputs: {
+    buy_net: string
+    sell_gross: string
+    avg_daily_close: string | null
+    daily_close_samples: number
+  }
+  runs: { count: number; first_cycle: string | null; last_cycle: string | null }
+}

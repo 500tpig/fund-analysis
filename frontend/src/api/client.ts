@@ -15,9 +15,12 @@ import type {
   PortfolioRiskResponse,
   SimulationAccount,
   SimulationAccountsResponse,
+  SimulationMetrics,
   SimulationOrderDetail,
   SimulationOrdersResponse,
   SimulationPosition,
+  SimulationRunDetail,
+  SimulationRunsResponse,
 } from './types'
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
@@ -167,4 +170,35 @@ export function fetchSimulationOrders(
 
 export function fetchSimulationOrder(id: string): Promise<SimulationOrderDetail> {
   return requestJson(`/api/simulation/orders/${encodeURIComponent(id)}`)
+}
+
+export function fetchSimulationRuns(
+  id: string,
+  options: { cursor?: string | null; limit?: number } = {},
+): Promise<SimulationRunsResponse> {
+  const params = new URLSearchParams({ limit: String(options.limit ?? 20) })
+  if (options.cursor) params.set('cursor', options.cursor)
+  return requestJson(`/api/simulation/accounts/${encodeURIComponent(id)}/runs?${params.toString()}`)
+}
+
+export function fetchSimulationRun(runId: string): Promise<SimulationRunDetail> {
+  return requestJson(`/api/simulation/runs/${encodeURIComponent(runId)}`)
+}
+
+export function fetchSimulationMetrics(id: string): Promise<SimulationMetrics> {
+  return requestJson(`/api/simulation/accounts/${encodeURIComponent(id)}/metrics`)
+}
+
+/** 暂停/恢复只改本账户状态，不触发下单；服务端按 expected_version 校验并发。 */
+export function setSimulationPause(
+  id: string,
+  action: 'pause' | 'resume',
+  expectedVersion: number,
+  idempotencyKey: string,
+): Promise<SimulationAccount> {
+  return requestJson(`/api/simulation/accounts/${encodeURIComponent(id)}/${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+    body: JSON.stringify({ expected_version: expectedVersion }),
+  })
 }
