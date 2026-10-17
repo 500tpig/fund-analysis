@@ -1,0 +1,55 @@
+{
+  "id": "prod_016665_alipay_20261018",
+  "environment": "production",
+  "status": "verified",
+  "code": "016665",
+  "name": "天弘全球高端制造混合(QDII)C",
+  "channel": "ant_fund_alipay",
+  "share_class": "C",
+  "currency": "CNY",
+  "effective_from": "2026-10-18",
+  "effective_to": null,
+  "evidence": {
+    "source_url": "https://fundf10.eastmoney.com/jjfl_016665.html",
+    "evidence_ref": "支付宝 App「交易规则」页截图（买入规则、卖出规则，2026-10-17 由用户提供；买入截图 SHA-256 920b1ec2…、卖出截图 eb0bb534…）；东财费率页 2026-10-18 抓取交叉核对（申购起点 10.00 元、日累计申购限额 1000.00 元、最小赎回 0.10 份、买入/卖出确认 T+2）；份额取整与持有期条款沿用天弘招募说明书转载（SHA-256 223b11d2a76b4efb63884e7f152d808b32537ed9d015407bbc07d26db198aca4）",
+    "published_at": null,
+    "checked_at": "2026-10-18",
+    "assumptions": [
+      "confirm_time、payment_time、nav_due_time 是结算引擎的模型时刻，不是渠道承诺的具体时点",
+      "卖出到账按截图余额宝示例记 T+3 工作日（银行卡示例为 T+5 工作日）；首版策略只买不卖，到账参数不参与当前运行",
+      "nav_due_working_days=1 对应 QDII 于下一国内交易日晚间披露净值的实际时序",
+      "open_calendars 取境内与美国市场交集，依据招募说明书「境内及主要境外市场同时交易」"
+    ]
+  },
+  "body": {
+    "fund_type": "active",
+    "index_group": null,
+    "subscription_fee_rate": "0",
+    "redemption_fee_tiers": [
+      {"min_days": 0, "max_days": 7, "rate": "0.015"},
+      {"min_days": 7, "max_days": 30, "rate": "0.005"},
+      {"min_days": 30, "max_days": null, "rate": "0"}
+    ],
+    "min_buy": "10.00",
+    "min_add": "10.00",
+    "max_daily_buy": "1000.00",
+    "min_sell_shares": "0.10",
+    "min_remaining_shares": "0.10",
+    "share_quantum": "0.01",
+    "rounding": "ROUND_HALF_UP",
+    "cutoff": "15:00",
+    "cancel_cutoff": "15:00",
+    "working_calendar": "CN_STOCK",
+    "open_calendars": ["CN_STOCK", "US_STOCK"],
+    "closed_dates": [],
+    "nav_due_working_days": 1,
+    "nav_due_time": "20:00",
+    "confirm_working_days": 2,
+    "confirm_time": "18:00",
+    "payment_working_days": 3,
+    "payment_time": "18:00",
+    "holding_period": "buy_confirm_inclusive_to_sell_confirm_exclusive",
+    "lot_order": "FIFO",
+    "dividend_mode": "cash"
+  }
+}

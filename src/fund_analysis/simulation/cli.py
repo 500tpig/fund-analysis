@@ -12,7 +12,7 @@ from typing import Any
 from ..web.defaults import DEFAULT_DB_PATH
 from .acceptance import run_acceptance
 from .maintenance import backup_simulation_db, restore_simulation_db
-from .nav_sources import MainDbNavSource
+from .nav_sources import EastmoneyLsjzNavSource, FallbackNavSource, MainDbNavSource
 from .rules import FIXTURE_QDII_C_V1
 from .service import SimulationError, SimulationService
 from .store import SimulationConfigError, SimulationStore, StorageBusy, resolve_simulation_path
@@ -153,6 +153,11 @@ def _require_fixture(service: SimulationService, action: str) -> None:
         raise SimulationError("fixture_only", f"{action}仅用于 fixture 模拟库", status=403)
 
 
+def _production_nav_source(main_db: str) -> FallbackNavSource:
+    """生产结算净值来源：东财 lsjz 优先（按代码查询，与是否持仓无关），真实库只读净值兜底。"""
+    return FallbackNavSource(EastmoneyLsjzNavSource(), MainDbNavSource(main_db))
+
+
 def _run_acceptance(args: argparse.Namespace) -> int:
     checks = run_acceptance(args.output_dir)
     failed = [check for check in checks if not check.ok]
@@ -217,7 +222,7 @@ def _dispatch(args: argparse.Namespace) -> int:
         )
         _print({"created": created, "dividend": row})
     elif command == "settle":
-        source = MainDbNavSource(args.main_db) if service.store.environment == "production" else None
+        source = _production_nav_source(args.main_db) if service.store.environment == "production" else None
         _print(service.settle(args.account, now=args.at, nav_source=source).to_dict())
     elif command == "valuate":
         _print(service.valuate(args.account, now=args.at))
@@ -262,11 +267,11 @@ def _dispatch(args: argparse.Namespace) -> int:
         version_id, created = service.import_strategy_version(record)
         _print({"id": version_id, "created": created})
     elif command == "run-cycle":
-        source = MainDbNavSource(args.main_db) if service.store.environment == "production" else None
+        source = _production_nav_source(args.main_db) if service.store.environment == "production" else None
         result = service.run_cycle(args.account, now=args.at, nav_source=source)
         _print(result if result is not None else {"skipped": "没有可运行的账户"})
     elif command == "tick":
-        source = MainDbNavSource(args.main_db) if service.store.environment == "production" else None
+        source = _production_nav_source(args.main_db) if service.store.environment == "production" else None
         _print(service.scheduled_tick(now=args.at, nav_source=source))
     elif command == "runs":
         _print(service.list_runs(args.account, limit=args.limit))
