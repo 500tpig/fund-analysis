@@ -1,0 +1,15 @@
+[Unit]
+Description=Run fund analysis simulation tick every five minutes (Beijing time)
+
+# 触发频率必须 >= 每 5 分钟：策略执行窗口是周三北京时间的 [14:00, 14:10)，而
+# service 层的 SETTLE_SLOTS 只覆盖五个结算时刻，不含 14:00。tick 里的周期处理
+# 是无条件执行的，因此放宽间隔（例如只配五个结算时刻）会让每周策略全部落成
+# missed。五分钟网格同时落在全部五个结算时刻上，故一条 timer 即可覆盖两者。
+[Timer]
+OnCalendar=*-*-* *:00/5:00 Asia/Shanghai
+AccuracySec=1s
+Persistent=true
+Unit=fund-analysis-simulation.service
+
+[Install]
+WantedBy=timers.target

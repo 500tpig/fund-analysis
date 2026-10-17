@@ -16,6 +16,7 @@ from .nav_sources import MainDbNavSource
 from .rules import FIXTURE_QDII_C_V1
 from .service import SimulationError, SimulationService
 from .store import SimulationConfigError, SimulationStore, StorageBusy, resolve_simulation_path
+from .strategy import default_fixture_strategy
 
 
 def _at(value: str) -> datetime:
@@ -110,6 +111,30 @@ def register(commands: Any) -> None:
 
     acceptance = sub.add_parser("acceptance", help="在新目录中运行 C01–C16 与日期算例。")
     acceptance.add_argument("--output-dir", required=True, type=Path)
+
+    strategy = sub.add_parser("strategy-import", help="导入固定策略版本（不可覆盖，修订需更晚生效日）。")
+    strategy_group = strategy.add_mutually_exclusive_group(required=True)
+    strategy_group.add_argument("--fixture", action="store_true", help="按已导入的 fixture 规则生成每周三 14:00、每只 500 元的样例策略")
+    strategy_group.add_argument("--file", type=Path, help="策略版本 JSON")
+    strategy.add_argument("--account", required=True)
+    strategy.add_argument("--effective-from", required=True, type=date.fromisoformat)
+
+    cycle = sub.add_parser("run-cycle", help="处理到期周期：窗口内受理，过期补记 missed。")
+    cycle.add_argument("--account", default=None, help="默认使用当前未归档账户")
+    cycle.add_argument("--at", type=_at)
+
+    tick = sub.add_parser("tick", help="每日调度入口：结算检查与 23:30 日终快照。")
+    tick.add_argument("--at", type=_at)
+
+    runs = sub.add_parser("runs", help="查看周期运行记录。")
+    runs.add_argument("--account", required=True)
+    runs.add_argument("--limit", type=int, default=20)
+
+    run_show = sub.add_parser("run", help="查看单个周期运行详情。")
+    run_show.add_argument("--run", required=True)
+
+    metrics = sub.add_parser("metrics", help="查看费用后指标（现金占比、回撤、换手）。")
+    metrics.add_argument("--account", required=True)
 
 
 def _print(payload: Any) -> None:
@@ -225,4 +250,28 @@ def _dispatch(args: argparse.Namespace) -> int:
                 args.account, confirm_account_id=args.confirm, operator=args.operator, reason=args.reason
             )
         )
+    elif command == "strategy-import":
+        if args.fixture:
+            codes = service.verified_codes()
+            if not codes:
+                raise SimulationError("rule_incomplete", "没有已核验规则，不能生成 fixture 策略")
+            record = default_fixture_strategy(args.account, args.effective_from, codes)
+        else:
+            record = json.loads(args.file.read_text("utf-8"))
+            record = {**record, "account_id": args.account}
+        version_id, created = service.import_strategy_version(record)
+        _print({"id": version_id, "created": created})
+    elif command == "run-cycle":
+        source = MainDbNavSource(args.main_db) if service.store.environment == "production" else None
+        result = service.run_cycle(args.account, now=args.at, nav_source=source)
+        _print(result if result is not None else {"skipped": "没有可运行的账户"})
+    elif command == "tick":
+        source = MainDbNavSource(args.main_db) if service.store.environment == "production" else None
+        _print(service.scheduled_tick(now=args.at, nav_source=source))
+    elif command == "runs":
+        _print(service.list_runs(args.account, limit=args.limit))
+    elif command == "run":
+        _print(service.run_detail(args.run))
+    elif command == "metrics":
+        _print(service.account_metrics(args.account))
     return 0

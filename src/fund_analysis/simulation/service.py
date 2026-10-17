@@ -43,6 +43,12 @@ from .rules import (
     local_datetime,
     validate_rule_record,
 )
+from .strategy import (
+    StrategyValidationError,
+    StrategyVersion,
+    load_strategy_version,
+    validate_strategy_record,
+)
 from .store import SimulationStore, utc_now, utc_text
 
 INITIAL_CASH = Decimal("200000.00")
@@ -50,6 +56,11 @@ SINGLE_FUND_LIMIT = Decimal("0.25")
 INDEX_GROUP_LIMIT = Decimal("0.40")
 DRAWDOWN_LIMIT = Decimal("0.15")
 RATIO_QUANTUM = Decimal("0.000001")
+# 阶段 7 调度默认值：每日结算检查时刻（北京时间）、23:30 日终快照与 missed 回溯上限。
+SETTLE_SLOTS = ((8, 30), (18, 30), (21, 30), (23, 30), (0, 30))
+TICK_WINDOW_MINUTES = 20
+DAILY_CLOSE_SLOT = (23, 30)
+MISSED_BACKFILL_DAYS = 90
 
 FREEZING_STATUSES = ("accepted", "awaiting_nav", "awaiting_confirmation")
 PENDING_STATUSES = (*FREEZING_STATUSES, "awaiting_payment")
@@ -228,6 +239,35 @@ MISSING_MESSAGES = {
     "nav_missing": "缺少已应披露的官方净值",
     "nav_conflict": "同一净值日存在不同数值",
 }
+
+
+def _in_slot(now: datetime, slot: tuple[int, int]) -> bool:
+    """now 是否处于北京时间 slot 时刻的触发窗口内（窗口不跨整点小时）。"""
+    local = now.astimezone(SHANGHAI)
+    minutes = local.hour * 60 + local.minute
+    hour, minute = slot
+    start = hour * 60 + minute
+    return start <= minutes < start + TICK_WINDOW_MINUTES
+
+
+def _run_status(statuses: list[str], reasons: list[str | None]) -> str:
+    """由运行项汇总周期状态。
+
+    全部技术失败为 `failed`，部分技术失败为 `partial`；全部因窗口过期未执行
+    （从未进入窗口尝试）为 `missed`；其余（含全部业务跳过）为 `completed`。
+    """
+    if not statuses:
+        return "failed"
+    if all(status == "failed" for status in statuses):
+        return "failed"
+    if any(status == "failed" for status in statuses):
+        return "partial"
+    if all(
+        status == "skipped" and reason == "window_expired"
+        for status, reason in zip(statuses, reasons)
+    ):
+        return "missed"
+    return "completed"
 
 
 class SimulationService:
@@ -710,7 +750,13 @@ class SimulationService:
         )
 
     def _record_valuation(
-        self, conn: sqlite3.Connection, account: sqlite3.Row, valuation: Valuation
+        self,
+        conn: sqlite3.Connection,
+        account: sqlite3.Row,
+        valuation: Valuation,
+        *,
+        kind: str = "observation",
+        kind_date: str | None = None,
     ) -> dict[str, Any]:
         peak = Decimal(account["peak"])
         drawdown: Decimal | None = None
@@ -721,13 +767,16 @@ class SimulationService:
         conn.execute(
             """
             INSERT INTO valuations (
-                id, account_id, observed_at, nav_refs_json, available, frozen, receivable,
-                dividend_receivable, holdings_value, total, quality, missing_json, peak, drawdown
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                id, account_id, kind, kind_date, observed_at, nav_refs_json, available, frozen,
+                receivable, dividend_receivable, holdings_value, total, quality, missing_json,
+                peak, drawdown
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 valuation_id,
                 account["id"],
+                kind,
+                kind_date,
                 utc_text(valuation.observed_at),
                 json.dumps(valuation.nav_refs, ensure_ascii=False),
                 money_text(valuation.balances.available),
@@ -1009,6 +1058,681 @@ class SimulationService:
             )
             return self._account_view(conn, new_account_id, now)
 
+    # ---- 固定策略与周期运行（阶段 7） -------------------------------------------
+
+    def import_strategy_version(self, record: Mapping[str, Any], *, now: datetime | None = None) -> tuple[str, bool]:
+        """导入不可变策略版本；同一账户同一生效日只允许一个版本，修订必须更晚生效。"""
+        try:
+            canonical = validate_strategy_record(record)
+        except StrategyValidationError as exc:
+            raise SimulationError("strategy_invalid", str(exc), status=422) from exc
+        now = self._now(now)
+        digest = request_hash({key: value for key, value in canonical.items() if key != "id"})
+        with self._write(now) as conn:
+            account = self._account(conn, canonical["account_id"])
+            if account["status"] == "archived":
+                raise SimulationError("account_archived", "账户已归档")
+            existing = conn.execute(
+                "SELECT * FROM strategy_versions WHERE id = ?", (canonical["id"],)
+            ).fetchone()
+            if existing is not None:
+                if existing["request_hash"] != digest:
+                    raise SimulationError(
+                        "strategy_version_immutable",
+                        "策略版本已存在且内容不同；修订请使用更晚的 effective_from",
+                    )
+                return canonical["id"], False
+            latest = conn.execute(
+                "SELECT effective_from FROM strategy_versions WHERE account_id = ? ORDER BY effective_from DESC LIMIT 1",
+                (canonical["account_id"],),
+            ).fetchone()
+            if latest is not None and canonical["effective_from"] <= latest["effective_from"]:
+                raise SimulationError(
+                    "strategy_interval_conflict",
+                    f"已有生效至 {latest['effective_from']} 的版本；修订必须使用更晚的 effective_from",
+                )
+            conn.execute(
+                """
+                INSERT INTO strategy_versions (
+                    id, account_id, effective_from, timezone, weekday, time, window_end,
+                    amounts_json, rule_set, request_hash, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    canonical["id"],
+                    canonical["account_id"],
+                    canonical["effective_from"],
+                    canonical["timezone"],
+                    canonical["weekday"],
+                    canonical["time"],
+                    canonical["window_end"],
+                    json.dumps(canonical["amounts"], ensure_ascii=False),
+                    canonical["rule_set"],
+                    digest,
+                    utc_text(now),
+                ),
+            )
+        return canonical["id"], True
+
+    def strategy_version_for(self, account_id: str, day: date) -> dict[str, Any] | None:
+        """该账户在指定日期生效的策略版本；没有则返回 None。"""
+        with self.store.read() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM strategy_versions WHERE account_id = ? AND effective_from <= ?
+                ORDER BY effective_from DESC LIMIT 1
+                """,
+                (account_id, day.isoformat()),
+            ).fetchone()
+            return self._strategy_view(row) if row is not None else None
+
+    @staticmethod
+    def _strategy_view(row: sqlite3.Row) -> dict[str, Any]:
+        return {
+            "id": row["id"],
+            "account_id": row["account_id"],
+            "effective_from": row["effective_from"],
+            "timezone": row["timezone"],
+            "weekday": row["weekday"],
+            "time": row["time"],
+            "window_end": row["window_end"],
+            "amounts": json.loads(row["amounts_json"]),
+            "rule_set": row["rule_set"],
+            "created_at": row["created_at"],
+        }
+
+    def active_account_id(self) -> str | None:
+        with self.store.read() as conn:
+            row = conn.execute("SELECT id FROM accounts WHERE active_slot = 1").fetchone()
+        return str(row["id"]) if row is not None else None
+
+    def verified_codes(self) -> list[str]:
+        """当前环境中存在 verified 规则的基金代码（按代码升序）。"""
+        with self.store.read() as conn:
+            rows = conn.execute(
+                "SELECT DISTINCT code FROM rule_versions WHERE environment = ? AND status = 'verified' ORDER BY code",
+                (self.store.environment,),
+            ).fetchall()
+        return [str(row["code"]) for row in rows]
+
+    def _due_cycles(
+        self, conn: sqlite3.Connection, account: sqlite3.Row, now: datetime
+    ) -> list[tuple[date, StrategyVersion]]:
+        """截至 now 应已开始的周期：按当时生效版本的计划星期与时刻推导。
+
+        周期必须晚于账户创建与版本导入时刻，避免用后来才存在的版本补记历史周期。
+        """
+        versions = [
+            load_strategy_version(row)
+            for row in conn.execute(
+                "SELECT * FROM strategy_versions WHERE account_id = ? ORDER BY effective_from",
+                (account["id"],),
+            )
+        ]
+        if not versions:
+            return []
+        created_at = _parse_dt(account["created_at"])
+        local_today = now.astimezone(SHANGHAI).date()
+        start = max(created_at.astimezone(SHANGHAI).date(), local_today - timedelta(days=MISSED_BACKFILL_DAYS))
+        due: list[tuple[date, StrategyVersion]] = []
+        day = start
+        while day <= local_today:
+            version = None
+            for candidate in versions:
+                if candidate.effective_from <= day:
+                    version = candidate
+                else:
+                    break
+            if version is not None and day.isoweekday() == version.weekday:
+                cycle_start = local_datetime(day, version.time)
+                if cycle_start <= now and cycle_start >= _parse_dt(version.created_at):
+                    due.append((day, version))
+            day += timedelta(days=1)
+        return due
+
+    def run_cycle(
+        self,
+        account_id: str | None = None,
+        *,
+        now: datetime | None = None,
+        nav_source: NavSource | None = None,
+    ) -> dict[str, Any] | None:
+        """处理到期周期：窗口内受理订单，过期补记 missed；重复调用不重复下单。
+
+        没有账户或账户已归档时返回 None；无到期周期时返回含空列表的结果。
+        """
+        now = self._now(now)
+        with self.store.read() as conn:
+            if account_id is None:
+                row = conn.execute("SELECT id FROM accounts WHERE active_slot = 1").fetchone()
+                account_id = str(row["id"]) if row is not None else None
+            if account_id is None:
+                return None
+            account = self._account(conn, account_id)
+            if account["status"] == "archived":
+                return None
+            due = self._due_cycles(conn, account, now)
+            wanted = {row["code"] for row in conn.execute("SELECT DISTINCT code FROM lots WHERE account_id = ?", (account_id,))}
+            for _, version in due:
+                wanted |= set(version.amounts)
+        observations: list[NavObservation] = []
+        fetch_errors: list[dict[str, Any]] = []
+        if nav_source is not None and due:
+            for code in sorted(wanted):
+                try:
+                    obs = nav_source.fetch(code, None, now)
+                except Exception as exc:  # noqa: BLE001 - 来源失败逐项留档，不生成默认数据
+                    fetch_errors.append({"code": code, "error": str(exc)})
+                    continue
+                if obs is not None:
+                    observations.append(obs)
+        with self._write(now) as conn:
+            account = self._account(conn, account_id)
+            due = self._due_cycles(conn, account, now)
+            for obs in observations:
+                self._record_nav(conn, obs)
+            runs = [
+                self._process_cycle(conn, account, cycle_date, version, now)
+                for cycle_date, version in due
+            ]
+        return {
+            "account_id": account_id,
+            "fetched_navs": len(observations),
+            "fetch_errors": fetch_errors,
+            "runs": [run for run in runs if run is not None],
+        }
+
+    def _process_cycle(
+        self,
+        conn: sqlite3.Connection,
+        account: sqlite3.Row,
+        cycle_date: date,
+        version: StrategyVersion,
+        now: datetime,
+    ) -> dict[str, Any] | None:
+        account_id = account["id"]
+        existing = conn.execute(
+            "SELECT * FROM runs WHERE account_id = ? AND cycle_date = ?",
+            (account_id, cycle_date.isoformat()),
+        ).fetchone()
+        if existing is not None:
+            if existing["status"] in ("completed", "missed"):
+                return self._run_view(conn, existing)
+            # 周期开始后不因新版本改写处理口径：一律使用运行时记录的版本。
+            version = self._strategy_for_run(conn, existing)
+        window_end = local_datetime(cycle_date, version.window_end)
+        if existing is not None:
+            if now < window_end:
+                run_id = existing["id"]
+            else:
+                self._expire_pending_items(conn, existing, version, now)
+                return self._run_view(conn, self._run(conn, run_id=existing["id"]))
+        else:
+            run_id = new_id("run")
+            missed = now >= window_end
+            conn.execute(
+                """
+                INSERT INTO runs (
+                    id, account_id, cycle_date, strategy_version, status, reason_code,
+                    reason_detail, started_at, finished_at, snapshot_ids_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]')
+                """,
+                (
+                    run_id,
+                    account_id,
+                    cycle_date.isoformat(),
+                    version.id,
+                    "running",
+                    None,
+                    None,
+                    utc_text(now),
+                    None,
+                ),
+            )
+            if missed:
+                self._expire_pending_items(conn, self._run(conn, run_id=run_id), version, now)
+                return self._run_view(conn, self._run(conn, run_id=run_id))
+        existing_items = {
+            row["code"]: row
+            for row in conn.execute("SELECT * FROM run_items WHERE run_id = ?", (run_id,))
+        }
+        snapshot_ids: set[str] = set()
+        for code in sorted(version.amounts):
+            item = existing_items.get(code)
+            if item is not None and item["status"] != "failed":
+                if item["order_id"]:
+                    snapshot_ids |= self._order_snapshot_ids(conn, item["order_id"])
+                continue
+            outcome = self._process_item(conn, account, version, cycle_date, code, now, run_id)
+            if outcome["order_id"]:
+                snapshot_ids |= self._order_snapshot_ids(conn, outcome["order_id"])
+            values = {
+                "name": outcome["name"],
+                "status": outcome["status"],
+                "requested_amount": outcome["requested_amount"],
+                "accepted_amount": outcome["accepted_amount"],
+                "skipped_amount": outcome["skipped_amount"],
+                "reason_code": outcome["reason_code"],
+                "reason_detail": outcome["reason_detail"],
+                "order_id": outcome["order_id"],
+                "rule_id": outcome["rule_id"],
+                "error": outcome["error"],
+            }
+            if item is None:
+                conn.execute(
+                    f"INSERT INTO run_items (id, run_id, code, {', '.join(values)}) VALUES (?, ?, ?, {_marks(values)})",
+                    (new_id("item"), run_id, code, *values.values()),
+                )
+            else:
+                assignments = ", ".join(f"{key} = ?" for key in values)
+                conn.execute(
+                    f"UPDATE run_items SET {assignments} WHERE id = ?",
+                    (*values.values(), item["id"]),
+                )
+        rows = conn.execute(
+            "SELECT status, reason_code FROM run_items WHERE run_id = ?", (run_id,)
+        ).fetchall()
+        status = _run_status([row["status"] for row in rows], [row["reason_code"] for row in rows])
+        conn.execute(
+            "UPDATE runs SET status = ?, finished_at = ?, snapshot_ids_json = ? WHERE id = ?",
+            (status, utc_text(now), json.dumps(sorted(snapshot_ids)), run_id),
+        )
+        return self._run_view(conn, self._run(conn, run_id=run_id))
+
+    @staticmethod
+    def _strategy_for_run(conn: sqlite3.Connection, run: sqlite3.Row) -> StrategyVersion:
+        row = conn.execute(
+            "SELECT * FROM strategy_versions WHERE id = ?", (run["strategy_version"],)
+        ).fetchone()
+        if row is None:
+            raise SimulationError("strategy_invalid", f"策略版本 {run['strategy_version']} 不存在")
+        return load_strategy_version(row)
+
+    def _expire_pending_items(
+        self,
+        conn: sqlite3.Connection,
+        run: sqlite3.Row,
+        version: StrategyVersion,
+        now: datetime,
+    ) -> None:
+        """窗口已过：未落定的运行项记为过期跳过，不补建订单。
+
+        已落定项（含技术失败）保留原状；一轮周期的事务整体提交或整体回滚，
+        因此这里只会补齐从未落定的基金。
+        """
+        existing = {
+            row["code"]
+            for row in conn.execute("SELECT code FROM run_items WHERE run_id = ?", (run["id"],))
+        }
+        for code in sorted(version.amounts):
+            if code in existing:
+                continue
+            amount = money_text(version.amounts[code])
+            conn.execute(
+                """
+                INSERT INTO run_items (
+                    id, run_id, code, name, status, requested_amount, accepted_amount,
+                    skipped_amount, reason_code, reason_detail, order_id, rule_id, error
+                ) VALUES (?, ?, ?, NULL, 'skipped', ?, '0.00', ?, 'window_expired',
+                          '周期未在执行窗口内执行，不补单', NULL, NULL, NULL)
+                """,
+                (new_id("item"), run["id"], code, amount, amount),
+            )
+        rows = conn.execute(
+            "SELECT status, reason_code FROM run_items WHERE run_id = ?", (run["id"],)
+        ).fetchall()
+        status = _run_status([row["status"] for row in rows], [row["reason_code"] for row in rows])
+        conn.execute(
+            "UPDATE runs SET status = ?, reason_code = ?, reason_detail = ?, finished_at = ? WHERE id = ?",
+            (
+                status,
+                "window_expired" if status == "missed" else None,
+                "周期未在执行窗口内执行" if status == "missed" else None,
+                utc_text(now),
+                run["id"],
+            ),
+        )
+
+    def _process_item(
+        self,
+        conn: sqlite3.Connection,
+        account: sqlite3.Row,
+        version: StrategyVersion,
+        cycle_date: date,
+        code: str,
+        now: datetime,
+        run_id: str,
+    ) -> dict[str, Any]:
+        """处理单个基金：前置检查、限额缩减、受理；业务拒绝与数据缺失记为跳过。"""
+        planned = version.amounts[code]
+        requested = money_text(planned)
+        outcome: dict[str, Any] = {
+            "name": None, "status": "skipped", "requested_amount": requested,
+            "accepted_amount": "0.00", "skipped_amount": requested,
+            "reason_code": None, "reason_detail": None, "order_id": None,
+            "rule_id": None, "error": None,
+        }
+        conn.execute("SAVEPOINT strategy_item")
+        try:
+            decision = self._gates(conn, account, Decision("buy", code, planned, None), now)
+            outcome["rule_id"] = decision.rule_id
+            if decision.rule is not None:
+                outcome["name"] = decision.rule.name
+            if decision.reason_code is not None:
+                outcome.update(
+                    reason_code=decision.reason_code, reason_detail=decision.reason_detail
+                )
+            else:
+                rule = decision.rule
+                assert rule is not None and decision.nav_date is not None
+                holdings = self._holdings(conn, account["id"])
+                pending = self._open_buys(conn, account["id"])
+                minimum = rule.min_add if code in holdings or code in pending else rule.min_buy
+                remaining: Decimal | None = None
+                if rule.max_daily_buy is not None:
+                    reserved = self._reserved_daily(conn, account["id"], code, decision.nav_date)
+                    remaining = max(rule.max_daily_buy - reserved, ZERO)
+                accepted = planned if remaining is None else min(planned, remaining).quantize(
+                    Decimal("0.01"), rounding="ROUND_DOWN"
+                )
+                if accepted < minimum:
+                    outcome.update(
+                        reason_code="daily_limit" if remaining is not None else "below_minimum",
+                        reason_detail=(
+                            f"当日剩余额度 {money_text(remaining)} 元，低于最低申购额 {money_text(minimum)} 元"
+                            if remaining is not None
+                            else f"低于最低申购额 {money_text(minimum)} 元"
+                        ),
+                    )
+                else:
+                    digest = request_hash(
+                        {
+                            "operation": "strategy_cycle",
+                            "cycle_date": cycle_date.isoformat(),
+                            "code": code,
+                            "amount": money_text(accepted),
+                        }
+                    )
+                    row, _ = self._accept_order(
+                        conn, account["id"], f"strat-{cycle_date.isoformat()}-{code}", digest,
+                        side="buy", code=code, amount=accepted, shares=None, now=now, run_id=run_id,
+                    )
+                    if row["status"] == "rejected":
+                        outcome.update(
+                            reason_code=row["reason_code"],
+                            reason_detail=row["reason_detail"],
+                            order_id=row["id"],
+                        )
+                    else:
+                        outcome.update(
+                            status="accepted",
+                            accepted_amount=money_text(accepted),
+                            skipped_amount=money_text(planned - accepted),
+                            reason_code="daily_limit" if accepted < planned else None,
+                            reason_detail=(
+                                f"当日剩余额度不足，按 {money_text(accepted)} 元受理"
+                                if accepted < planned
+                                else None
+                            ),
+                            order_id=row["id"],
+                        )
+            conn.execute("RELEASE strategy_item")
+        except Exception as exc:  # noqa: BLE001 - 逐项技术失败不拖垮整轮
+            conn.execute("ROLLBACK TO strategy_item")
+            conn.execute("RELEASE strategy_item")
+            outcome.update(
+                status="failed", accepted_amount="0.00", skipped_amount=requested,
+                reason_code="technical_failure", reason_detail=str(exc), error=str(exc),
+            )
+        return outcome
+
+    @staticmethod
+    def _order_snapshot_ids(conn: sqlite3.Connection, order_id: str) -> set[str]:
+        row = conn.execute(
+            "SELECT snapshot_ids_json FROM orders WHERE id = ?", (order_id,)
+        ).fetchone()
+        return set(json.loads(row["snapshot_ids_json"])) if row is not None else set()
+
+    @staticmethod
+    def _run(conn: sqlite3.Connection, *, run_id: str) -> sqlite3.Row:
+        row = conn.execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
+        if row is None:
+            raise SimulationError("run_not_found", "运行记录不存在", status=404)
+        return row
+
+    def _run_view(self, conn: sqlite3.Connection, row: sqlite3.Row) -> dict[str, Any]:
+        counts = {"accepted": 0, "skipped": 0, "failed": 0}
+        orders = 0
+        for item in conn.execute(
+            "SELECT status, order_id FROM run_items WHERE run_id = ?", (row["id"],)
+        ):
+            counts[item["status"]] += 1
+            if item["order_id"]:
+                orders += 1
+        return {
+            "id": row["id"],
+            "account_id": row["account_id"],
+            "cycle_date": row["cycle_date"],
+            "status": row["status"],
+            "strategy_version": row["strategy_version"],
+            "reason_code": row["reason_code"],
+            "reason_detail": row["reason_detail"],
+            "started_at": row["started_at"],
+            "finished_at": row["finished_at"],
+            "accepted_count": counts["accepted"],
+            "skipped_count": counts["skipped"],
+            "failed_count": counts["failed"],
+            "order_count": orders,
+        }
+
+    def list_runs(
+        self,
+        account_id: str,
+        *,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> dict[str, Any]:
+        if not 1 <= limit <= 100:
+            raise SimulationError("invalid_limit", "limit 需在 1–100 之间", status=422, fields=["limit"])
+        query = "SELECT * FROM runs WHERE account_id = ?"
+        params: list[Any] = [account_id]
+        if cursor:
+            try:
+                cycle_date, run_id = base64.urlsafe_b64decode(cursor.encode()).decode().split("|", 1)
+            except (ValueError, UnicodeDecodeError) as exc:
+                raise SimulationError("invalid_cursor", "cursor 无效", status=422, fields=["cursor"]) from exc
+            query += " AND (cycle_date < ? OR (cycle_date = ? AND id < ?))"
+            params.extend([cycle_date, cycle_date, run_id])
+        query += " ORDER BY cycle_date DESC, id DESC LIMIT ?"
+        params.append(limit + 1)
+        with self.store.read() as conn:
+            self._account(conn, account_id)
+            rows = conn.execute(query, params).fetchall()
+            items = [self._run_view(conn, row) for row in rows[:limit]]
+        next_cursor = None
+        if len(rows) > limit:
+            last = rows[limit - 1]
+            next_cursor = base64.urlsafe_b64encode(
+                f"{last['cycle_date']}|{last['id']}".encode()
+            ).decode()
+        return {"items": items, "next_cursor": next_cursor}
+
+    def run_detail(self, run_id: str) -> dict[str, Any]:
+        with self.store.read() as conn:
+            row = self._run(conn, run_id=run_id)
+            view = self._run_view(conn, row)
+            version_row = conn.execute(
+                "SELECT * FROM strategy_versions WHERE id = ?", (row["strategy_version"],)
+            ).fetchone()
+            view["evidence_cutoff"] = row["started_at"]
+            view["snapshot_ids"] = json.loads(row["snapshot_ids_json"])
+            view["strategy"] = self._strategy_view(version_row) if version_row is not None else None
+            view["items"] = [
+                {
+                    "id": item["id"],
+                    "code": item["code"],
+                    "name": item["name"],
+                    "status": item["status"],
+                    "requested_amount": item["requested_amount"],
+                    "accepted_amount": item["accepted_amount"],
+                    "skipped_amount": item["skipped_amount"],
+                    "reason_code": item["reason_code"],
+                    "reason_detail": item["reason_detail"],
+                    "order_id": item["order_id"],
+                    "rule_id": item["rule_id"],
+                    "error": item["error"],
+                }
+                for item in conn.execute(
+                    "SELECT * FROM run_items WHERE run_id = ? ORDER BY code", (run_id,)
+                )
+            ]
+            return view
+
+    # ---- 运行指标（阶段 7） -------------------------------------------------------
+
+    def account_metrics(self, account_id: str, *, now: datetime | None = None) -> dict[str, Any]:
+        """费用后指标：现金占比、最大回撤、换手与费用；口径见专项方案第 12 节。"""
+        now = self._now(now)
+        with self.store.read() as conn:
+            self._account(conn, account_id)
+            valuation = self._compute_valuation(conn, account_id, now)
+            rows = conn.execute(
+                "SELECT observed_at, quality, drawdown, total FROM valuations WHERE account_id = ? ORDER BY observed_at",
+                (account_id,),
+            ).fetchall()
+            complete = [row for row in rows if row["quality"] == "complete" and row["drawdown"] is not None]
+            incomplete_count = len(rows) - len(complete)
+            max_drawdown = max((Decimal(row["drawdown"]) for row in complete), default=None)
+            total_fees = ZERO
+            for row in conn.execute("SELECT fee FROM ledger_events WHERE account_id = ?", (account_id,)):
+                total_fees += Decimal(row["fee"])
+            buy_net = ZERO
+            sell_gross = ZERO
+            for row in conn.execute(
+                """
+                SELECT side, net_amount, gross_amount FROM orders
+                WHERE account_id = ? AND confirmed_at IS NOT NULL
+                """,
+                (account_id,),
+            ):
+                if row["side"] == "buy" and row["net_amount"] is not None:
+                    buy_net += Decimal(row["net_amount"])
+                if row["side"] == "sell" and row["gross_amount"] is not None:
+                    sell_gross += Decimal(row["gross_amount"])
+            daily_totals = [
+                Decimal(row["total"])
+                for row in conn.execute(
+                    """
+                    SELECT total FROM valuations
+                    WHERE account_id = ? AND kind = 'daily_close' AND quality = 'complete' AND total IS NOT NULL
+                    """,
+                    (account_id,),
+                )
+            ]
+            run_row = conn.execute(
+                "SELECT COUNT(*) AS count, MIN(cycle_date) AS first_cycle, MAX(cycle_date) AS last_cycle FROM runs WHERE account_id = ?",
+                (account_id,),
+            ).fetchone()
+        avg_daily: Decimal | None = None
+        turnover: Decimal | None = None
+        if daily_totals:
+            avg_daily = sum(daily_totals, ZERO) / Decimal(len(daily_totals))
+            if avg_daily > 0:
+                turnover = (buy_net + sell_gross) / avg_daily
+        total = valuation.total
+        cash_ratio = None
+        if total is not None and total > 0:
+            cash_ratio = (valuation.balances.available + valuation.balances.frozen) / total
+        return {
+            "account_id": account_id,
+            "as_of": utc_text(now),
+            "cash_ratio": _ratio_text(cash_ratio) if cash_ratio is not None else None,
+            "receivable": money_text(valuation.balances.receivable),
+            "dividend_receivable": money_text(valuation.balances.dividend),
+            "max_drawdown": _ratio_text(max_drawdown) if max_drawdown is not None else None,
+            "valuation_range": {
+                "min": rows[0]["observed_at"] if rows else None,
+                "max": rows[-1]["observed_at"] if rows else None,
+            },
+            "complete_snapshots": len(complete),
+            "incomplete_snapshots": incomplete_count,
+            "total_fees": money_text(total_fees),
+            "turnover": _ratio_text(turnover) if turnover is not None else None,
+            "turnover_inputs": {
+                "buy_net": money_text(buy_net),
+                "sell_gross": money_text(sell_gross),
+                "avg_daily_close": money_text(round_money(avg_daily)) if avg_daily is not None else None,
+                "daily_close_samples": len(daily_totals),
+            },
+            "runs": {
+                "count": run_row["count"],
+                "first_cycle": run_row["first_cycle"],
+                "last_cycle": run_row["last_cycle"],
+            },
+        }
+
+    # ---- 每日调度（阶段 7） -------------------------------------------------------
+
+    def record_daily_close(self, account_id: str, *, now: datetime | None = None) -> dict[str, Any]:
+        """保存 23:30 日终观察快照；同一账户同一北京时间日期只保存一次。
+
+        快照只使用当时已取得的官方净值，不倒填后来披露值；缺失时保存为不完整快照。
+        """
+        now = self._now(now)
+        kind_date = now.astimezone(SHANGHAI).date().isoformat()
+        with self._write(now) as conn:
+            account = self._account(conn, account_id)
+            existing = conn.execute(
+                "SELECT id FROM valuations WHERE account_id = ? AND kind = 'daily_close' AND kind_date = ?",
+                (account_id, kind_date),
+            ).fetchone()
+            if existing is not None:
+                return {"created": False, "kind_date": kind_date, "valuation": {"id": existing["id"]}}
+            valuation = self._compute_valuation(conn, account_id, now)
+            recorded = self._record_valuation(conn, account, valuation, kind="daily_close", kind_date=kind_date)
+            return {"created": True, "kind_date": kind_date, "valuation": recorded}
+
+    def scheduled_tick(
+        self,
+        *,
+        now: datetime | None = None,
+        nav_source: NavSource | None = None,
+        settle: bool = True,
+        cycles: bool = True,
+    ) -> dict[str, Any]:
+        """每日调度入口：补记到期周期、结算检查与 23:30 日终快照。
+
+        每次 tick 都以当前时刻重新判定应执行内容；重复执行不重复下单、结算或快照。
+        账户处于暂停或回撤锁定时，结算照常推进，只停止新增买入。
+
+        `now` 原样下传给子步骤，而不是传递本方法解析出的时刻：`_now` 把「非 None」
+        一律视为外部指定时间，生产库据此拒绝，下传解析值会让生产库拒绝自己解析的
+        结果，使定时任务在生产库上完全无法运行。原样下传后语义仍是各步取同一时钟
+        来源：显式时间只来自最外层调用方，生产库无参调用各步都取服务端时钟。
+        本方法自身解析一次用于 slot 判定，与子步骤的取值最多相差极小的调度延迟。
+        """
+        resolved = self._now(now)
+        result: dict[str, Any] = {"as_of": utc_text(resolved), "actions": []}
+        with self.store.read() as conn:
+            row = conn.execute("SELECT id, status FROM accounts WHERE active_slot = 1").fetchone()
+        if row is None or row["status"] == "archived":
+            result["actions"].append({"action": "skip", "reason": "no_active_account"})
+            return result
+        account_id = str(row["id"])
+        # 周期处理始终执行：窗口内受理，窗口已过则补记 missed，重复调用不重复下单。
+        if cycles:
+            cycle_result = self.run_cycle(account_id, now=now, nav_source=nav_source)
+            if cycle_result is not None and cycle_result["runs"]:
+                result["actions"].append({"action": "cycles", "runs": cycle_result["runs"]})
+        if settle and any(_in_slot(resolved, slot) for slot in SETTLE_SLOTS):
+            report = self.settle(account_id, now=now, nav_source=nav_source)
+            result["actions"].append({"action": "settle", "report": report.to_dict()})
+        if _in_slot(resolved, DAILY_CLOSE_SLOT):
+            result["actions"].append({"action": "daily_close", **self.record_daily_close(account_id, now=now)})
+        if not result["actions"]:
+            result["actions"].append({"action": "skip", "reason": "outside_slots"})
+        return result
+
     # ---- 下单 -------------------------------------------------------------------
 
     def submit_order(
@@ -1044,27 +1768,63 @@ class SimulationService:
         digest = request_hash(normalized)
         now = self._now(now)
         with self._write(now) as conn:
-            existing = conn.execute(
-                "SELECT * FROM orders WHERE account_id = ? AND idempotency_key = ?",
-                (account_id, idempotency_key),
-            ).fetchone()
-            if existing is not None:
-                if existing["request_hash"] != digest:
-                    raise SimulationError("idempotency_conflict", "同一幂等键对应了不同请求")
-                return self._order_view(conn, existing), False
-            account = self._account(conn, account_id)
-            decision = self._decide(
-                conn, account, Decision(side, code, amount_value, shares_value), now
+            row, created = self._accept_order(
+                conn, account_id, idempotency_key, digest,
+                side=side, code=code, amount=amount_value, shares=shares_value, now=now, run_id=run_id,
             )
-            order_id = self._persist_order(
-                conn, account_id, decision, idempotency_key, digest, now, run_id
-            )
-            row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
-            return self._order_view(conn, row), True
+            return self._order_view(conn, row), created
+
+    def _accept_order(
+        self,
+        conn: sqlite3.Connection,
+        account_id: str,
+        idempotency_key: str,
+        digest: str,
+        *,
+        side: str,
+        code: str,
+        amount: Decimal | None,
+        shares: Decimal | None,
+        now: datetime,
+        run_id: str | None = None,
+    ) -> tuple[sqlite3.Row, bool]:
+        """在已打开的事务内受理订单；幂等键命中时返回原订单。
+
+        策略周期与 HTTP/CLI 下单共用这一入口，业务拒绝同样持久化为 rejected 订单。
+        """
+        existing = conn.execute(
+            "SELECT * FROM orders WHERE account_id = ? AND idempotency_key = ?",
+            (account_id, idempotency_key),
+        ).fetchone()
+        if existing is not None:
+            if existing["request_hash"] != digest:
+                raise SimulationError("idempotency_conflict", "同一幂等键对应了不同请求")
+            return existing, False
+        account = self._account(conn, account_id)
+        decision = self._decide(conn, account, Decision(side, code, amount, shares), now)
+        order_id = self._persist_order(
+            conn, account_id, decision, idempotency_key, digest, now, run_id
+        )
+        row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        return row, True
 
     def _decide(
         self, conn: sqlite3.Connection, account: sqlite3.Row, d: Decision, now: datetime
     ) -> Decision:
+        d = self._gates(conn, account, d, now)
+        if d.reason_code is not None:
+            return d
+        if d.side == "buy":
+            return self._decide_buy(conn, account, d, now)
+        return self._decide_sell(conn, account["id"], d)
+
+    def _gates(
+        self, conn: sqlite3.Connection, account: sqlite3.Row, d: Decision, now: datetime
+    ) -> Decision:
+        """与金额无关的受理前置检查：账户、规则、开放日、截止与日历。
+
+        固定策略先在这里取得逐基金结论，再按限额缩减金额进入 `_decide_buy`。
+        """
         if account["status"] == "archived":
             return d.reject("account_archived", "账户已归档")
         if d.side == "buy" and account["status"] in ("paused", "risk_paused"):
@@ -1088,9 +1848,7 @@ class SimulationService:
                 d.payment_due_date = rule.add_working_days(today, rule.payment_working_days)
         except CalendarUnknown as exc:
             return d.reject("calendar_unknown", f"交易日历未覆盖：{exc}")
-        if d.side == "buy":
-            return self._decide_buy(conn, account, d, now)
-        return self._decide_sell(conn, account["id"], d)
+        return d
 
     def _open_buys(self, conn: sqlite3.Connection, account_id: str) -> dict[str, Decimal]:
         pending: dict[str, Decimal] = {}

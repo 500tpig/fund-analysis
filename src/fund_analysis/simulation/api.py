@@ -114,6 +114,29 @@ def get_orders(
     )
 
 
+@router.get("/accounts/{account_id}/runs")
+def get_runs(
+    request: Request,
+    account_id: str,
+    cursor: str | None = Query(None),
+    limit: int = Query(20),
+) -> dict[str, Any]:
+    service = _service(request)
+    return _call(lambda: service.list_runs(account_id, cursor=cursor, limit=limit))
+
+
+@router.get("/runs/{run_id}")
+def get_run(request: Request, run_id: str) -> dict[str, Any]:
+    service = _service(request)
+    return _call(lambda: service.run_detail(run_id))
+
+
+@router.get("/accounts/{account_id}/metrics")
+def get_metrics(request: Request, account_id: str) -> dict[str, Any]:
+    service = _service(request)
+    return _call(lambda: service.account_metrics(account_id))
+
+
 @router.get("/orders/{order_id}")
 def get_order(request: Request, order_id: str) -> dict[str, Any]:
     service = _service(request)

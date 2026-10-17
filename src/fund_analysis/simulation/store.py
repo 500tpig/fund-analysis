@@ -14,12 +14,12 @@ from pathlib import Path
 
 from .rules import ENVIRONMENTS
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SIMULATION_DB_ENV = "FUND_ANALYSIS_SIMULATION_DB_PATH"
 DEFAULT_SIMULATION_DB_PATH = Path("data/simulation.db")
 BUSY_TIMEOUT_SECONDS = 5.0
 
-IMMUTABLE_TABLES = ("rule_versions", "snapshots", "order_events", "ledger_events")
+IMMUTABLE_TABLES = ("rule_versions", "snapshots", "order_events", "ledger_events", "strategy_versions")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS sim_meta (
@@ -190,6 +190,8 @@ CREATE TABLE IF NOT EXISTS dividends (
 CREATE TABLE IF NOT EXISTS valuations (
     id TEXT PRIMARY KEY,
     account_id TEXT NOT NULL REFERENCES accounts(id),
+    kind TEXT NOT NULL DEFAULT 'observation' CHECK (kind IN ('observation', 'daily_close')),
+    kind_date TEXT,
     observed_at TEXT NOT NULL,
     nav_refs_json TEXT NOT NULL,
     available TEXT NOT NULL,
@@ -204,6 +206,52 @@ CREATE TABLE IF NOT EXISTS valuations (
     drawdown TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_valuations_account ON valuations(account_id, observed_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_valuations_daily_close
+    ON valuations(account_id, kind_date) WHERE kind = 'daily_close';
+CREATE TABLE IF NOT EXISTS strategy_versions (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES accounts(id),
+    effective_from TEXT NOT NULL,
+    timezone TEXT NOT NULL,
+    weekday INTEGER NOT NULL CHECK (weekday BETWEEN 1 AND 7),
+    time TEXT NOT NULL,
+    window_end TEXT NOT NULL,
+    amounts_json TEXT NOT NULL,
+    rule_set TEXT NOT NULL,
+    request_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (account_id, effective_from)
+);
+CREATE TABLE IF NOT EXISTS runs (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES accounts(id),
+    cycle_date TEXT NOT NULL,
+    strategy_version TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'partial', 'failed', 'missed')),
+    reason_code TEXT,
+    reason_detail TEXT,
+    started_at TEXT NOT NULL,
+    finished_at TEXT,
+    snapshot_ids_json TEXT NOT NULL,
+    UNIQUE (account_id, cycle_date)
+);
+CREATE INDEX IF NOT EXISTS idx_runs_account ON runs(account_id, cycle_date DESC);
+CREATE TABLE IF NOT EXISTS run_items (
+    id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES runs(id),
+    code TEXT NOT NULL,
+    name TEXT,
+    status TEXT NOT NULL CHECK (status IN ('accepted', 'skipped', 'failed')),
+    requested_amount TEXT NOT NULL,
+    accepted_amount TEXT NOT NULL,
+    skipped_amount TEXT NOT NULL,
+    reason_code TEXT,
+    reason_detail TEXT,
+    order_id TEXT,
+    rule_id TEXT,
+    error TEXT,
+    UNIQUE (run_id, code)
+);
 CREATE TABLE IF NOT EXISTS account_operations (
     id TEXT PRIMARY KEY,
     kind TEXT NOT NULL,
@@ -257,12 +305,42 @@ def resolve_simulation_path(
 
 class SimulationStore:
     def __init__(self, path: Path, *, environment: str | None = None):
-        """打开或创建模拟库。新库需要显式环境；已有库的环境不可更改。"""
+        """打开或创建模拟库。新库需要显式环境；已有库的环境不可更改。
+
+        v1 模拟库（阶段 6 验收样例）在打开时原地迁移到 v2：为 valuations 增加
+        `kind`/`kind_date`，并创建阶段 7 的策略版本与运行表。迁移在同一事务内完成，
+        中途失败不会留下半迁移状态。
+        """
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with contextlib.closing(self._connect()) as conn:
             conn.execute("PRAGMA journal_mode=WAL")
-            conn.executescript(SCHEMA)
+            has_meta = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'sim_meta'"
+            ).fetchone()
+            meta = dict(conn.execute("SELECT key, value FROM sim_meta").fetchall()) if has_meta else {}
+            if not meta:
+                env = environment or "production"
+                if env not in ENVIRONMENTS:
+                    raise SimulationConfigError(f"未知模拟环境：{env}")
+                conn.executescript(SCHEMA)
+                conn.execute("BEGIN IMMEDIATE")
+                conn.executemany(
+                    "INSERT OR IGNORE INTO sim_meta (key, value) VALUES (?, ?)",
+                    [
+                        ("schema_version", str(SCHEMA_VERSION)),
+                        ("environment", env),
+                        ("created_at", utc_text(utc_now())),
+                    ],
+                )
+                conn.execute("COMMIT")
+                meta = dict(conn.execute("SELECT key, value FROM sim_meta").fetchall())
+            else:
+                version = int(meta["schema_version"])
+                if version < SCHEMA_VERSION:
+                    self._migrate(conn, version)
+                conn.executescript(SCHEMA)
+                meta = dict(conn.execute("SELECT key, value FROM sim_meta").fetchall())
             for table in IMMUTABLE_TABLES:
                 conn.execute(
                     f"""
@@ -276,22 +354,6 @@ class SimulationStore:
                     BEGIN SELECT RAISE(ABORT, '{table} is append-only'); END
                     """
                 )
-            meta = dict(conn.execute("SELECT key, value FROM sim_meta").fetchall())
-            if not meta:
-                env = environment or "production"
-                if env not in ENVIRONMENTS:
-                    raise SimulationConfigError(f"未知模拟环境：{env}")
-                conn.execute("BEGIN IMMEDIATE")
-                conn.executemany(
-                    "INSERT OR IGNORE INTO sim_meta (key, value) VALUES (?, ?)",
-                    [
-                        ("schema_version", str(SCHEMA_VERSION)),
-                        ("environment", env),
-                        ("created_at", utc_text(utc_now())),
-                    ],
-                )
-                conn.execute("COMMIT")
-                meta = dict(conn.execute("SELECT key, value FROM sim_meta").fetchall())
             if int(meta["schema_version"]) != SCHEMA_VERSION:
                 raise SimulationConfigError(
                     f"模拟库 schema 版本 {meta['schema_version']} 与代码 {SCHEMA_VERSION} 不一致"
@@ -301,6 +363,29 @@ class SimulationStore:
                     f"模拟库环境为 {meta['environment']}，不能按 {environment} 打开"
                 )
             self.environment = meta["environment"]
+
+    def _migrate(self, conn: sqlite3.Connection, version: int) -> None:
+        if version != 1:
+            raise SimulationConfigError(f"不支持的模拟库 schema 版本：{version}")
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            conn.execute(
+                """
+                ALTER TABLE valuations ADD COLUMN kind TEXT NOT NULL DEFAULT 'observation'
+                    CHECK (kind IN ('observation', 'daily_close'))
+                """
+            )
+            conn.execute("ALTER TABLE valuations ADD COLUMN kind_date TEXT")
+            conn.execute(
+                "UPDATE sim_meta SET value = ? WHERE key = 'schema_version'",
+                (str(SCHEMA_VERSION),),
+            )
+            conn.execute("COMMIT")
+        except BaseException:
+            if conn.in_transaction:
+                conn.execute("ROLLBACK")
+            raise
+        # 其余新表与索引由打开流程随后执行的 SCHEMA 幂等创建。
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.path, timeout=BUSY_TIMEOUT_SECONDS, isolation_level=None)

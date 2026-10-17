@@ -41,7 +41,7 @@ fi
 if sudo -n test -f /var/lib/fund-analysis/fund_analysis.db; then
     sudo -n -u fund-analysis python3 "$release/deploy/backup.py" /var/lib/fund-analysis/fund_analysis.db "/var/lib/fund-analysis/backups/pre-$release_id.db"
 fi
-for unit in fund-analysis-collect.timer fund-analysis-collect.service fund-analysis.service; do
+for unit in fund-analysis-collect.timer fund-analysis-collect.service fund-analysis-simulation.timer fund-analysis-simulation.service fund-analysis.service; do
     if [[ $(systemctl show "$unit" -p LoadState --value) != not-found ]]; then
         sudo -n systemctl stop "$unit"
     fi
@@ -57,6 +57,12 @@ sudo -n systemctl enable --now fund-analysis.service
 for attempt in {1..30}; do
     if curl --fail --silent --connect-timeout 2 --max-time 5 http://127.0.0.1:8765/api/funds >/dev/null; then
         sudo -n systemctl enable --now fund-analysis-collect.timer
+        # 模拟调度 timer 不随发布首次启用：阶段 7.5 的真实自动运行门槛（规则包、
+        # P0-B 采集与备份证据、年份日历）需人工确认。已由管理员启用过时恢复运行，
+        # 避免发布在上面第 44 行停掉之后静默不再启动。
+        if [[ $(systemctl show fund-analysis-simulation.timer -p UnitFileState --value) == enabled ]]; then
+            sudo -n systemctl start fund-analysis-simulation.timer
+        fi
         echo "Active release: $release"
         exit 0
     fi

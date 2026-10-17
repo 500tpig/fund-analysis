@@ -1,0 +1,26 @@
+[Unit]
+Description=Fund analysis simulation strategy scheduler (Beijing time)
+
+# 不依赖 fund-analysis.service：tick 直接读写模拟库，并以只读方式读取真实库
+# 的官方净值，全程不经过 8765 的 HTTP 接口。真实库以 mode=ro 打开，与 Web
+# 进程的并发访问由主库 WAL 承担。
+[Service]
+Type=oneshot
+User=fund-analysis
+Group=fund-analysis
+WorkingDirectory=/opt/fund-analysis/current
+Environment=TZ=Asia/Shanghai
+Environment=PYTHONDONTWRITEBYTECODE=1
+# 两个库路径都显式给出：--main-db 的默认值是相对路径 data/fund_analysis.db，
+# 依赖工作目录，不能用于服务；也不读取 FUND_ANALYSIS_SIMULATION_DB_PATH，
+# 避免出现第二个模拟库路径来源。
+ExecStart=/opt/fund-analysis/current/.venv/bin/fund-analysis simulation --sim-db /var/lib/fund-analysis/simulation.db --main-db /var/lib/fund-analysis/fund_analysis.db tick
+TimeoutStartSec=240
+StateDirectory=fund-analysis
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/fund-analysis
