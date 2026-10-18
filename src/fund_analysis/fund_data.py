@@ -888,17 +888,10 @@ def _parse_sina_curve(
 
     latest_date, latest_time, _, _ = max(valid_candidates, key=lambda x: (x[0], x[1]))
 
+    # 取最近一个已结束会话：非交易日与盘前回退到最近交易日数据，
+    # 由前端按点上的真实日期标注，不因「不是今天」而丢弃。
     if not is_overnight:
         open_date = latest_date
-        if open_date != today:
-            return {
-                "code": code,
-                "date": today.isoformat(),
-                "source": SINA_ESTIMATE_SOURCE_NAME,
-                "availability": "no_minute_data",
-                "points": [],
-                "warning": SINA_ESTIMATE_WARNING,
-            }
         selected = [
             item for item in valid_candidates
             if item[0] == open_date and (item[0], item[1]) <= (latest_date, latest_time)
@@ -910,15 +903,6 @@ def _parse_sina_curve(
             open_date = latest_date - timedelta(days=1)
 
         close_date = open_date + timedelta(days=1)
-        if today not in (open_date, close_date):
-            return {
-                "code": code,
-                "date": today.isoformat(),
-                "source": SINA_ESTIMATE_SOURCE_NAME,
-                "availability": "no_minute_data",
-                "points": [],
-                "warning": SINA_ESTIMATE_WARNING,
-            }
 
         selected = []
         for item in valid_candidates:

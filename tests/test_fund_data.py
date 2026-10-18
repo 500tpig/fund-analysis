@@ -698,6 +698,63 @@ class FundDataTest(unittest.TestCase):
         self.assertEqual(empty["availability"], "no_minute_data")
         self.assertEqual(empty["points"], [])
 
+    def test_curve_provider_keeps_latest_session_on_non_trading_day(self) -> None:
+        # 周日打开详情：新浪返回上一交易日（周五）的分时点，按最近已结束会话返回，
+        # 不因「不是今天」清空；点上的 datetime 保留真实日期供前端标注。
+        provider = FundCurveProvider(
+            json_getter=lambda _url, _params: {
+                "result": {
+                    "status": {"code": 0},
+                    "data": {
+                        "worth": "1.20",
+                        "worth_date": "2026-09-25",
+                        "time_range": ["09:30-11:30", "13:00-15:00"],
+                        "networth": [
+                            {"pre_nav": "1.212", "nav_pct": "1.0", "pre_date": "2026-09-25", "min_time": "14:59"},
+                            {"pre_nav": "1.210", "nav_pct": "0.8", "pre_date": "2026-09-25", "min_time": "09:30"},
+                            {"pre_nav": "1.100", "nav_pct": "-8.0", "pre_date": "2026-09-18", "min_time": "14:59"},
+                        ],
+                    },
+                }
+            },
+            today=date(2026, 9, 27),
+        )
+        payload = provider.fetch_intraday("110011")
+        self.assertEqual(payload["availability"], "available")
+        self.assertEqual(
+            [point["datetime"] for point in payload["points"]],
+            ["2026-09-25 09:30:00", "2026-09-25 14:59:00"],
+        )
+        self.assertEqual(payload["date"], "2026-09-27")
+
+    def test_curve_provider_keeps_latest_overnight_session_on_non_trading_day(self) -> None:
+        # 周六白天打开 QDII 详情：最近已结束会话是周五 21:30 至周六凌晨的夜盘，
+        # 返回该会话而不是清空。
+        provider = FundCurveProvider(
+            json_getter=lambda _url, _params: {
+                "result": {
+                    "status": {"code": 0},
+                    "data": {
+                        "worth": "4.2105",
+                        "worth_date": "2026-09-24",
+                        "time_range": [["21:30", "00:30"], ["00:30", "04:00"]],
+                        "networth": [
+                            {"pre_nav": "4.2000", "nav_pct": "-0.2500", "pre_date": "2026-09-25", "min_time": "21:30"},
+                            {"pre_nav": "4.1736", "nav_pct": "-0.8758", "pre_date": "2026-09-26", "min_time": "04:00"},
+                            {"pre_nav": "4.3000", "nav_pct": "2.0000", "pre_date": "2026-09-24", "min_time": "22:00"},
+                        ],
+                    },
+                }
+            },
+            today=date(2026, 9, 26),
+        )
+        payload = provider.fetch_intraday("017731")
+        self.assertEqual(payload["availability"], "available")
+        self.assertEqual(
+            [point["datetime"] for point in payload["points"]],
+            ["2026-09-25 21:30:00", "2026-09-26 04:00:00"],
+        )
+
     def test_curve_provider_handles_cross_midnight_points_and_sorts_chronologically(self) -> None:
         today = date(2026, 9, 26)
         provider = FundCurveProvider(
