@@ -1495,7 +1495,7 @@ tr:focus-within .row-action,
 
 .accuracy-section__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: 12px;
 }
 
@@ -2314,10 +2314,6 @@ tr:focus-within .row-action,
     display: none;
   }
 
-  .refresh-status-line {
-    display: none;
-  }
-
   .fund-mobile-list {
     display: block;
     width: 100%;
@@ -2553,10 +2549,6 @@ tr:focus-within .row-action,
 
   .holding-mobile-list__loading .holding-mobile-row {
     pointer-events: none;
-  }
-
-  .market-quote-strip {
-    order: 3;
   }
 
   .portfolio-analysis {

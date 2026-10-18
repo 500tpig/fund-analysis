@@ -21,6 +21,8 @@ import {
 import DataToolbar from '@/components/DataToolbar.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import FundDetailDrawer from '@/components/FundDetailDrawer.vue'
+import FundDetailPanel from '@/components/FundDetailPanel.vue'
+import FundIdentityHeader from '@/components/FundIdentityHeader.vue'
 import HeroMetrics, { type HeroMetric } from '@/components/HeroMetrics.vue'
 import MarketQuoteStrip from '@/components/MarketQuoteStrip.vue'
 import PortfolioAnalysisPanel from '@/components/PortfolioAnalysisPanel.vue'
@@ -93,6 +95,19 @@ const mobileSearchOpen = ref(false)
 
 const selectedFund = ref<HoldingRow | null>(null)
 const drawerOpen = ref(false)
+
+// ≥1440px 使用列表 + 常驻详情分栏，抽屉只在窄屏使用；两处共用详情内容。
+const wideSplit = ref(false)
+let wideSplitMedia: MediaQueryList | null = null
+
+function onWideSplitChange(matches: boolean): void {
+  wideSplit.value = matches
+  if (matches) drawerOpen.value = false
+}
+
+function onWideSplitMediaEvent(event: MediaQueryListEvent): void {
+  onWideSplitChange(event.matches)
+}
 
 const copiedCode = ref<string | null>(null)
 const tablePressing = ref(false)
@@ -440,6 +455,9 @@ onMounted(() => {
   pageActive = true
   initialBackfillPending = true
   document.addEventListener('visibilitychange', onVisibilityChange)
+  wideSplitMedia = window.matchMedia('(min-width: 1440px)')
+  onWideSplitChange(wideSplitMedia.matches)
+  wideSplitMedia.addEventListener('change', onWideSplitMediaEvent)
   void loadFunds().then(() => {
     if (!pageActive) return
     if (document.visibilityState === 'visible') startChecks()
@@ -451,6 +469,8 @@ onBeforeUnmount(() => {
   pageActive = false
   initialBackfillPending = false
   stopChecks()
+  wideSplitMedia?.removeEventListener('change', onWideSplitMediaEvent)
+  wideSplitMedia = null
   document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 
@@ -526,6 +546,10 @@ useHotkeys((event) => {
 })
 
 function openFundDrawer(row: HoldingRow): void {
+  if (wideSplit.value) {
+    selectedFund.value = row
+    return
+  }
   selectedFund.value = row
   drawerOpen.value = true
 }
@@ -533,6 +557,14 @@ function openFundDrawer(row: HoldingRow): void {
 function closeFundDrawer(): void {
   drawerOpen.value = false
   selectedFund.value = null
+}
+
+function closeFundDetail(): void {
+  if (wideSplit.value) {
+    selectedFund.value = null
+    return
+  }
+  closeFundDrawer()
 }
 
 function onRowKeydown(event: KeyboardEvent, row: HoldingRow) {
@@ -658,421 +690,457 @@ function closeMobileSearch() {
 
     <MarketQuoteStrip :quotes="funds?.market_quotes" />
 
-    <section
-      class="funds-blotter blotter flex min-h-0 flex-1 flex-col"
-      :class="tablePressing ? 'is-pressing' : ''"
-      @mousedown="tablePressing = true"
-      @mouseup="tablePressing = false"
-      @mouseleave="tablePressing = false"
-    >
-      <DataToolbar
-        :class="{
-          'is-mobile-search-open': mobileSearchOpen,
-          'has-mobile-meta': hasActiveMobileMeta,
-        }"
+    <div class="funds-split">
+      <section
+        class="funds-blotter blotter flex min-h-0 flex-1 flex-col"
+        :class="tablePressing ? 'is-pressing' : ''"
+        @mousedown="tablePressing = true"
+        @mouseup="tablePressing = false"
+        @mouseleave="tablePressing = false"
       >
-        <template #search>
-          <div
-            class="w-full valuation-search-container"
-            :class="mobileSearchOpen ? 'is-open' : ''"
-          >
-            <Input
-              id="funds-search"
-              v-model="searchQuery"
-              placeholder="搜索基金代码/名称"
-              size="sm"
-              autocomplete="off"
-              aria-label="搜索基金"
+        <DataToolbar
+          :class="{
+            'is-mobile-search-open': mobileSearchOpen,
+            'has-mobile-meta': hasActiveMobileMeta,
+          }"
+        >
+          <template #search>
+            <div
+              class="w-full valuation-search-container"
+              :class="mobileSearchOpen ? 'is-open' : ''"
             >
-              <template #prefix>
-                <Search
-                  class="h-3.5 w-3.5 text-(--text-tertiary)"
-                  :stroke-width="1.75"
-                />
-              </template>
-              <template
-                v-if="mobileSearchOpen"
-                #suffix
+              <Input
+                id="funds-search"
+                v-model="searchQuery"
+                placeholder="搜索基金代码/名称"
+                size="sm"
+                autocomplete="off"
+                aria-label="搜索基金"
               >
-                <button
-                  type="button"
-                  class="min-w-[44px] min-h-[44px] flex items-center justify-center text-(--text-tertiary) hover:text-(--text-primary)"
-                  aria-label="关闭搜索"
-                  @click="closeMobileSearch"
-                >
-                  <X
-                    class="h-3.5 w-3.5"
+                <template #prefix>
+                  <Search
+                    class="h-3.5 w-3.5 text-(--text-tertiary)"
                     :stroke-width="1.75"
                   />
-                </button>
-              </template>
-            </Input>
-          </div>
-        </template>
+                </template>
+                <template
+                  v-if="mobileSearchOpen"
+                  #suffix
+                >
+                  <button
+                    type="button"
+                    class="min-w-[44px] min-h-[44px] flex items-center justify-center text-(--text-tertiary) hover:text-(--text-primary)"
+                    aria-label="关闭搜索"
+                    @click="closeMobileSearch"
+                  >
+                    <X
+                      class="h-3.5 w-3.5"
+                      :stroke-width="1.75"
+                    />
+                  </button>
+                </template>
+              </Input>
+            </div>
+          </template>
 
-        <template #filters>
-          <div
-            class="text-filters text-filters--desktop valuation-desktop-only"
-            role="tablist"
-            aria-label="按盘中状态筛选"
-          >
-            <button
-              v-for="item in filterOptions"
-              :key="item.key"
-              type="button"
-              role="tab"
-              class="text-filter"
-              :class="statusFilter === item.key ? 'is-active' : ''"
-              :aria-selected="statusFilter === item.key"
-              @click="statusFilter = item.key"
-            >
-              {{ item.label }} {{ item.count }}
-            </button>
-          </div>
-
-          <div
-            v-if="!mobileSearchOpen"
-            class="toolbar-mobile-row valuation-mobile-only flex items-center justify-between w-full gap-2"
-          >
+          <template #filters>
             <div
-              class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"
+              class="text-filters text-filters--desktop valuation-desktop-only"
               role="tablist"
               aria-label="按盘中状态筛选"
             >
               <button
-                v-for="item in mobileFilterOptions"
-                :key="`m-${item.key}`"
+                v-for="item in filterOptions"
+                :key="item.key"
                 type="button"
                 role="tab"
-                class="mobile-filter-tab px-2.5 py-1 rounded-[6px] text-[12px] font-medium transition-colors"
-                :class="statusFilter === item.key ? 'bg-(--bg-surface-hover) text-(--text-primary)' : 'text-(--text-secondary) hover:text-(--text-primary)'"
+                class="text-filter"
+                :class="statusFilter === item.key ? 'is-active' : ''"
                 :aria-selected="statusFilter === item.key"
                 @click="statusFilter = item.key"
               >
                 {{ item.label }} {{ item.count }}
               </button>
             </div>
+
+            <div
+              v-if="!mobileSearchOpen"
+              class="toolbar-mobile-row valuation-mobile-only flex items-center justify-between w-full gap-2"
+            >
+              <div
+                class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"
+                role="tablist"
+                aria-label="按盘中状态筛选"
+              >
+                <button
+                  v-for="item in mobileFilterOptions"
+                  :key="`m-${item.key}`"
+                  type="button"
+                  role="tab"
+                  class="mobile-filter-tab px-2.5 py-1 rounded-[6px] text-[12px] font-medium transition-colors"
+                  :class="statusFilter === item.key ? 'bg-(--bg-surface-hover) text-(--text-primary)' : 'text-(--text-secondary) hover:text-(--text-primary)'"
+                  :aria-selected="statusFilter === item.key"
+                  @click="statusFilter = item.key"
+                >
+                  {{ item.label }} {{ item.count }}
+                </button>
+              </div>
+              <button
+                type="button"
+                class="mobile-search-trigger min-w-[44px] min-h-[44px] flex items-center justify-center rounded-[6px] text-(--text-secondary) hover:text-(--text-primary)"
+                aria-label="展开搜索"
+                @click="openMobileSearch"
+              >
+                <Search
+                  class="h-4 w-4"
+                  :stroke-width="1.75"
+                />
+              </button>
+            </div>
+          </template>
+
+          <template #meta>
+            <span class="valuation-desktop-only">{{ inventoryLabel(funds?.rows ?? [], displayRows) }}</span>
+            <div
+              v-if="sortField"
+              class="valuation-mobile-only inline-flex items-center gap-1 rounded-[6px] bg-(--bg-surface) px-2 py-0.5 text-[12px] text-(--text-secondary)"
+            >
+              <span>{{ sortLabel }}</span>
+            </div>
+            <button
+              v-if="hasActiveFilterOrSort"
+              type="button"
+              class="cursor-pointer text-[12px] text-(--text-secondary) transition-colors hover:text-(--text-primary) min-h-[36px] flex items-center"
+              @click="resetFiltersAndSort"
+            >
+              重置
+            </button>
+          </template>
+        </DataToolbar>
+
+        <!-- 手机端列表 -->
+        <div class="fund-mobile-list">
+          <div class="fund-mobile-list__head">
             <button
               type="button"
-              class="mobile-search-trigger min-w-[44px] min-h-[44px] flex items-center justify-center rounded-[6px] text-(--text-secondary) hover:text-(--text-primary)"
-              aria-label="展开搜索"
-              @click="openMobileSearch"
+              @click="toggleSort('name')"
             >
-              <Search
+              <SortableTh
+                label="基金"
+                :active="sortField === 'name'"
+                :order="sortOrder"
+              />
+            </button>
+            <button
+              type="button"
+              @click="toggleSort('amount')"
+            >
+              <SortableTh
+                label="金额"
+                align="right"
+                :active="sortField === 'amount'"
+                :order="sortOrder"
+              />
+            </button>
+            <button
+              type="button"
+              @click="toggleSort('today_profit')"
+            >
+              <SortableTh
+                label="当日收益"
+                align="right"
+                :active="sortField === 'today_profit'"
+                :order="sortOrder"
+              />
+            </button>
+          </div>
+
+          <div
+            v-if="loading"
+            class="fund-mobile-list__loading"
+            aria-label="正在加载基金"
+          >
+            <div
+              v-for="index in 6"
+              :key="`mobile-sk-${index}`"
+              class="fund-mobile-row"
+            >
+              <span class="skeleton w-32" />
+              <span class="skeleton w-14" />
+              <span class="skeleton w-16" />
+            </div>
+          </div>
+
+          <EmptyState
+            v-else-if="displayRows.length === 0"
+            title="暂无匹配的基金"
+            description="请先在持仓页添加或录入基金，或调整筛选条件"
+          />
+
+          <button
+            v-for="row in displayRows"
+            v-else
+            :key="`mobile-${row.id}`"
+            type="button"
+            class="fund-mobile-row"
+            :class="selectedFund?.id === row.id ? 'is-active' : ''"
+            @click="openFundDrawer(row)"
+          >
+            <span class="fund-mobile-row__identity">
+              <span
+                class="fund-mobile-row__name"
+                :title="row.name"
+              >{{ row.name }}</span>
+              <span class="fund-mobile-row__subline">
+                <span>{{ row.is_cash_asset ? '现金' : row.code }}</span>
+                <template
+                  v-for="badge in rowSessionProfitMap.get(row.id)?.badges"
+                  :key="badge"
+                >
+                  <span
+                    class="inline-badge"
+                    :class="badgeClass(badge)"
+                  >{{ badge }}</span>
+                </template>
+              </span>
+            </span>
+
+            <span class="fund-mobile-row__amount">
+              {{ row.amount != null ? formatMoney(row.amount) : '—' }}
+            </span>
+
+            <span class="fund-mobile-row__profit">
+              <span
+                class="fund-mobile-row__profit-amount"
+                :class="valueStateClass(signedState(rowSessionProfitMap.get(row.id)?.amount))"
+              >
+                {{ row.is_cash_asset ? '—' : signedMoney(rowSessionProfitMap.get(row.id)?.amount) }}
+              </span>
+              <span
+                v-if="!row.is_cash_asset && rowSessionProfitMap.get(row.id)?.returnPct != null"
+                class="fund-mobile-row__profit-pct"
+                :class="valueStateClass(signedState(rowSessionProfitMap.get(row.id)?.returnPct))"
+              >
+                {{ formatPercent(rowSessionProfitMap.get(row.id)?.returnPct) }}
+              </span>
+              <span
+                v-else-if="!row.is_cash_asset"
+                class="fund-mobile-row__profit-pct text-(--text-tertiary)"
+              >
+                —
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <!-- 桌面端表格 -->
+        <div class="funds-table-scroll blotter-scroll">
+          <table class="data-dense-table funds-table">
+            <thead>
+              <tr>
+                <th
+                  class="w-[32%] min-w-[200px] cursor-pointer text-left"
+                  @click="toggleSort('name')"
+                >
+                  <SortableTh
+                    label="基金"
+                    :active="sortField === 'name'"
+                    :order="sortOrder"
+                  />
+                </th>
+                <th
+                  class="w-[17%] min-w-[110px] cursor-pointer text-right"
+                  @click="toggleSort('amount')"
+                >
+                  <SortableTh
+                    label="持仓金额"
+                    align="right"
+                    :active="sortField === 'amount'"
+                    :order="sortOrder"
+                  />
+                </th>
+                <th
+                  class="w-[17%] min-w-[100px] cursor-pointer text-right"
+                  @click="toggleSort('estimated_return_pct')"
+                >
+                  <SortableTh
+                    label="当日涨跌"
+                    align="right"
+                    :active="sortField === 'estimated_return_pct'"
+                    :order="sortOrder"
+                  />
+                </th>
+                <th
+                  class="w-[17%] min-w-[110px] cursor-pointer text-right"
+                  @click="toggleSort('today_profit')"
+                >
+                  <SortableTh
+                    label="当日收益"
+                    align="right"
+                    :active="sortField === 'today_profit'"
+                    :order="sortOrder"
+                  />
+                </th>
+                <th
+                  class="w-[17%] min-w-[110px] cursor-pointer text-right"
+                  @click="toggleSort('holding_profit')"
+                >
+                  <SortableTh
+                    label="持有收益"
+                    align="right"
+                    :active="sortField === 'holding_profit'"
+                    :order="sortOrder"
+                  />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-if="loading">
+                <tr
+                  v-for="index in 10"
+                  :key="`sk-${index}`"
+                >
+                  <td><span class="skeleton w-40" /></td>
+                  <td class="text-right">
+                    <span class="skeleton w-16" />
+                  </td>
+                  <td class="text-right">
+                    <span class="skeleton w-12" />
+                  </td>
+                  <td class="text-right">
+                    <span class="skeleton w-16" />
+                  </td>
+                  <td class="text-right">
+                    <span class="skeleton w-16" />
+                  </td>
+                </tr>
+              </template>
+              <tr v-else-if="displayRows.length === 0">
+                <td colspan="5">
+                  <EmptyState
+                    title="暂无匹配的基金"
+                    description="请先在持仓页添加或录入基金，或调整筛选条件"
+                  />
+                </td>
+              </tr>
+              <tr
+                v-for="row in displayRows"
+                :key="row.id"
+                :class="['group cursor-pointer', selectedFund?.id === row.id ? 'is-active' : '']"
+                tabindex="0"
+                :title="rowStatusTitle(row)"
+                @click="openFundDrawer(row)"
+                @keydown="onRowKeydown($event, row)"
+              >
+                <td>
+                  <span
+                    class="fund-name"
+                    :title="row.name"
+                  >{{ row.name }}</span>
+                  <div class="fund-code flex items-center gap-1.5">
+                    <span>{{ row.is_cash_asset ? '现金' : row.code }}</span>
+                    <button
+                      v-if="!row.is_cash_asset"
+                      type="button"
+                      class="row-action rounded-[6px] p-0.5 text-(--text-tertiary) hover:text-(--text-primary)"
+                      aria-label="复制基金代码"
+                      @click="copyCode(row.code, $event)"
+                    >
+                      <Check
+                        v-if="copiedCode === row.code"
+                        class="h-3 w-3"
+                        :stroke-width="1.75"
+                      />
+                      <Copy
+                        v-else
+                        class="h-3 w-3"
+                        :stroke-width="1.75"
+                      />
+                    </button>
+                    <template
+                      v-for="badge in rowSessionProfitMap.get(row.id)?.badges"
+                      :key="badge"
+                    >
+                      <span
+                        class="inline-badge"
+                        :class="badgeClass(badge)"
+                      >{{ badge }}</span>
+                    </template>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <MarketValue :value="row.amount" />
+                </td>
+                <td class="text-right">
+                  <MarketValue
+                    :value="rowSessionProfitMap.get(row.id)?.returnPct ?? rowEstimateView(row).pct"
+                    kind="percent"
+                    :state="signedState(rowSessionProfitMap.get(row.id)?.returnPct ?? rowEstimateView(row).pct)"
+                    :tone-level="rowEstimateView(row).overseas ? 'muted' : 'strong'"
+                  />
+                </td>
+                <td class="text-right">
+                  <MarketValue
+                    :value="rowSessionProfitMap.get(row.id)?.amount"
+                    kind="signed-money"
+                    :state="signedState(rowSessionProfitMap.get(row.id)?.amount)"
+                  />
+                </td>
+                <td class="text-right">
+                  <MarketValue
+                    :value="row.holding_profit"
+                    kind="signed-money"
+                    :state="row.holding_profit_state"
+                    tone-level="strong"
+                  />
+                  <div
+                    v-if="row.holding_profit_rate != null"
+                    class="text-[12px] font-numeric"
+                    :class="valueStateClass(row.holding_profit_state, 'muted')"
+                  >
+                    {{ formatPercent(row.holding_profit_rate) }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside
+        v-if="wideSplit"
+        class="funds-detail-pane"
+        aria-label="基金详情"
+      >
+        <template v-if="selectedFund">
+          <div class="funds-detail-pane__header">
+            <FundIdentityHeader
+              :fund="selectedFund"
+              @copy-code="copyCode"
+            />
+            <button
+              type="button"
+              class="funds-detail-pane__close"
+              aria-label="关闭详情"
+              @click="closeFundDetail"
+            >
+              <X
                 class="h-4 w-4"
                 :stroke-width="1.75"
               />
             </button>
           </div>
-        </template>
-
-        <template #meta>
-          <span class="valuation-desktop-only">{{ inventoryLabel(funds?.rows ?? [], displayRows) }}</span>
-          <div
-            v-if="sortField"
-            class="valuation-mobile-only inline-flex items-center gap-1 rounded-[6px] bg-(--bg-surface) px-2 py-0.5 text-[12px] text-(--text-secondary)"
-          >
-            <span>{{ sortLabel }}</span>
+          <div class="funds-detail-pane__body">
+            <FundDetailPanel :fund="selectedFund" />
           </div>
-          <button
-            v-if="hasActiveFilterOrSort"
-            type="button"
-            class="cursor-pointer text-[12px] text-(--text-secondary) transition-colors hover:text-(--text-primary) min-h-[36px] flex items-center"
-            @click="resetFiltersAndSort"
-          >
-            重置
-          </button>
         </template>
-      </DataToolbar>
-
-      <!-- 手机端列表 -->
-      <div class="fund-mobile-list">
-        <div class="fund-mobile-list__head">
-          <button
-            type="button"
-            @click="toggleSort('name')"
-          >
-            <SortableTh
-              label="基金"
-              :active="sortField === 'name'"
-              :order="sortOrder"
-            />
-          </button>
-          <button
-            type="button"
-            @click="toggleSort('amount')"
-          >
-            <SortableTh
-              label="金额"
-              align="right"
-              :active="sortField === 'amount'"
-              :order="sortOrder"
-            />
-          </button>
-          <button
-            type="button"
-            @click="toggleSort('today_profit')"
-          >
-            <SortableTh
-              label="当日收益"
-              align="right"
-              :active="sortField === 'today_profit'"
-              :order="sortOrder"
-            />
-          </button>
-        </div>
-
-        <div
-          v-if="loading"
-          class="fund-mobile-list__loading"
-          aria-label="正在加载基金"
-        >
-          <div
-            v-for="index in 6"
-            :key="`mobile-sk-${index}`"
-            class="fund-mobile-row"
-          >
-            <span class="skeleton w-32" />
-            <span class="skeleton w-14" />
-            <span class="skeleton w-16" />
-          </div>
-        </div>
-
         <EmptyState
-          v-else-if="displayRows.length === 0"
-          title="暂无匹配的基金"
-          description="请先在持仓页添加或录入基金，或调整筛选条件"
-        />
-
-        <button
-          v-for="row in displayRows"
           v-else
-          :key="`mobile-${row.id}`"
-          type="button"
-          class="fund-mobile-row"
-          :class="selectedFund?.id === row.id ? 'is-active' : ''"
-          @click="openFundDrawer(row)"
-        >
-          <span class="fund-mobile-row__identity">
-            <span
-              class="fund-mobile-row__name"
-              :title="row.name"
-            >{{ row.name }}</span>
-            <span class="fund-mobile-row__subline">
-              <span>{{ row.is_cash_asset ? '现金' : row.code }}</span>
-              <template
-                v-for="badge in rowSessionProfitMap.get(row.id)?.badges"
-                :key="badge"
-              >
-                <span
-                  class="inline-badge"
-                  :class="badgeClass(badge)"
-                >{{ badge }}</span>
-              </template>
-            </span>
-          </span>
-
-          <span class="fund-mobile-row__amount">
-            {{ row.amount != null ? formatMoney(row.amount) : '—' }}
-          </span>
-
-          <span class="fund-mobile-row__profit">
-            <span
-              class="fund-mobile-row__profit-amount"
-              :class="valueStateClass(signedState(rowSessionProfitMap.get(row.id)?.amount))"
-            >
-              {{ row.is_cash_asset ? '—' : signedMoney(rowSessionProfitMap.get(row.id)?.amount) }}
-            </span>
-            <span
-              v-if="!row.is_cash_asset && rowSessionProfitMap.get(row.id)?.returnPct != null"
-              class="fund-mobile-row__profit-pct"
-              :class="valueStateClass(signedState(rowSessionProfitMap.get(row.id)?.returnPct))"
-            >
-              {{ formatPercent(rowSessionProfitMap.get(row.id)?.returnPct) }}
-            </span>
-            <span
-              v-else-if="!row.is_cash_asset"
-              class="fund-mobile-row__profit-pct text-(--text-tertiary)"
-            >
-              —
-            </span>
-          </span>
-        </button>
-      </div>
-
-      <!-- 桌面端表格 -->
-      <div class="funds-table-scroll blotter-scroll">
-        <table class="data-dense-table funds-table">
-          <thead>
-            <tr>
-              <th
-                class="w-[32%] min-w-[200px] cursor-pointer text-left"
-                @click="toggleSort('name')"
-              >
-                <SortableTh
-                  label="基金"
-                  :active="sortField === 'name'"
-                  :order="sortOrder"
-                />
-              </th>
-              <th
-                class="w-[17%] min-w-[110px] cursor-pointer text-right"
-                @click="toggleSort('amount')"
-              >
-                <SortableTh
-                  label="持仓金额"
-                  align="right"
-                  :active="sortField === 'amount'"
-                  :order="sortOrder"
-                />
-              </th>
-              <th
-                class="w-[17%] min-w-[100px] cursor-pointer text-right"
-                @click="toggleSort('estimated_return_pct')"
-              >
-                <SortableTh
-                  label="当日涨跌"
-                  align="right"
-                  :active="sortField === 'estimated_return_pct'"
-                  :order="sortOrder"
-                />
-              </th>
-              <th
-                class="w-[17%] min-w-[110px] cursor-pointer text-right"
-                @click="toggleSort('today_profit')"
-              >
-                <SortableTh
-                  label="当日收益"
-                  align="right"
-                  :active="sortField === 'today_profit'"
-                  :order="sortOrder"
-                />
-              </th>
-              <th
-                class="w-[17%] min-w-[110px] cursor-pointer text-right"
-                @click="toggleSort('holding_profit')"
-              >
-                <SortableTh
-                  label="持有收益"
-                  align="right"
-                  :active="sortField === 'holding_profit'"
-                  :order="sortOrder"
-                />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-if="loading">
-              <tr
-                v-for="index in 10"
-                :key="`sk-${index}`"
-              >
-                <td><span class="skeleton w-40" /></td>
-                <td class="text-right">
-                  <span class="skeleton w-16" />
-                </td>
-                <td class="text-right">
-                  <span class="skeleton w-12" />
-                </td>
-                <td class="text-right">
-                  <span class="skeleton w-16" />
-                </td>
-                <td class="text-right">
-                  <span class="skeleton w-16" />
-                </td>
-              </tr>
-            </template>
-            <tr v-else-if="displayRows.length === 0">
-              <td colspan="5">
-                <EmptyState
-                  title="暂无匹配的基金"
-                  description="请先在持仓页添加或录入基金，或调整筛选条件"
-                />
-              </td>
-            </tr>
-            <tr
-              v-for="row in displayRows"
-              :key="row.id"
-              :class="['group cursor-pointer', selectedFund?.id === row.id ? 'is-active' : '']"
-              tabindex="0"
-              :title="rowStatusTitle(row)"
-              @click="openFundDrawer(row)"
-              @keydown="onRowKeydown($event, row)"
-            >
-              <td>
-                <span
-                  class="fund-name"
-                  :title="row.name"
-                >{{ row.name }}</span>
-                <div class="fund-code flex items-center gap-1.5">
-                  <span>{{ row.is_cash_asset ? '现金' : row.code }}</span>
-                  <button
-                    v-if="!row.is_cash_asset"
-                    type="button"
-                    class="row-action rounded-[6px] p-0.5 text-(--text-tertiary) hover:text-(--text-primary)"
-                    aria-label="复制基金代码"
-                    @click="copyCode(row.code, $event)"
-                  >
-                    <Check
-                      v-if="copiedCode === row.code"
-                      class="h-3 w-3"
-                      :stroke-width="1.75"
-                    />
-                    <Copy
-                      v-else
-                      class="h-3 w-3"
-                      :stroke-width="1.75"
-                    />
-                  </button>
-                  <template
-                    v-for="badge in rowSessionProfitMap.get(row.id)?.badges"
-                    :key="badge"
-                  >
-                    <span
-                      class="inline-badge"
-                      :class="badgeClass(badge)"
-                    >{{ badge }}</span>
-                  </template>
-                </div>
-              </td>
-              <td class="text-right">
-                <MarketValue :value="row.amount" />
-              </td>
-              <td class="text-right">
-                <MarketValue
-                  :value="rowSessionProfitMap.get(row.id)?.returnPct ?? rowEstimateView(row).pct"
-                  kind="percent"
-                  :state="signedState(rowSessionProfitMap.get(row.id)?.returnPct ?? rowEstimateView(row).pct)"
-                  :tone-level="rowEstimateView(row).overseas ? 'muted' : 'strong'"
-                />
-              </td>
-              <td class="text-right">
-                <MarketValue
-                  :value="rowSessionProfitMap.get(row.id)?.amount"
-                  kind="signed-money"
-                  :state="signedState(rowSessionProfitMap.get(row.id)?.amount)"
-                />
-              </td>
-              <td class="text-right">
-                <MarketValue
-                  :value="row.holding_profit"
-                  kind="signed-money"
-                  :state="row.holding_profit_state"
-                  tone-level="strong"
-                />
-                <div
-                  v-if="row.holding_profit_rate != null"
-                  class="text-[12px] font-numeric"
-                  :class="valueStateClass(row.holding_profit_state, 'muted')"
-                >
-                  {{ formatPercent(row.holding_profit_rate) }}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+          title="选择基金查看详情"
+          description="点击左侧列表任意基金，在此查看估值、走势与档案"
+        />
+      </aside>
+    </div>
 
     <!-- 组合分析 -->
     <PortfolioAnalysisPanel
@@ -1221,5 +1289,66 @@ function closeMobileSearch() {
     font-size: 18px !important;
     line-height: 24px !important;
   }
+}
+
+/* ---------- ≥1440px 列表 + 常驻详情分栏 ---------- */
+
+/* 承接原 .funds-blotter 的 flex-1 + min-h-0，桌面端保持表格内部滚动。 */
+.funds-split {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+}
+
+@media (min-width: 1440px) {
+  .funds-split {
+    gap: 20px;
+  }
+
+  .funds-detail-pane {
+    display: flex;
+    flex-direction: column;
+    width: clamp(380px, 28vw, 500px);
+    flex-shrink: 0;
+    min-height: 0;
+    border-left: 1px solid var(--border-subtle);
+  }
+}
+
+.funds-detail-pane__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 4px 20px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.funds-detail-pane__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-control);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out);
+}
+
+.funds-detail-pane__close:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+}
+
+.funds-detail-pane__body {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 20px 24px;
 }
 </style>

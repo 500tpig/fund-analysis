@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import type { PerformanceBenchmarkOption } from '@/api/types'
 import { chartColors } from '@/theme'
@@ -49,23 +49,44 @@ const emit = defineEmits<{
   'update:benchmarkCode': [code: string]
 }>()
 
-const width = 720
 const height = 290
-const plot = { left: 62, right: 18, top: 18, bottom: 34 }
-const plotWidth = width - plot.left - plot.right
+const plot = { left: 68, right: 16, top: 16, bottom: 30 }
 const plotHeight = height - plot.top - plot.bottom
 
+// SVG 坐标与容器像素 1:1，坐标轴标签用 HTML 渲染，字号不随图表宽度缩放。
 const containerRef = ref<HTMLDivElement | null>(null)
+const measuredWidth = ref(720)
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  const el = containerRef.value
+  if (!el) return
+  measuredWidth.value = Math.max(Math.round(el.clientWidth), 280)
+  resizeObserver = new ResizeObserver((entries) => {
+    const entry = entries[0]
+    if (!entry) return
+    const next = Math.max(Math.round(entry.contentRect.width), 280)
+    if (next !== measuredWidth.value) measuredWidth.value = next
+  })
+  resizeObserver.observe(el)
+})
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+})
+
+const width = computed(() => measuredWidth.value)
+const plotWidth = computed(() => width.value - plot.left - plot.right)
+
 const activeXKey = ref<string | null>(null)
-const pointerClientX = ref<number | null>(null)
-const pointerClientY = ref<number | null>(null)
 
 const isCnATradingSession = computed(() => (
   props.xMode === 'time' && props.sessionType === 'cn-a'
 ))
 
 const cnALayout = computed(() => (
-  computeTradingAxisLayout(width, plot.left, plot.right, 36)
+  computeTradingAxisLayout(width.value, plot.left, plot.right, 36)
 ))
 
 function xValue(value: string): number {
@@ -136,7 +157,7 @@ const chart = computed(() => {
   const minX = Math.min(...xs)
   const maxX = Math.max(...xs)
   const scaleX = (value: string) => (
-    plot.left + ((xValue(value) - minX) / Math.max(maxX - minX, 1)) * plotWidth
+    plot.left + ((xValue(value) - minX) / Math.max(maxX - minX, 1)) * plotWidth.value
   )
 
   const lines = populated.map((item) => {
@@ -292,11 +313,13 @@ function seriesDisplayLabel(item: { name: string; sourceLabel?: string }, timeSt
   return item.name
 }
 
+// 触摸滚动交给浏览器（touch-action: pan-y），十字线只在鼠标指针下出现。
 function handlePointerMove(e: PointerEvent) {
+  if (e.pointerType !== 'mouse') return
   if (!chart.value || !uniqueXList.value.length || !containerRef.value) return
   const rect = containerRef.value.getBoundingClientRect()
-  const relSvgX = ((e.clientX - rect.left) / rect.width) * width
-  const clampedX = Math.max(plot.left, Math.min(width - plot.right, relSvgX))
+  const relSvgX = ((e.clientX - rect.left) / rect.width) * width.value
+  const clampedX = Math.max(plot.left, Math.min(width.value - plot.right, relSvgX))
 
   let bestKey = uniqueXList.value[0]
   let bestDist = Infinity
@@ -309,14 +332,10 @@ function handlePointerMove(e: PointerEvent) {
     }
   }
   activeXKey.value = bestKey
-  pointerClientX.value = e.clientX - rect.left
-  pointerClientY.value = e.clientY - rect.top
 }
 
 function handlePointerLeave() {
   activeXKey.value = null
-  pointerClientX.value = null
-  pointerClientY.value = null
 }
 
 const showBenchmarkSelect = computed(() => props.benchmarkOptions.length > 0)
@@ -386,12 +405,14 @@ const benchmarkLine = computed(() => {
     <div
       ref="containerRef"
       class="curve-chart__plot-wrapper"
+      :style="{ height: `${height}px` }"
       @pointermove="handlePointerMove"
       @pointerleave="handlePointerLeave"
     >
       <svg
         class="curve-chart__plot"
         :viewBox="`0 0 ${width} ${height}`"
+        preserveAspectRatio="none"
         aria-hidden="true"
       >
         <!-- Horizontal grid lines -->
@@ -513,77 +534,69 @@ const benchmarkLine = computed(() => {
             class="curve-chart__hover-point"
           />
         </g>
+      </svg>
 
-        <!-- Y Axis Labels -->
-        <text
-          :x="plot.left - 8"
-          :y="plot.top + 4"
-          text-anchor="end"
-          class="curve-chart__axis-label"
-        >{{ formatValue(chart.maxY) }}</text>
-        <text
-          v-if="chart.zeroY !== null && Math.abs(chart.zeroY - (plot.top + 4)) > 16 && Math.abs(chart.zeroY - (height - plot.bottom - 2)) > 16"
-          :x="plot.left - 8"
-          :y="chart.zeroY + 4"
-          text-anchor="end"
-          class="curve-chart__axis-label opacity-75"
-        >{{ formatValue(0) }}</text>
-        <text
-          :x="plot.left - 8"
-          :y="height - plot.bottom - 2"
-          text-anchor="end"
-          class="curve-chart__axis-label"
-        >{{ formatValue(chart.minY) }}</text>
+      <!-- Y axis labels (HTML, fixed font size) -->
+      <div
+        class="curve-chart__y-labels"
+        aria-hidden="true"
+      >
+        <span
+          class="curve-chart__axis-label curve-chart__axis-label--y"
+          :style="{ top: `${plot.top}px`, width: `${plot.left - 8}px` }"
+        >{{ formatValue(chart.maxY) }}</span>
+        <span
+          v-if="chart.zeroY !== null && Math.abs(chart.zeroY - plot.top) > 16 && Math.abs(chart.zeroY - (height - plot.bottom)) > 16"
+          class="curve-chart__axis-label curve-chart__axis-label--y is-zero"
+          :style="{ top: `${chart.zeroY}px`, width: `${plot.left - 8}px` }"
+        >{{ formatValue(0) }}</span>
+        <span
+          class="curve-chart__axis-label curve-chart__axis-label--y"
+          :style="{ top: `${height - plot.bottom}px`, width: `${plot.left - 8}px` }"
+        >{{ formatValue(chart.minY) }}</span>
+      </div>
 
-        <!-- X Axis Labels -->
+      <!-- X axis labels (HTML, fixed font size) -->
+      <div
+        class="curve-chart__x-labels"
+        aria-hidden="true"
+      >
         <template v-if="chart.isCnA && chart.layout">
-          <text
-            :x="chart.layout.morningStartX"
-            :y="height - 8"
-            text-anchor="start"
+          <span
             class="curve-chart__axis-label"
-          >09:30</text>
-          <text
-            :x="chart.layout.morningEndX - 4"
-            :y="height - 8"
-            text-anchor="end"
+            :style="{ left: `${chart.layout.morningStartX}px` }"
+          >09:30</span>
+          <span
+            class="curve-chart__axis-label curve-chart__axis-label--end"
+            :style="{ left: `${chart.layout.morningEndX}px` }"
+          >11:30</span>
+          <span
             class="curve-chart__axis-label"
-          >11:30</text>
-          <text
-            :x="chart.layout.afternoonStartX + 4"
-            :y="height - 8"
-            text-anchor="start"
-            class="curve-chart__axis-label"
-          >13:00</text>
-          <text
-            :x="chart.layout.afternoonEndX"
-            :y="height - 8"
-            text-anchor="end"
-            class="curve-chart__axis-label"
-          >15:00</text>
+            :style="{ left: `${chart.layout.afternoonStartX}px` }"
+          >13:00</span>
+          <span
+            class="curve-chart__axis-label curve-chart__axis-label--end"
+            :style="{ left: `${chart.layout.afternoonEndX}px` }"
+          >15:00</span>
         </template>
         <template v-else-if="chart.xLabels">
-          <text
-            :x="plot.left"
-            :y="height - 8"
-            text-anchor="start"
+          <span
             class="curve-chart__axis-label"
-          >{{ formatX(chart.xLabels[0]) }}</text>
-          <text
-            :x="width - plot.right"
-            :y="height - 8"
-            text-anchor="end"
-            class="curve-chart__axis-label"
-          >{{ formatX(chart.xLabels[1]) }}</text>
+            :style="{ left: `${plot.left}px` }"
+          >{{ formatX(chart.xLabels[0]) }}</span>
+          <span
+            class="curve-chart__axis-label curve-chart__axis-label--end"
+            :style="{ left: `${width - plot.right}px` }"
+          >{{ formatX(chart.xLabels[1]) }}</span>
         </template>
-      </svg>
+      </div>
 
       <!-- Hover Tooltip -->
       <div
-        v-if="activeHover && pointerClientX !== null"
+        v-if="activeHover"
         class="curve-chart__tooltip"
         :style="{
-          left: `${(activeHover.xPos / width) * 100}%`,
+          left: `${activeHover.xPos}px`,
           transform: activeHover.xPos > width / 2
             ? 'translate(-108%, 0)'
             : 'translate(8%, 0)',
@@ -675,17 +688,18 @@ const benchmarkLine = computed(() => {
   border-radius: 999px;
 }
 
+/* touch-action: pan-y 让纵向滚动透传给页面；十字线只在鼠标指针下响应。 */
 .curve-chart__plot-wrapper {
   position: relative;
   width: 100%;
   cursor: crosshair;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .curve-chart__plot {
   width: 100%;
+  height: 100%;
   display: block;
-  overflow: visible;
   background: transparent;
 }
 
@@ -749,13 +763,40 @@ const benchmarkLine = computed(() => {
   pointer-events: none;
 }
 
-.curve-chart__axis-label {
-  fill: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
+.curve-chart__y-labels,
+.curve-chart__x-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
+.curve-chart__axis-label {
+  position: absolute;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+.curve-chart__axis-label--y {
+  left: 0;
+  text-align: right;
+  transform: translateY(-50%);
+}
+
+.curve-chart__axis-label--y.is-zero {
+  opacity: 0.75;
+}
+
+.curve-chart__x-labels .curve-chart__axis-label {
+  bottom: 4px;
+}
+
+.curve-chart__axis-label--end {
+  transform: translateX(-100%);
+}
 
 .curve-chart__tooltip {
   position: absolute;
@@ -767,7 +808,7 @@ const benchmarkLine = computed(() => {
   white-space: nowrap;
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-container);
   box-shadow: var(--shadow-overlay);
   padding: 8px 12px;
   display: flex;
