@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Plus,
   Copy,
@@ -7,6 +8,8 @@ import {
   Search,
   AlertCircle,
   AlertTriangle,
+  Images,
+  Ellipsis,
 } from '@lucide/vue'
 
 import { deleteHolding, fetchHoldings } from '@/api/client'
@@ -27,6 +30,7 @@ import {
   formatMonthDay,
   formatPercent,
   signedCompactMoney,
+  valueStateClass,
 } from '@/shared/formatters'
 import { useMessage } from '@/shared/toast'
 import { isEditableTarget, useHotkeys } from '@/shared/hotkeys'
@@ -51,6 +55,7 @@ const copiedCode = ref<string | null>(null)
 const actionMenu = ref<{ id: number; top: number; right: number } | null>(null)
 
 const message = useMessage()
+const router = useRouter()
 
 const actionMenuRow = computed(() => (
   (holdings.value?.rows ?? []).find((row) => row.id === actionMenu.value?.id) ?? null
@@ -115,6 +120,9 @@ async function executeDelete() {
 }
 
 const summary = computed(() => holdings.value?.summary)
+
+// 区分「组合本身为空」与「筛选后无匹配」，前者给出录入入口。
+const hasAnyHolding = computed(() => (holdings.value?.rows.length ?? 0) > 0)
 
 const holdingProfitRate = computed(() => {
   const profit = summary.value?.total_holding_profit ?? 0
@@ -241,6 +249,15 @@ function barWidth(weight: number | null | undefined): string {
 
 function closeActionMenu() {
   actionMenu.value = null
+}
+
+function onRowKeydown(event: KeyboardEvent, row: HoldingRow) {
+  // 行内复制/菜单按钮自身会处理按键，避免重复打开编辑。
+  if (event.target !== event.currentTarget) return
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    openEdit(row)
+  }
 }
 
 function toggleActionMenu(row: HoldingRow, event: MouseEvent) {
@@ -443,14 +460,30 @@ useHotkeys((event) => {
 
         <EmptyState
           v-else-if="filteredRows.length === 0"
-          title="暂无匹配的持仓记录"
-        />
+          :title="hasAnyHolding ? '暂无匹配的持仓记录' : '还没有持仓记录'"
+          :description="hasAnyHolding ? '调整搜索或排序后重试' : '从持仓截图识别录入，或手动新增一条持仓'"
+        >
+          <Button
+            v-if="!hasAnyHolding"
+            variant="primary"
+            @click="router.push({ name: 'import' })"
+          >
+            <template #icon>
+              <Images
+                class="h-4 w-4"
+                :stroke-width="1.75"
+              />
+            </template>
+            去录入
+          </Button>
+        </EmptyState>
 
         <div
           v-for="row in filteredRows"
           v-else
           :key="`holding-mobile-${row.id}`"
           class="holding-mobile-row"
+          @click="openEdit(row)"
         >
           <span class="holding-mobile-row__identity">
             <span
@@ -478,7 +511,13 @@ useHotkeys((event) => {
               :state="row.holding_profit_state"
               tone-level="muted"
             />
-            <span>累计收益</span>
+            <span v-if="row.is_cash_asset">—</span>
+            <span
+              v-else-if="row.holding_profit_rate != null"
+              class="font-numeric"
+              :class="valueStateClass(row.holding_profit_rate_state, 'muted')"
+            >{{ formatPercent(row.holding_profit_rate) }}</span>
+            <span v-else>—</span>
           </span>
           <div
             class="holding-mobile-row__menu row-menu"
@@ -492,7 +531,10 @@ useHotkeys((event) => {
               :aria-label="`${row.name} 的持仓操作`"
               @click="toggleActionMenu(row, $event)"
             >
-              ···
+              <Ellipsis
+                class="h-4 w-4"
+                :stroke-width="1.75"
+              />
             </button>
           </div>
         </div>
@@ -589,13 +631,33 @@ useHotkeys((event) => {
             </template>
             <tr v-else-if="filteredRows.length === 0">
               <td :colspan="showThemeColumn ? 7 : 6">
-                <EmptyState title="暂无匹配的持仓记录" />
+                <EmptyState
+                  :title="hasAnyHolding ? '暂无匹配的持仓记录' : '还没有持仓记录'"
+                  :description="hasAnyHolding ? '调整搜索或排序后重试' : '从持仓截图识别录入，或手动新增一条持仓'"
+                >
+                  <Button
+                    v-if="!hasAnyHolding"
+                    variant="primary"
+                    @click="router.push({ name: 'import' })"
+                  >
+                    <template #icon>
+                      <Images
+                        class="h-4 w-4"
+                        :stroke-width="1.75"
+                      />
+                    </template>
+                    去录入
+                  </Button>
+                </EmptyState>
               </td>
             </tr>
             <tr
               v-for="row in filteredRows"
               :key="row.id"
-              class="group"
+              class="group cursor-pointer"
+              tabindex="0"
+              @click="openEdit(row)"
+              @keydown="onRowKeydown($event, row)"
             >
               <td>
                 <span
@@ -632,9 +694,6 @@ useHotkeys((event) => {
               </td>
               <td class="text-right">
                 <div class="weight-bar">
-                  <span class="font-numeric text-[var(--text-secondary)]">
-                    {{ formatPercent(row.weight_pct, { signed: false }) }}
-                  </span>
                   <div
                     class="weight-bar__track"
                     :aria-label="`组合占比 ${formatPercent(row.weight_pct, { signed: false })}`"
@@ -644,6 +703,9 @@ useHotkeys((event) => {
                       :style="{ width: barWidth(row.weight_pct) }"
                     />
                   </div>
+                  <span class="weight-bar__value font-numeric text-[var(--text-secondary)]">
+                    {{ formatPercent(row.weight_pct, { signed: false }) }}
+                  </span>
                 </div>
               </td>
               <td class="col-priority-medium text-right text-[var(--text-secondary)]">
@@ -661,13 +723,21 @@ useHotkeys((event) => {
                   v-if="row.is_cash_asset"
                   class="text-[12px] text-[var(--text-tertiary)]"
                 >—</span>
-                <MarketValue
-                  v-else
-                  :value="row.holding_profit"
-                  kind="signed-money"
-                  :state="row.holding_profit_state"
-                  tone-level="muted"
-                />
+                <template v-else>
+                  <MarketValue
+                    :value="row.holding_profit"
+                    kind="signed-money"
+                    :state="row.holding_profit_state"
+                    tone-level="muted"
+                  />
+                  <div
+                    v-if="row.holding_profit_rate != null"
+                    class="text-[12px] font-numeric"
+                    :class="valueStateClass(row.holding_profit_rate_state, 'muted')"
+                  >
+                    {{ formatPercent(row.holding_profit_rate) }}
+                  </div>
+                </template>
               </td>
               <td
                 v-if="showThemeColumn"
@@ -688,7 +758,10 @@ useHotkeys((event) => {
                     :aria-label="`${row.name} 的持仓操作`"
                     @click="toggleActionMenu(row, $event)"
                   >
-                    ···
+                    <Ellipsis
+                      class="h-4 w-4"
+                      :stroke-width="1.75"
+                    />
                   </button>
                 </div>
               </td>
@@ -760,6 +833,7 @@ useHotkeys((event) => {
             <Button
               variant="ghost"
               size="sm"
+              class="min-h-[44px]"
               @click="deleteTarget = null"
             >
               取消
@@ -767,6 +841,7 @@ useHotkeys((event) => {
             <Button
               variant="danger"
               size="sm"
+              class="min-h-[44px]"
               :loading="deleting"
               @click="executeDelete"
             >

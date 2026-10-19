@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   RefreshCw,
   Copy,
@@ -7,6 +8,7 @@ import {
   AlertCircle,
   Search,
   X,
+  Images,
 } from '@lucide/vue'
 
 import {
@@ -79,7 +81,11 @@ const funds = ref<FundsResponse | null>(null)
 const loading = ref(true)
 const refreshing = ref(false)
 const error = ref<string | null>(null)
-const refreshNote = ref<string | null>(null)
+type StatusPart = { text: string; tone: 'neutral' | 'warning' }
+
+// 页首状态按片段保留语义，失败片段单独着色；纯文本由 parts 拼回。
+const refreshNoteParts = ref<StatusPart[] | null>(null)
+const refreshNote = computed(() => refreshNoteParts.value?.map((part) => part.text).join(' · ') ?? null)
 const autoFailures = ref(0)
 let refreshInFlight = false
 let syncInFlight = false
@@ -111,6 +117,10 @@ function onWideSplitMediaEvent(event: MediaQueryListEvent): void {
 
 const copiedCode = ref<string | null>(null)
 const tablePressing = ref(false)
+
+const router = useRouter()
+// 区分「组合本身为空」与「筛选后无匹配」，前者给出录入入口。
+const hasFundRows = computed(() => (funds.value?.rows.length ?? 0) > 0)
 
 const sortField = ref<SortField | null>(null)
 const sortOrder = ref<SortOrder>(null)
@@ -364,11 +374,12 @@ async function runRefresh(options: { auto?: boolean } = {}): Promise<void> {
     const updates = diffSourceUpdates(previous, result.monitor)
     applyMonitor(result.monitor)
     autoFailures.value = isFailedRun(result) ? autoFailures.value + 1 : 0
-    refreshNote.value = [
-      `${nowClock()} ${result.coalesced ? '已合并进行中的刷新' : '已刷新'}`,
-      describeSourceUpdates(updates),
-      result.has_failure ? '部分来源失败' : null,
-    ].filter(Boolean).join(' · ')
+    const noteParts: StatusPart[] = [
+      { text: `${nowClock()} ${result.coalesced ? '已合并进行中的刷新' : '已刷新'}`, tone: 'neutral' },
+      { text: describeSourceUpdates(updates), tone: 'neutral' },
+    ]
+    if (result.has_failure) noteParts.push({ text: '部分来源失败', tone: 'warning' })
+    refreshNoteParts.value = noteParts
     if (!options.auto) {
       if (result.has_failure) message.warning(result.message)
       else message.success(result.message)
@@ -378,7 +389,7 @@ async function runRefresh(options: { auto?: boolean } = {}): Promise<void> {
   } catch (caught) {
     autoFailures.value += 1
     const msg = caught instanceof Error ? caught.message : '刷新行情失败'
-    refreshNote.value = `${nowClock()} 刷新失败 · 保留此前数据`
+    refreshNoteParts.value = [{ text: `${nowClock()} 刷新失败 · 保留此前数据`, tone: 'warning' }]
     if (!funds.value) error.value = msg
     if (!options.auto || autoFailures.value === 1) message.error(msg)
   } finally {
@@ -514,18 +525,20 @@ const mobileHeaderStatus = computed(() => {
   return headerPhaseStatus.value
 })
 
-const headerStatusLine = computed(() => {
-  const parts = [headerPhaseStatus.value]
+const headerStatusParts = computed<StatusPart[]>(() => {
+  const parts: StatusPart[] = [{ text: headerPhaseStatus.value, tone: 'neutral' }]
   if (refreshing.value) {
-    parts.push('正在刷新行情')
-  } else if (refreshNote.value) {
-    parts.push(refreshNote.value)
+    parts.push({ text: '正在刷新行情', tone: 'neutral' })
+  } else if (refreshNoteParts.value) {
+    parts.push(...refreshNoteParts.value)
   }
   if (autoPaused.value) {
-    parts.push('连续失败，自动刷新已暂停')
+    parts.push({ text: '连续失败，自动刷新已暂停', tone: 'warning' })
   }
-  return parts.filter(Boolean).join(' · ')
+  return parts.filter((part) => part.text)
 })
+
+const headerStatusLine = computed(() => headerStatusParts.value.map((part) => part.text).join(' · '))
 
 const hasActiveMobileMeta = computed(() => Boolean(sortField.value || hasActiveFilterOrSort.value))
 
@@ -644,7 +657,12 @@ function closeMobileSearch() {
     <WorkbenchPageHeader title="基金估值">
       <template #meta>
         <p class="valuation-desktop-only page-header__status text-[13px] text-(--text-secondary)">
-          {{ headerStatusLine }}
+          <span
+            v-for="(part, index) in headerStatusParts"
+            :key="index"
+            class="page-header__status-part"
+            :class="part.tone === 'warning' ? 'is-warning' : ''"
+          >{{ part.text }}</span>
         </p>
       </template>
 
@@ -873,9 +891,23 @@ function closeMobileSearch() {
 
           <EmptyState
             v-else-if="displayRows.length === 0"
-            title="暂无匹配的基金"
-            description="请先在持仓页添加或录入基金，或调整筛选条件"
-          />
+            :title="hasFundRows ? '暂无匹配的基金' : '还没有持仓'"
+            :description="hasFundRows ? '调整筛选或搜索条件后重试' : '从持仓截图识别录入，或在持仓页手动新增'"
+          >
+            <Button
+              v-if="!hasFundRows"
+              variant="primary"
+              @click="router.push({ name: 'import' })"
+            >
+              <template #icon>
+                <Images
+                  class="h-4 w-4"
+                  :stroke-width="1.75"
+                />
+              </template>
+              去录入
+            </Button>
+          </EmptyState>
 
           <button
             v-for="row in displayRows"
@@ -1018,9 +1050,23 @@ function closeMobileSearch() {
               <tr v-else-if="displayRows.length === 0">
                 <td colspan="5">
                   <EmptyState
-                    title="暂无匹配的基金"
-                    description="请先在持仓页添加或录入基金，或调整筛选条件"
-                  />
+                    :title="hasFundRows ? '暂无匹配的基金' : '还没有持仓'"
+                    :description="hasFundRows ? '调整筛选或搜索条件后重试' : '从持仓截图识别录入，或在持仓页手动新增'"
+                  >
+                    <Button
+                      v-if="!hasFundRows"
+                      variant="primary"
+                      @click="router.push({ name: 'import' })"
+                    >
+                      <template #icon>
+                        <Images
+                          class="h-4 w-4"
+                          :stroke-width="1.75"
+                        />
+                      </template>
+                      去录入
+                    </Button>
+                  </EmptyState>
                 </td>
               </tr>
               <tr
@@ -1194,6 +1240,10 @@ function closeMobileSearch() {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    /* 44px 触摸目标保留，外形收敛为胶囊，避免读起来像方形磁贴 */
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 999px;
   }
 }
 
@@ -1204,6 +1254,15 @@ function closeMobileSearch() {
 
   .valuation-desktop-only.page-header__status {
     display: block;
+  }
+
+  .page-header__status-part + .page-header__status-part::before {
+    color: var(--text-tertiary);
+    content: ' · ';
+  }
+
+  .page-header__status-part.is-warning {
+    color: var(--status-warning);
   }
 
   span.valuation-desktop-only {

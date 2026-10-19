@@ -291,7 +291,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="workbench-container flex flex-col gap-5 overflow-auto">
+  <div class="workbench-container flex flex-col gap-5">
     <WorkbenchPageHeader
       title="持仓录入"
       description="从持仓截图提取候选，人工核对后再批量写入。"
@@ -687,3 +687,25 @@ onUnmounted(() => {
     </section>
   </div>
 </template>
+
+<style scoped>
+/* 桌面端全局 .workbench-container 是定高 + overflow:hidden 的容器（见 main.css ≥769px 规则），
+   会覆盖根节点原来的 overflow-auto，把较长的候选或预览列表裁掉且无法滚动。
+   录入页没有内部滚动区域，这里让容器自身纵向滚动。 */
+.workbench-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 769px) {
+  /* 底部操作栏吸附在滚动容器底部，长列表滚动时保持可见。 */
+  .entry-sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    padding-bottom: 12px;
+    background: var(--bg-canvas);
+  }
+}
+</style>

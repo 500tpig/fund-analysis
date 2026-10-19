@@ -455,43 +455,45 @@ onMounted(() => {
         </div>
       </template>
       <template #actions>
-        <Button
-          v-if="account && !account.archived_at && (canPause || canResume)"
-          :variant="canResume ? 'secondary' : 'ghost'"
-          size="sm"
-          :loading="pausing"
-          :aria-label="canPause ? '暂停新增买入' : '恢复新增买入'"
-          @click="togglePause"
-        >
-          <template #icon>
-            <Pause
-              v-if="canPause"
-              class="h-3.5 w-3.5"
-              :stroke-width="1.75"
-            />
-            <Play
-              v-else
-              class="h-3.5 w-3.5"
-              :stroke-width="1.75"
-            />
-          </template>
-          {{ canPause ? '暂停买入' : '恢复买入' }}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          :loading="loading"
-          aria-label="重新读取模拟账户"
-          @click="loadAll"
-        >
-          <template #icon>
-            <RefreshCw
-              class="h-3.5 w-3.5"
-              :stroke-width="1.75"
-            />
-          </template>
-          刷新
-        </Button>
+        <div class="header-actions flex shrink-0 items-center gap-3">
+          <Button
+            v-if="account && !account.archived_at && (canPause || canResume)"
+            :variant="canResume ? 'secondary' : 'ghost'"
+            size="sm"
+            :loading="pausing"
+            :aria-label="canPause ? '暂停新增买入' : '恢复新增买入'"
+            @click="togglePause"
+          >
+            <template #icon>
+              <Pause
+                v-if="canPause"
+                class="h-3.5 w-3.5"
+                :stroke-width="1.75"
+              />
+              <Play
+                v-else
+                class="h-3.5 w-3.5"
+                :stroke-width="1.75"
+              />
+            </template>
+            {{ canPause ? '暂停买入' : '恢复买入' }}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            :loading="loading"
+            aria-label="重新读取模拟账户"
+            @click="loadAll"
+          >
+            <template #icon>
+              <RefreshCw
+                class="h-3.5 w-3.5"
+                :stroke-width="1.75"
+              />
+            </template>
+            刷新
+          </Button>
+        </div>
       </template>
     </WorkbenchPageHeader>
 
@@ -580,7 +582,7 @@ onMounted(() => {
           费用后指标
           <span>{{ metrics.runs.count }} 个周期</span>
         </h2>
-        <dl class="sim-balances">
+        <dl class="sim-balances sim-balances--metrics">
           <div
             v-for="item in metricItems"
             :key="item.key"
@@ -1031,9 +1033,21 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+/* 费用后指标是派生数据，去掉卡片描边并收小字号，避免与上方资金卡片同权重 */
+.sim-balances--metrics .sim-balances__item {
+  border-color: transparent;
+}
+
+.sim-balances--metrics .sim-balances__item dd {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .sim-section {
   display: flex;
   flex-direction: column;
+  /* 8px + 标题自带的 12px 上内边距 = 20px，与估值页区块的分隔留白一致 */
+  padding-top: 8px;
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -1052,7 +1066,7 @@ onMounted(() => {
   padding: 12px 0;
   color: var(--text-primary);
   font-size: 15px;
-  font-weight: 560;
+  font-weight: 500;
   line-height: 22px;
 }
 
@@ -1238,7 +1252,7 @@ onMounted(() => {
   margin-top: 2px;
   overflow: hidden;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;

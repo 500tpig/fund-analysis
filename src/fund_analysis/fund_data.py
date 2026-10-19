@@ -1130,7 +1130,7 @@ def _estimate_basis_warnings(
         warnings.append(
             {
                 "stage": "estimate_basis",
-                "message": "previous_nav_date 等于估值日，不能当作涨跌前净值",
+                "message": "涨跌基准净值与估值日相同，不能作为涨跌前净值",
             }
         )
     elif (
@@ -1146,14 +1146,14 @@ def _estimate_basis_warnings(
             warnings.append(
                 {
                     "stage": "estimate_basis",
-                    "message": "净值比与来源涨跌幅不一致，未改用来源涨跌幅",
+                    "message": "净值比与来源涨跌幅不一致，仍按净值比估算",
                 }
             )
     if source and "sina" in source:
         warnings.append(
             {
                 "stage": "estimate_basis",
-                "message": "未将估值点日期当作海外收益归属日",
+                "message": "估值点日期不作为海外收益的归属日",
             }
         )
     return warnings
