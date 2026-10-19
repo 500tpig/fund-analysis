@@ -50,6 +50,17 @@ import {
 
 const CREATE_KEY_STORAGE = 'fundpilot.simulation.create-key'
 
+/**
+ * 幂等键由前端生成。`crypto.randomUUID` 只在安全上下文可用：手机经局域网 IP 走 http 时它是
+ * undefined，直接调用会在 try 之外抛错，按钮会一直停在加载态且请求发不出去。这里回退到
+ * `crypto.getRandomValues`，它在非安全上下文同样可用。
+ */
+function newIdempotencyKey(): string {
+  if (typeof crypto.randomUUID === 'function') return `web-${crypto.randomUUID()}`
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  return `web-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`
+}
+
 const accounts = ref<SimulationAccountsResponse | null>(null)
 const account = ref<SimulationAccount | null>(null)
 const positions = ref<SimulationPosition[]>([])
@@ -149,7 +160,7 @@ async function togglePause() {
   error.value = null
   const action = canPause.value ? 'pause' : 'resume'
   try {
-    account.value = await setSimulationPause(current.id, action, current.version, `web-${crypto.randomUUID()}`)
+    account.value = await setSimulationPause(current.id, action, current.version, newIdempotencyKey())
   } catch (caught) {
     error.value = messageOf(caught, action === 'pause' ? '暂停失败' : '恢复失败')
   } finally {
@@ -194,7 +205,7 @@ async function createAccount() {
   // 同一次建立动作的重试复用幂等键，避免网络重试重复入金。
   let key = sessionStorage.getItem(CREATE_KEY_STORAGE)
   if (!key) {
-    key = `web-${crypto.randomUUID()}`
+    key = newIdempotencyKey()
     sessionStorage.setItem(CREATE_KEY_STORAGE, key)
   }
   try {
