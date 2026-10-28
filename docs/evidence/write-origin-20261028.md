@@ -83,3 +83,47 @@ systemd 切换。测试全部使用临时库。
 **回滚会撤回安全防护**：基线允许跨站简单请求写入持仓、录入确认、刷新与识图。
 P0-A 远程入口（Cloudflare Tunnel + Access）开放后，不得回滚到无防护版本；
 如确需回滚代码，必须同时关闭远程路由后再执行。
+
+## 生产发布（2026-10-28）
+
+经用户两次确认（先授权上传与运行安装脚本，再确认切换）后发布完成。
+
+### 发布前只读核对
+
+- 工作区干净，本地 `HEAD` = `origin/main` = `7be4761`。
+- 线上 `current` 仍为 `20261028-au9999-close-1`；`production-inventory.json` 的 84 个文件在线上
+  逐文件 SHA-256 与权限全部一致（84/84）。
+- `fund-analysis.service` active，采集与模拟 timer 均 active + enabled，`/api/funds` 返回 200。
+- 包 SHA-256 复核为 `a393e916…40a38e`，与 `SHA256SUMS` 一致；目标发布目录不存在，
+  `pre-20261028-write-origin-1.db` 尚不存在。
+- 发布前只读指纹留档于 `reports/releases/20261028-write-origin-1/pre-deploy-fingerprint.json`。
+
+### 发布
+
+上传 `fund-analysis-20261028-write-origin-1.tar.gz` 与包内 `deploy/install-release.sh` 到
+`/home/ubuntu/release-upload/`，远端 SHA-256 与本地一致。以 `20261028-write-origin-1` 运行安装脚本，
+用时 14 秒、退出码 0：建立独立 venv、按线上 `requirements-installed.txt` 约束安装（`pip check` 无冲突）、
+生成并校验 `/var/lib/fund-analysis/backups/pre-20261028-write-origin-1.db`、停 Web 与两个 timer、
+原子切换 `current`、健康检查通过后恢复 timer。未构建前端。
+`current -> 20261028-write-origin-1`，`previous -> 20261028-au9999-close-1`。
+
+### 发布后回读
+
+- 部署树 85 个文件逐文件 SHA-256 与 `RELEASE.json` 的 `candidate_inventory` 全部一致。
+- `fund-analysis.service` active；`/api/funds` HTTP 200；采集与模拟 timer 均 active + enabled。
+- 来源运行记录：切换后 23:40 槽（`data_source_runs` id 5213–5215）三条全部 `success`；
+  采集日志为「官方净值成功 18 只、失败 0 只；盘中估算成功 18 只、失败 0 只；市场行情成功 3 项、失败 0 项」，
+  说明经 `POST /api/funds/refresh` 的采集写入未被来源校验拦截。
+- 写来源校验实测（loopback，均不产生写入，以 GET-only 路径 `/api/funds` 探测方法级拦截）：
+  同源 `Origin` 与 CLI 无来源头形态均放行至路由（405），跨站 `Origin`、rebinding（Host=Origin=evil）、
+  未知 `Host`、伪造 `X-Forwarded-Host`、跨站 `DELETE` 均返回 403。生效可信 Host 为内置 loopback
+  （`/etc/fund-analysis.env` 未设 `FUND_ANALYSIS_WRITE_HOSTS`，隧道未开）。
+- 业务数据未变：主库 `holdings` 18 行逐行一致、`transactions` 11 行不变；
+  模拟库 `accounts`／`orders`／`runs`／`ledger_events`／`lots` 计数与内容不变，
+  10-28 周期订单 `ord_6f34…` 仍为 `awaiting_nav`。`valuations` 由 223 增至 225，
+  对应 15:30、15:35 两个正常调度点（该表在 00/10/13/15/16 UTC 窗口每 5 分钟写入，非本次发布引入）。
+- 既有的黄金行情来源 `partial`／`failed` 记录（东财 push2 502 与备用源问题）自 9 月起持续存在，与本次发布无关。
+
+### 未覆盖
+
+隧道未开，本轮不做手机验收；未改动 Cloudflare／DNS；未产生新的 Git 提交。
