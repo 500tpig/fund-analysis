@@ -2,7 +2,10 @@
 
 ## 当前阶段
 
-- 当前活动阶段以 `docs/project-roadmap.md` 为准。阶段 7 部署与 timer 已于 2026-10-18 完成，7.5 真实周期验收进行中。
+- 当前活动阶段以 `docs/project-roadmap.md` 为准。阶段 7 部署与 timer 已于 2026-10-18 完成，7.5 首期真实周期
+  已于 2026-10-28 验收通过；阶段 7 待 P0-A（手机安全远程访问，方案见 `docs/p0a-mobile-remote-access-plan.md`）
+  与生产手机真机查看／暂停验收。P0-A 涉及的 Cloudflare、DNS 和生产配置变更，以及生产暂停／恢复，
+  均须用户逐项确认后执行。
 - 当前路线先完成模拟规则、账本与固定策略，再接 AI；阶段编号与依赖以 roadmap 为准。
 - 未经用户明确启动对应阶段，不进入模拟实现、AI 专项设计或后续功能开发。
 - roadmap 中的未来阶段不是实施授权。未经用户明确启动下一阶段，不新增 AI API、
@@ -15,6 +18,7 @@
 
 - `README.md` 描述当前可用能力和运行方式。
 - `docs/project-roadmap.md` 是唯一有效的产品规划。
+- `docs/p0a-mobile-remote-access-plan.md` 是 P0-A 手机安全远程访问的实施与验收方案（已准备，未执行）。
 - `docs/holdings-entry-plan.md` 记录阶段 3 已完成契约和验收结果。
 - `docs/mobile-responsive-plan.md` 是当前移动端改造规范。
 - `docs/valuation-display-plan.md` 是估值页展示改版规范；估值页布局冲突时以它为准。
