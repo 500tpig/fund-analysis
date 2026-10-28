@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import sqlite3
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from fund_analysis.fund_data import FundIntradayEstimate, FundMarketData
@@ -301,8 +303,8 @@ class EstimateAccuracyTest(unittest.TestCase):
                 ).fetchone()
             self.assertIsNotNone(row)
 
-    def test_upsert_overwrites_when_later_estimated_at(self) -> None:
-        """同一 (code, date)，estimated_at 更晚的记录应覆盖旧记录。"""
+    def test_upsert_retains_later_and_original_candidates(self) -> None:
+        """同一观察日的新报价追加候选，原值继续保留。"""
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
             early = FundIntradayEstimate(
@@ -330,11 +332,11 @@ class EstimateAccuracyTest(unittest.TestCase):
                 rows = conn.execute(
                     "SELECT estimated_return_pct FROM fund_estimate_daily_accuracy WHERE code = '110011'"
                 ).fetchall()
-            self.assertEqual(len(rows), 1)
-            self.assertAlmostEqual(rows[0][0], 1.67, places=4)
+            self.assertEqual(len(rows), 2)
+            self.assertEqual({row[0] for row in rows}, {0.83, 1.67})
 
-    def test_upsert_keeps_earlier_when_not_later(self) -> None:
-        """estimated_at 相同或更早时，不应覆盖现有记录。"""
+    def test_upsert_retains_out_of_order_candidates(self) -> None:
+        """迟到的旧报价保留为独立证据，不覆盖现有记录。"""
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
             first = FundIntradayEstimate(
@@ -362,8 +364,8 @@ class EstimateAccuracyTest(unittest.TestCase):
                 rows = conn.execute(
                     "SELECT estimated_return_pct FROM fund_estimate_daily_accuracy WHERE code = '110011'"
                 ).fetchall()
-            self.assertEqual(len(rows), 1)
-            self.assertAlmostEqual(rows[0][0], 0.83, places=4)
+            self.assertEqual(len(rows), 2)
+            self.assertEqual({row[0] for row in rows}, {0.83, 2.5})
 
     def test_reconcile_writes_error_on_date_match(self) -> None:
         with tempfile.TemporaryDirectory() as root:
@@ -383,6 +385,7 @@ class EstimateAccuracyTest(unittest.TestCase):
                 "2026-09-02",
                 allow_same_day_target=True,
             )
+            storage.record_official_daily_profit(market_data(nav_date="2026-09-01", latest_nav=1.2), 1000)
             storage.reconcile_accuracy_samples("110011", 1.209, 0.75, "2026-09-02")
             import sqlite3
             with sqlite3.connect(storage.db_path) as conn:
@@ -399,6 +402,7 @@ class EstimateAccuracyTest(unittest.TestCase):
             # 即使在收盘后，未明确标记为境内基金时也不猜测目标净值日。
             est = estimate(estimated_at="2026-09-02T16:00:00+08:00")
             storage.upsert_estimate_daily_sample(est, "2026-09-02")
+            storage.record_official_daily_profit(market_data(nav_date="2026-09-01", latest_nav=1.2), 1000)
             storage.reconcile_accuracy_samples("110011", 1.209, 0.75, "2026-09-02")
             import sqlite3
             with sqlite3.connect(storage.db_path) as conn:
@@ -417,7 +421,7 @@ class EstimateAccuracyTest(unittest.TestCase):
             self.assertEqual(result["pending_count"], 1)
             self.assertNotIn("mae_pct_points", result)
 
-    def test_accuracy_summary_returns_none_below_min_samples(self) -> None:
+    def test_accuracy_summary_excludes_legacy_results_without_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
             # 插入 2 条已对账样本（低于最小值 3）
@@ -434,72 +438,64 @@ class EstimateAccuracyTest(unittest.TestCase):
                     )
             result = storage.get_accuracy_summary("110011", "source-a")
             self.assertIsNotNone(result)
-            self.assertEqual(result["sample_count"], 2)
+            self.assertEqual(result["sample_count"], 0)
+            self.assertEqual(result["pending_count"], 2)
             self.assertNotIn("mae_pct_points", result)
 
     def test_accuracy_summary_computes_mae_bias_max(self) -> None:
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
-            import sqlite3
-            now = "2026-09-03T10:00:00+08:00"
-            errors = [0.10, -0.20, 0.30]  # mae=0.2, bias=0.0667, max=0.30
-            with sqlite3.connect(storage.db_path) as conn:
-                for i, (d, err) in enumerate(
-                    zip(["2026-09-01", "2026-09-02", "2026-09-03"], errors)
-                ):
-                    conn.execute(
-                        """INSERT INTO fund_estimate_daily_accuracy
-                           (code, observed_date, estimate_source, estimated_return_pct,
-                            official_return_pct, error_pct_points, reconciled_at, created_at, updated_at)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                        ("110011", d, "source-a", 0.83, 0.83 - err, err, now, now, now),
-                    )
-            result = storage.get_accuracy_summary("110011", "source-a")
-            self.assertIsNotNone(result)
+            errors = [0.10, -0.20, 0.30]
+            for day, error in zip([2, 3, 4], errors):
+                previous = f"2026-09-{day - 1:02d}"
+                target = f"2026-09-{day:02d}"
+                storage.record_official_daily_profit(market_data(nav_date=previous, latest_nav=1.2, daily_return_pct=0), 1000)
+                storage.upsert_estimate_daily_sample(replace(
+                    estimate(estimated_at=target+"T16:00:00+08:00", estimated_return_pct=error),
+                    previous_nav_date=previous, estimated_nav=1.2*(1+error/100),
+                    fetched_at=target+"T16:00:01+08:00",
+                ), target, allow_same_day_target=True)
+                storage.reconcile_accuracy_samples("110011", 1.2, 0, target)
+            result = storage.get_accuracy_summary("110011", "eastmoney_fund_core_diy")
             self.assertEqual(result["sample_count"], 3)
-            expected_mae = round(sum(abs(e) for e in errors) / 3, 4)
-            self.assertAlmostEqual(result["mae_pct_points"], expected_mae, places=3)
-            expected_bias = round(sum(errors) / 3, 4)
-            self.assertAlmostEqual(result["bias_pct_points"], expected_bias, places=3)
-            self.assertAlmostEqual(result["max_abs_error_pct_points"], 0.30, places=4)
+            self.assertEqual(result["pending_count"], 0)
+            self.assertAlmostEqual(result["mae_pct_points"], 0.2)
+            self.assertAlmostEqual(result["bias_pct_points"], 0.0667)
+            self.assertAlmostEqual(result["max_abs_error_pct_points"], 0.3)
 
     def test_later_estimate_recomputes_previous_reconciliation(self) -> None:
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
-            storage.upsert_estimate_daily_sample(
-                estimate(estimated_at="2026-09-02T16:00:00+08:00", estimated_return_pct=1.0),
-                "2026-09-02",
-                allow_same_day_target=True,
-            )
-            storage.reconcile_accuracy_samples("110011", 1.008, 0.8, "2026-09-02")
-            storage.upsert_estimate_daily_sample(
-                estimate(estimated_at="2026-09-02T17:00:00+08:00", estimated_return_pct=2.0),
-                "2026-09-02",
-                allow_same_day_target=True,
-            )
-            with sqlite3.connect(storage.db_path) as conn:
-                row = conn.execute(
-                    "SELECT error_pct_points, reconciled_at FROM fund_estimate_daily_accuracy"
-                ).fetchone()
-            self.assertAlmostEqual(row[0], 1.2)
-            self.assertIsNotNone(row[1])
+            storage.record_official_daily_profit(market_data(nav_date="2026-09-01", latest_nav=1.2), 1000)
+            for hour, rate, nav in [(16, 1.0, 1.212), (17, 2.0, 1.224)]:
+                storage.upsert_estimate_daily_sample(replace(
+                    estimate(estimated_at=f"2026-09-02T{hour}:00:00+08:00", estimated_return_pct=rate),
+                    previous_nav_date="2026-09-01", estimated_nav=nav,
+                    fetched_at=f"2026-09-02T{hour}:00:01+08:00",
+                ), "2026-09-02", allow_same_day_target=True)
+                storage.reconcile_accuracy_samples("110011", 1.2096, 0.8, "2026-09-02")
+            with contextlib.closing(sqlite3.connect(storage.db_path)) as conn:
+                rows = conn.execute("SELECT error_pct_points, attribution_reason FROM fund_estimate_daily_accuracy ORDER BY id").fetchall()
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0][1], "superseded")
+            self.assertAlmostEqual(rows[1][0], 1.2)
+            self.assertIsNone(rows[1][1])
 
     def test_accuracy_summary_only_uses_requested_source(self) -> None:
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
-            now = "2026-09-03T10:00:00+08:00"
-            with sqlite3.connect(storage.db_path) as conn:
-                for index, source in enumerate(["source-a"] * 3 + ["source-b"] * 3):
-                    error = 0.1 if source == "source-a" else 1.0
-                    conn.execute(
-                        """INSERT INTO fund_estimate_daily_accuracy
-                           (code, observed_date, estimate_source, error_pct_points,
-                            reconciled_at, created_at, updated_at)
-                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                        ("110011", f"2026-09-{index + 1:02d}", source, error, now, now, now),
-                    )
-            result = storage.get_accuracy_summary("110011", "source-a")
-            self.assertEqual(result["source"], "source-a")
+            for day in [2, 3, 4]:
+                target, previous = f"2026-09-{day:02d}", f"2026-09-{day-1:02d}"
+                storage.record_official_daily_profit(market_data(nav_date=previous, latest_nav=1.2, daily_return_pct=0), 1000)
+                for source, rate in [("eastmoney_fund_core_diy", 0.1), ("tiantian_fund_valuation_last", 1.0)]:
+                    storage.upsert_estimate_daily_sample(replace(
+                        estimate(estimated_at=target+"T16:00:00+08:00", estimated_return_pct=rate, source=source),
+                        previous_nav_date=previous, estimated_nav=1.2*(1+rate/100),
+                        fetched_at=target+"T16:00:01+08:00",
+                    ), target, allow_same_day_target=True)
+                storage.reconcile_accuracy_samples("110011", 1.2, 0, target)
+            result = storage.get_accuracy_summary("110011", "eastmoney_fund_core_diy")
+            self.assertEqual(result["source"], "eastmoney_fund_core_diy")
             self.assertEqual(result["sample_count"], 3)
             self.assertAlmostEqual(result["mae_pct_points"], 0.1)
 

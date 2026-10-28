@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from ..collection import collection_slot
 from ..fund_data import (
+    CHINA_TZ,
     CompositeFundEstimateProvider,
     EastmoneyFundDataProvider,
     FundCurveProvider,
@@ -208,7 +209,7 @@ def _refresh_funds(
     estimate_provider: Any,
 ) -> dict[str, Any]:
     started_at = datetime.now().astimezone().isoformat()
-    today_date = datetime.now().astimezone().strftime("%Y-%m-%d")
+    today_date = datetime.now(CHINA_TZ).strftime("%Y-%m-%d")
     success_codes: list[str] = []
     estimate_success_codes: list[str] = []
     failures: list[dict[str, str]] = []
@@ -264,12 +265,11 @@ def _refresh_funds(
         if estimate is not None:
             storage.save_fund_intraday_estimate(estimate)
             estimate_date = _date_prefix(estimate.estimated_at)
-            if estimate_date == today_date:
-                storage.upsert_estimate_daily_sample(
-                    estimate,
-                    today_date,
-                    allow_same_day_target=code in same_day_nav_codes,
-                )
+            storage.upsert_estimate_daily_sample(
+                estimate,
+                today_date,
+                allow_same_day_target=code in same_day_nav_codes,
+            )
             estimate_success_codes.append(code)
             if estimate_date:
                 estimate_dates.append(estimate_date)
@@ -281,18 +281,14 @@ def _refresh_funds(
                 }
             )
 
-    for code, market_data in market_data_by_code.items():
-        if (
-            market_data.nav_date
-            and market_data.daily_return_pct is not None
-            and market_data.latest_nav is not None
-        ):
-            storage.reconcile_accuracy_samples(
-                code,
-                market_data.latest_nav,
-                market_data.daily_return_pct,
-                str(market_data.nav_date)[:10],
-            )
+    for code in codes:
+        market_data = market_data_by_code.get(code)
+        storage.reconcile_accuracy_samples(
+            code,
+            market_data.latest_nav if market_data else None,
+            market_data.daily_return_pct if market_data else None,
+            str(market_data.nav_date)[:10] if market_data and market_data.nav_date else None,
+        )
 
     completed_at = datetime.now().astimezone().isoformat()
     storage.record_data_source_run(

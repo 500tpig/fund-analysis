@@ -1,0 +1,783 @@
+{
+  "release": "20261028-qdii-evidence-1",
+  "base_release": "20261023-profit-quotes-2",
+  "user_authorization": "2026-10-28 approved production deployment and conditional rollback of code plus pre-migration main database; report withdrawn data window if rollback occurs.",
+  "preflight_captured_at": "2026-10-28T07:49:05.222009+00:00",
+  "preflight_runtime_and_dependency_hashes_match": true,
+  "archive_sha256": "c29fcec637a4c62f7949c0000b22eba54393fcf3f60856b09c31f45e6f80df09",
+  "backups": {
+    "fund_analysis.db": {
+      "path": "/var/lib/fund-analysis/backups/pre-20261028-qdii-evidence-1.db",
+      "sha256": "da2d8edc0bcb98c60fb215d766354e443f9e3230e5447b385760d066e228629e",
+      "bytes": 24047616,
+      "mode": "0o600",
+      "restore_drill": "/var/lib/fund-analysis/backups/restore-drill-pre-20261028-qdii-evidence-1.db",
+      "restored_all_tables_equal": true
+    },
+    "simulation.db": {
+      "path": "/var/lib/fund-analysis/backups/sim-pre-20261028-qdii-evidence-1.db",
+      "sha256": "542d12d8a8818a5274c2997308c3786c8b6890b32cf0b0927436efa9ce2cbd41",
+      "bytes": 290816,
+      "mode": "0o600",
+      "restore_drill": "/var/lib/fund-analysis/backups/restore-drill-sim-pre-20261028-qdii-evidence-1.db",
+      "restored_all_tables_equal": true
+    }
+  },
+  "backup_verified_at": "2026-10-28T07:51:39.635596+00:00",
+  "migration": {
+    "original_rows_preserved": 448,
+    "other_tables_unchanged": [
+      "agent_evidence_snapshots",
+      "ai_analysis_runs",
+      "alipay_income_records",
+      "allocation_advice_snapshots",
+      "allocation_decision_events",
+      "analysis_runs",
+      "candidate_researches",
+      "data_source_runs",
+      "dca_executions",
+      "dca_plans",
+      "decision_events",
+      "decision_outcomes",
+      "fund_fee_snapshots",
+      "fund_intraday_estimates",
+      "fund_manager_snapshots",
+      "fund_market_snapshots",
+      "fund_metadata",
+      "fund_nav_history",
+      "fund_official_daily_profit",
+      "fund_portfolio_holdings",
+      "fund_valuation_profiles",
+      "holdings",
+      "index_nav_history",
+      "market_quote_snapshots",
+      "news_entities",
+      "news_items",
+      "portfolio_news_impact_enrichments",
+      "portfolio_news_impacts",
+      "prices",
+      "recommendation_snapshots",
+      "reports",
+      "rule_eval_snapshots",
+      "schema_version",
+      "strategy_lab_paper_ledger_entries",
+      "strategy_lab_paper_ledgers",
+      "target_allocation_lines",
+      "target_allocations",
+      "trading_recommendation_snapshots",
+      "transactions"
+    ],
+    "integrity": "ok",
+    "unique_columns": [
+      [
+        "code",
+        "estimate_source",
+        "estimate_fingerprint"
+      ]
+    ]
+  },
+  "web_started_at": "2026-10-28T07:52:59+00:00",
+  "final_checked_at": "2026-10-28T07:58:31.030004+00:00",
+  "runtime_files": [
+    "src/fund_analysis/fund_data.py",
+    "src/fund_analysis/web/app.py",
+    "src/fund_analysis/web/storage.py"
+  ],
+  "packaging_metadata_changes": [
+    "src/fund_analysis.egg-info/SOURCES.txt"
+  ],
+  "production_ui_and_systemd_units_unchanged": true,
+  "dependencies_unchanged": "old and new requirements-installed.txt compare byte for byte equal",
+  "original_rows_preserved": 448,
+  "legacy_errors_preserved": 189,
+  "real_holdings_unchanged": true,
+  "simulation_table_changes": {},
+  "sample_count": 466,
+  "new_candidates": 18,
+  "duplicate_candidates": 0,
+  "attribution_reasons": [
+    [
+      "legacy_evidence_missing",
+      448
+    ],
+    [
+      "official_missing",
+      10
+    ],
+    [
+      "source_date_unverified",
+      8
+    ]
+  ],
+  "qdii_reliable_pairs": 0,
+  "browser": {
+    "production_origin_via_local_ssh_tunnel": true,
+    "desktop": {
+      "width": 1440,
+      "height": 1000,
+      "code": "009860",
+      "accuracy_text": "历史估值误差\n待对账（已记录估值样本，等待匹配官方净值日）"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "code": "016665",
+      "accuracy_text": "历史估值误差\n待对账（已记录估值样本，等待匹配官方净值日）"
+    },
+    "zero_error_or_accuracy_claim_displayed": false,
+    "javascript_errors": [],
+    "console_errors": [],
+    "screenshots": "Private local reports/qdii-production-20261028/; contain actual portfolio data, excluded from Git."
+  },
+  "real_collection": {
+    "started_at": "2026-10-28T07:55:37.968287+00:00",
+    "completed_at": "2026-10-28T07:56:10.025792+00:00",
+    "rows_before": 466,
+    "rows_after_first": 466,
+    "rows_after_second": 466,
+    "same_candidate_ids_preserved": 18,
+    "first_response": {
+      "success": 18,
+      "failure": 0,
+      "estimate_success": 18,
+      "estimate_failure": 0,
+      "quote_success": 2,
+      "quote_failure": 1,
+      "quote_failures": [
+        {
+          "code": "AU9999",
+          "error": "failed to fetch https://push2.eastmoney.com/api/qt/ulist.np/get: HTTP Error 502: Bad Gateway; backup: AU9999: invalid backup quote: inconsistent quote prices and change"
+        }
+      ],
+      "coalesced": false
+    },
+    "second_response": {
+      "success": 18,
+      "failure": 0,
+      "estimate_success": 18,
+      "estimate_failure": 0,
+      "quote_success": 2,
+      "quote_failure": 1,
+      "quote_failures": [
+        {
+          "code": "AU9999",
+          "error": "failed to fetch https://push2.eastmoney.com/api/qt/ulist.np/get: HTTP Error 502: Bad Gateway; backup: AU9999: invalid backup quote: inconsistent quote prices and change"
+        }
+      ],
+      "coalesced": false
+    },
+    "qdii_new_candidates": 8,
+    "qdii_targets_remain_unknown": true,
+    "candidates": [
+      {
+        "id": 450,
+        "code": "024481",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 1.3328,
+        "estimated_return_pct": 4.14,
+        "previous_nav": 1.2798,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "9a161514cdb462683e712044399d767e142f4812d93d2659446ceb45db052d55"
+      },
+      {
+        "id": 451,
+        "code": "021528",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 2.934,
+        "estimated_return_pct": 4.04,
+        "previous_nav": 2.82,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "469b96c5e5038473006a8529ba91e894ba27afae6405907606d3c55ba7e7c14b"
+      },
+      {
+        "id": 452,
+        "code": "006503",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 4.6813,
+        "estimated_return_pct": 4.47,
+        "previous_nav": 4.4812,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "b46110dce971a4f9b738888050e61899dce93388a8ab09ba8ea79e51f142b932"
+      },
+      {
+        "id": 453,
+        "code": "015060",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 2.1573,
+        "estimated_return_pct": 4.9,
+        "previous_nav": 2.0565,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "64387d90fc43ee3401c304c0318cdf0569ff0d1d80660a613121dd9637ca795e"
+      },
+      {
+        "id": 454,
+        "code": "027138",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 1.0472,
+        "estimated_return_pct": -0.3,
+        "previous_nav": 1.0504,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "a8f65ff98d0a521a0e64d5d2e01d3fadc8e9886852faab91fe7ee435dbf18934"
+      },
+      {
+        "id": 455,
+        "code": "014674",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 0.5727,
+        "estimated_return_pct": 0.51,
+        "previous_nav": 0.5698,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "27b8eed59d0ff22ae56b82ef17a12df7d6f9901aecd9ef8fe8eada3c914a5691"
+      },
+      {
+        "id": 456,
+        "code": "016702",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 2.0119,
+        "estimated_return_pct": 0.05,
+        "previous_nav": 2.011,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "04013d3edfd4653972d7d7616c5607e61f395654d7b55b729e6d521b97db7776"
+      },
+      {
+        "id": 457,
+        "code": "021842",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 6.2536,
+        "estimated_return_pct": 0.04,
+        "previous_nav": 6.2509,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "0c0d19919718401bbb3843d30cf5759ecb8de2ae0c8d00ee800842acd8d1d86f"
+      },
+      {
+        "id": 458,
+        "code": "017731",
+        "source": "sina_fund_estimate",
+        "source_url": "https://stock.finance.sina.com.cn/fundInfo/api/openapi.php/FdFundService.getEstimateNetworthPic?symbol=017731",
+        "estimated_at": "2026-10-28 15:00:00",
+        "estimated_nav": 3.4284,
+        "estimated_return_pct": 3.1925,
+        "previous_nav": 3.3223,
+        "previous_nav_date": "20261026",
+        "first_fetched_at": "2026-10-28T07:55:15+00:00",
+        "last_fetched_at": "2026-10-28T07:56:06+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "549c9091508e8d0181cce52ea9f15a3a6d1d295e0d26b279a459c84c71cdbaa7"
+      },
+      {
+        "id": 459,
+        "code": "002207",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 2.2507,
+        "estimated_return_pct": -0.5,
+        "previous_nav": 2.262,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "0905dd88db652472c4ca0f51dfbe5fd9e8a21fe70c272cbe07d1f25e6e48f652"
+      },
+      {
+        "id": 460,
+        "code": "021740",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:30",
+        "estimated_nav": 1.992,
+        "estimated_return_pct": 1.01,
+        "previous_nav": 1.9721,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "ed097c8c566761cf67656258e6ca50e1565454bd2cc1adbd1a5765cbe6a3d934"
+      },
+      {
+        "id": 461,
+        "code": "018036",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 2.3446,
+        "estimated_return_pct": 0.04,
+        "previous_nav": 2.3437,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "5daee9135ee0bf1136db476f757abddbbaa853a85f3a4d92c8bc649d8f0e0d8e"
+      },
+      {
+        "id": 462,
+        "code": "012922",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 3.2197,
+        "estimated_return_pct": 0.03,
+        "previous_nav": 3.2187,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "bdf4fcbced3e58ba56f17ab6562f916a6086daa18fcdfb514d83147a46f75fad"
+      },
+      {
+        "id": 463,
+        "code": "021277",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 5.5475,
+        "estimated_return_pct": 0.03,
+        "previous_nav": 5.5458,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "df57018bbd5a077f4f351c6606fdef34bdca5fede8156686a945078165d452e0"
+      },
+      {
+        "id": 464,
+        "code": "016665",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 2.117,
+        "estimated_return_pct": 0.02,
+        "previous_nav": 2.1166,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "2821b2ba43077b30575694b8693d9b0a21a08934cac24d0e4920964f115bf179"
+      },
+      {
+        "id": 465,
+        "code": "009860",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 1.7107,
+        "estimated_return_pct": -0.62,
+        "previous_nav": 1.7214,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "676dad020dda0df461051d4ce0aba21f0876eccaedea53f8893b86489c667766"
+      },
+      {
+        "id": 466,
+        "code": "014002",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 04:00",
+        "estimated_nav": 3.2403,
+        "estimated_return_pct": 0.04,
+        "previous_nav": 3.2391,
+        "previous_nav_date": "2026-10-26",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": null,
+        "attribution_reason": "source_date_unverified",
+        "estimate_fingerprint": "d0a3a868d7cef1fb7df304ce00d1247c490fff58a0467fe682b4e939eeb4fc38"
+      },
+      {
+        "id": 467,
+        "code": "540010",
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "estimated_nav": 4.044,
+        "estimated_return_pct": 4.66,
+        "previous_nav": 3.8638,
+        "previous_nav_date": "2026-10-27",
+        "first_fetched_at": "2026-10-28T07:55:14+00:00",
+        "last_fetched_at": "2026-10-28T07:56:05+00:00",
+        "target_nav_date": "2026-10-28",
+        "attribution_reason": "official_missing",
+        "estimate_fingerprint": "294b627a163cd97c90f49cbfdc260c4f99ac7b18a2f856e28b55afac5e910dc5"
+      }
+    ]
+  },
+  "units": {
+    "fund-analysis.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "fund-analysis-collect.timer": {
+      "NextElapseUSecRealtime": "Wed 2026-10-28 08:00:00 UTC",
+      "LastTriggerUSec": "Wed 2026-10-28 07:57:04 UTC",
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "waiting",
+      "UnitFileState": "enabled"
+    },
+    "fund-analysis-collect.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "static"
+    },
+    "fund-analysis-simulation.timer": {
+      "NextElapseUSecRealtime": "Wed 2026-10-28 08:00:00 UTC",
+      "LastTriggerUSec": "Wed 2026-10-28 07:57:04 UTC",
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "waiting",
+      "UnitFileState": "enabled"
+    },
+    "fund-analysis-simulation.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "static"
+    }
+  },
+  "accuracy": {
+    "024481": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "021528": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "006503": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "015060": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "027138": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "014674": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "016702": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 10,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "021842": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 10,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "017731": {
+      "source": "sina_fund_estimate",
+      "sample_count": 0,
+      "pending_count": 32,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "002207": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "021740": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 22,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "018036": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 10,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "012922": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 10,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "021277": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 10,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "016665": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 1,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "009860": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 21,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "014002": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 7,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    },
+    "540010": {
+      "source": "eastmoney_fund_core_diy",
+      "sample_count": 0,
+      "pending_count": 17,
+      "window": 30,
+      "mae_pct_points": null,
+      "bias_pct_points": null,
+      "max_abs_error_pct_points": null
+    }
+  },
+  "preexisting_source_failure": {
+    "symbol": "AU9999",
+    "preflight_status": "failed",
+    "post_release_status": "failed",
+    "description": "Eastmoney HTTP 502 and backup quote price/change inconsistency; market quote implementation unchanged."
+  },
+  "rollback_executed": false,
+  "withdrawn_data_window": null,
+  "overseas_accuracy_improvement_claimed": false,
+  "post_scheduled_cycle": {
+    "checked_at": "2026-10-28T08:02:43.739434+00:00",
+    "sample_count": 467,
+    "new_candidates": 19,
+    "duplicate_candidates": 0,
+    "reasons": [
+      [
+        "legacy_evidence_missing",
+        448
+      ],
+      [
+        "official_missing",
+        9
+      ],
+      [
+        "quote_revision_ambiguous",
+        2
+      ],
+      [
+        "source_date_unverified",
+        8
+      ]
+    ],
+    "qdii_total_rows": 229,
+    "qdii_reliable_pairs": 0,
+    "simulation_table_changes": {},
+    "units": {
+      "fund-analysis.service": {
+        "Result": "success",
+        "ExecMainStatus": "0",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fund-analysis-collect.timer": {
+        "NextElapseUSecRealtime": "Wed 2026-10-28 08:05:00 UTC",
+        "LastTriggerUSec": "Wed 2026-10-28 08:00:00 UTC",
+        "Result": "success",
+        "ActiveState": "active",
+        "SubState": "waiting",
+        "UnitFileState": "enabled"
+      },
+      "fund-analysis-collect.service": {
+        "Result": "exit-code",
+        "ExecMainStatus": "1",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "static"
+      },
+      "fund-analysis-simulation.timer": {
+        "NextElapseUSecRealtime": "Wed 2026-10-28 08:05:00 UTC",
+        "LastTriggerUSec": "Wed 2026-10-28 08:00:00 UTC",
+        "Result": "success",
+        "ActiveState": "active",
+        "SubState": "waiting",
+        "UnitFileState": "enabled"
+      },
+      "fund-analysis-simulation.service": {
+        "Result": "success",
+        "ExecMainStatus": "0",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "UnitFileState": "static"
+      }
+    },
+    "market_quote_states": [
+      [
+        "CSI_ALL_SHARE",
+        "fresh"
+      ],
+      [
+        "AU9999",
+        "failed"
+      ],
+      [
+        "NDX",
+        "fresh"
+      ]
+    ],
+    "new_candidate": {
+      "id": 468,
+      "code": "014674",
+      "observed_date": "2026-10-28",
+      "target_nav_date": "2026-10-28",
+      "estimated_nav": 0.5725,
+      "estimated_return_pct": 0.48,
+      "estimated_at": "2026-10-28 15:00",
+      "estimate_source": "eastmoney_fund_core_diy",
+      "official_nav": null,
+      "official_return_pct": null,
+      "official_nav_date": null,
+      "error_pct_points": null,
+      "reconciled_at": null,
+      "created_at": "2026-10-28T16:00:12.500904+08:00",
+      "updated_at": "2026-10-28T16:00:12.500904+08:00",
+      "attribution_reason": "quote_revision_ambiguous",
+      "estimate_fingerprint": "19bc41be16c94c10072f0f8439d83e995a02399e70e722cc54c11f156880590d",
+      "provenance": {
+        "source": "eastmoney_fund_core_diy",
+        "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+        "estimated_at": "2026-10-28 15:00",
+        "previous_nav": 0.5698,
+        "previous_nav_date": "2026-10-27",
+        "fetched_at": "2026-10-28T08:00:11+00:00",
+        "last_fetched_at": "2026-10-28T08:00:11+00:00"
+      }
+    },
+    "collection_exit_1_reason": "Preexisting AU9999 upstream/backup validation failure; official NAV 18/18, estimates 18/18, market quotes 2/3. Timer remains active."
+  }
+}

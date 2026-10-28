@@ -128,8 +128,9 @@ class CollectionTest(unittest.TestCase):
                 self.assertEqual(_refresh_all(request, scheduled=True)["success"], 1)
             with sqlite3.connect(storage.db_path) as conn:
                 sample = conn.execute("SELECT target_nav_date,official_nav_date,reconciled_at FROM fund_estimate_daily_accuracy").fetchone()
-                self.assertEqual(sample[:2], ("2026-09-30", "2026-09-30"))
-                self.assertIsNotNone(sample[2])
+                # fixture 的前值日期与采集日期相隔一个月，不应通过新基准校验。
+                self.assertEqual(sample[:2], (None, None))
+                self.assertIsNone(sample[2])
             with patch.object(FixedDatetime, "instant", datetime.fromisoformat("2026-10-03T14:00:00+08:00")):
                 self.assertTrue(_refresh_all(request, scheduled=True)["skipped"])
 

@@ -791,7 +791,7 @@ class AccuracyApiTest(unittest.TestCase):
             ).fetchone()[0]
         self.assertEqual(count, 1)
 
-    def test_refresh_reconciles_sample_after_latest_estimate_is_saved(self) -> None:
+    def test_refresh_rejects_unverified_fixture_basis(self) -> None:
         today = date.today().isoformat()
         with TestClient(
             create_app(
@@ -809,8 +809,8 @@ class AccuracyApiTest(unittest.TestCase):
             row = conn.execute(
                 "SELECT error_pct_points, reconciled_at FROM fund_estimate_daily_accuracy"
             ).fetchone()
-        self.assertAlmostEqual(row[0], 0.0)
-        self.assertIsNotNone(row[1])
+        self.assertIsNone(row[0])
+        self.assertIsNone(row[1])
 
     def test_funds_api_includes_metadata_and_nav_update_status(self) -> None:
         # 新增持仓：024481（境内混合）与 016702（QDII）与现金
@@ -1190,11 +1190,14 @@ class OfficialDailyProfitApiTest(unittest.TestCase):
                     self.assertTrue(str(row["estimated_at"]).startswith("2026-09-25"))
                     self.assertEqual(row["status"], "stale")
 
-                    # 验证 2：旧估值补拉绝对不能污染当天（2026-09-26）及 2026-09-25 的 accuracy 样本
+                    # 验证 2：迟到报价以真实采集日留证，休市日不产生可对账结果。
                     sample_weekend = conn.execute(
                         "SELECT * FROM fund_estimate_daily_accuracy WHERE code = '110011' AND observed_date = '2026-09-26'"
                     ).fetchone()
-                    self.assertIsNone(sample_weekend)
+                    self.assertIsNotNone(sample_weekend)
+                    self.assertEqual(sample_weekend["attribution_reason"], "source_date_unverified")
+                    self.assertIsNone(sample_weekend["target_nav_date"])
+                    self.assertIsNone(sample_weekend["reconciled_at"])
                     sample_friday = conn.execute(
                         "SELECT * FROM fund_estimate_daily_accuracy WHERE code = '110011' AND observed_date = '2026-09-25'"
                     ).fetchone()

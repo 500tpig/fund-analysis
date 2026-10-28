@@ -1,0 +1,45 @@
+{
+  "release": "20261028-qdii-evidence-1",
+  "base_release": "20261023-profit-quotes-2",
+  "local_head": "b18c7e84148afc41fd8a5f621fb482e9a9b2d2f9",
+  "reconstruction_base": "41016ad",
+  "runtime": {
+    "src/fund_analysis/fund_data.py": {
+      "before_sha256": "233867809e56adb2bd6074597f0bfa929804a477bbbb49e83a0ca997c1941dec",
+      "after_sha256": "9c4a27a309cc843d835e2630f48a572a1a30c0c8de895bb92f7ab8b86bcaff8f"
+    },
+    "src/fund_analysis/web/storage.py": {
+      "before_sha256": "5cbf8c14675712b7d55beb7f3b40c1ba2370d463d23ac0f58ae01cf9153c4566",
+      "after_sha256": "77a2096f80d32f9291d9dbe3a707513ed4fad25b2dd216e3233b990ae12a364d"
+    },
+    "src/fund_analysis/web/app.py": {
+      "before_sha256": "ceabef26de213b8d04e1ce4ecefc337f8c001e847e803ef798b2e31727c847e4",
+      "after_sha256": "cc9c93a745129935775ea9892471f429cc94e960f096432c09d4cf931f474784"
+    }
+  },
+  "verification_files": {
+    "tests/test_collection.py": "4f75b5c05775beb4d508fb9a1fbb2ba0375d4688ed2d98effceeffc94f83abb5",
+    "tests/test_web_api.py": "4562a78eecc429560efbaaacdf6ccef8e71b5cb0783dfdbcdc536483f5566162",
+    "tests/test_web_storage.py": "1da41b72da583aa3c507882739a31a9f6acd5d781e8d14905f0c0588f8d9d2f9",
+    "tests/test_estimate_accuracy.py": "4e97e03a9ffddd663218c96831e2ce05b952b64ba6772650f336e2c85f7c5493",
+    "docs/evidence/qdii-estimate-attribution-20261028.json": "200d88eed21ae50627d1ebffe4bfd852a296266909cf2cb6deff2cd954e90885"
+  },
+  "existing_dependencies": {
+    "src/fund_analysis/today_profit.py": "10f71b42bf3a3d5eae6ea892c2c960e857fbb8f2a6ef0dea2ef8de77f91c6092",
+    "src/fund_analysis/fund_metadata.py": "6cd75037a744ad42f1c965a0ef8a225ae4c8e286def22e234415380527451162",
+    "src/fund_analysis/trading_calendar.py": "d7230ca2dab57afed2adedd9d9dde40d37945ed7714777aa75aafb54e7f5b0d8",
+    "src/fund_analysis/web/holdings_entry.py": "e7f320b77cf95d6cf4880a1e3037ae69ace2bcdafbcf8478ab27975b915945b6",
+    "src/fund_analysis/web/api_payloads.py": "06c30d67305b9c3cd42c90e14df037822eff1b16a3d84eea5a39cefa1c9e843c",
+    "src/fund_analysis/collection.py": "e33a77617be23a7b6cd53ff6d81fb252585848f766be13720834b2ae07a64cd4",
+    "src/fund_analysis/models.py": "9eac0b9a6dd5965f32778e864691d28d9ed80b36a70cea58807d06115f372d58",
+    "pyproject.toml": "be838d6fbb99ff925a0657ba28ee64e4dd835bb1b6cd1beb638b8fe2e45f2c52"
+  },
+  "dependency_hash_provenance": "Reconstructed local integration baseline; production must verify these hashes before proceeding. Only the three runtime before hashes were captured from production on 2026-10-28.",
+  "frontend": "Preserve existing production frontend/dist byte for byte; local reconstructed frontend is QA only.",
+  "schema": "Rebuild fund_estimate_daily_accuracy; add evidence_json, attribution_reason, estimate_fingerprint; unique(code, estimate_source, estimate_fingerprint).",
+  "code_only_rollback_safe": false,
+  "rollback": "Stop all writers, preserve failed-state backup, restore pre-migration DB and baseline code together.",
+  "runtime_patch_sha256": "2351e314c16e739251751ff0e8ce6362ccac1e3665efaf3ab1b10f356912d2b3",
+  "verification_helper_sha256": "dad118b9737f13e8bd277a128363c2fbf967ab88464fd587f5da0fc2b8d79182",
+  "notes": "Contains an overlay, not a standalone install-release.sh archive. Stop all writers before backup. Restore the pre-migration database together with baseline code for rollback. Never enable old code on the migrated schema."
+}

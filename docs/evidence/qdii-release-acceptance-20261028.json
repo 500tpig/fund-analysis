@@ -1,0 +1,138 @@
+{
+  "release": "20261028-qdii-evidence-1",
+  "status": "local_acceptance_passed_awaiting_user_production_approval",
+  "independent_review": "Passed per user statement; 3 P2 fixes verified by existing regression tests.",
+  "tests": {
+    "workspace": 368,
+    "isolated_candidate": 366,
+    "isolated_baseline": 340,
+    "candidate_difference_from_workspace": "Two unpublished curve-display tests excluded.",
+    "ruff_scoped": "pass",
+    "ruff_expanded_existing_errors": 4,
+    "mypy_baseline_errors": 20,
+    "mypy_candidate_errors": 20,
+    "mypy_new_errors": 0,
+    "frontend_workspace_and_reconstructed_baseline": "routes, lint, vue-tsc, vite build passed"
+  },
+  "migration": {
+    "original_fields_preserved": 448,
+    "legacy_errors_preserved": 189,
+    "qdii_unknown": 221,
+    "reopen_idempotent": true,
+    "failure_nonempty_rollback_and_retry": true,
+    "api_after": {
+      "009860": {
+        "source": "eastmoney_fund_core_diy",
+        "sample_count": 0,
+        "pending_count": 21,
+        "window": 30,
+        "mae_pct_points": null,
+        "bias_pct_points": null,
+        "max_abs_error_pct_points": null
+      },
+      "016665": {
+        "source": "sina_fund_estimate",
+        "sample_count": 0,
+        "pending_count": 32,
+        "window": 30,
+        "mae_pct_points": null,
+        "bias_pct_points": null,
+        "max_abs_error_pct_points": null
+      }
+    },
+    "schema": "CREATE TABLE fund_estimate_daily_accuracy (\n                id                   INTEGER PRIMARY KEY AUTOINCREMENT,\n                code                 TEXT NOT NULL,\n                observed_date        TEXT NOT NULL,\n                target_nav_date      TEXT,\n                estimated_nav        REAL,\n                estimated_return_pct REAL,\n                estimated_at         TEXT,\n                estimate_source      TEXT,\n                official_nav         REAL,\n                official_return_pct  REAL,\n                official_nav_date    TEXT,\n                error_pct_points     REAL,\n                reconciled_at        TEXT,\n                created_at           TEXT NOT NULL,\n                updated_at           TEXT NOT NULL,\n                evidence_json        TEXT,\n                attribution_reason   TEXT DEFAULT 'legacy_evidence_missing',\n                estimate_fingerprint TEXT,\n                UNIQUE(code, estimate_source, estimate_fingerprint)\n            )"
+  },
+  "rollback": {
+    "old_code_get_api_status": 200,
+    "old_api_reincludes_legacy_samples": 18,
+    "old_write_overwrites_both_candidates": true,
+    "evidence_disagrees_after_old_write": true,
+    "safe_code_only_rollback": false,
+    "restore_backup_integrity": "ok",
+    "restored_original_rows": 448,
+    "restored_old_api": {
+      "009860": {
+        "source": "eastmoney_fund_core_diy",
+        "sample_count": 18,
+        "pending_count": 3,
+        "window": 30,
+        "mae_pct_points": 0.0633,
+        "bias_pct_points": -0.0067,
+        "max_abs_error_pct_points": 0.28
+      },
+      "016665": {
+        "source": "sina_fund_estimate",
+        "sample_count": 0,
+        "pending_count": 32,
+        "window": 30,
+        "mae_pct_points": null,
+        "bias_pct_points": null,
+        "max_abs_error_pct_points": null
+      }
+    }
+  },
+  "migration_gate": {
+    "original_rows_preserved": 448,
+    "other_tables_unchanged": [
+      "data_source_runs",
+      "fund_intraday_estimates",
+      "fund_market_snapshots",
+      "fund_official_daily_profit",
+      "fund_valuation_profiles",
+      "holdings",
+      "market_quote_snapshots",
+      "schema_version"
+    ],
+    "integrity": "ok",
+    "unique_columns": [
+      [
+        "code",
+        "estimate_source",
+        "estimate_fingerprint"
+      ]
+    ]
+  },
+  "browser": {
+    "origin": "http://127.0.0.1:18876",
+    "fixtures": "448 captured legacy accuracy rows and 2 synthetic holdings; providers injected from local tests, no upstream requests",
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "fund": "009860"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "fund": "016665"
+      }
+    ],
+    "display": "待对账（已记录估值样本，等待匹配官方净值日）",
+    "api_sample_count": 0,
+    "api_error_metrics": null,
+    "zero_error_or_fake_accuracy_displayed": false,
+    "javascript_errors": [],
+    "frontend_boundary": "Rebuilt pre-UI-revision shell; deployed dist unavailable locally. Runtime package preserves deployed dist; exact production UI checked after approval."
+  },
+  "production_changes": false,
+  "overseas_source_contract_verified": false,
+  "reliable_qdii_pairs": 0,
+  "overseas_accuracy_improvement_claimed": false,
+  "artifact": {
+    "name": "fund-analysis-20261028-qdii-evidence-1-overlay.tar.gz",
+    "sha256": "c29fcec637a4c62f7949c0000b22eba54393fcf3f60856b09c31f45e6f80df09",
+    "members": [
+      "RELEASE.json",
+      "docs/evidence/qdii-estimate-attribution-20261028.json",
+      "src/fund_analysis/fund_data.py",
+      "src/fund_analysis/web/app.py",
+      "src/fund_analysis/web/storage.py",
+      "tests/test_collection.py",
+      "tests/test_estimate_accuracy.py",
+      "tests/test_web_api.py",
+      "tests/test_web_storage.py",
+      "verify-migration.py"
+    ],
+    "verified_archive_bytes_equal_tested_candidate": true
+  }
+}

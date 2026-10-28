@@ -36,7 +36,10 @@ SINA_ESTIMATE_WARNING = "新浪估值基于公开披露持仓计算，可能滞�
 # 第一组，不跨组拼接；第二组只留档。
 SINA_NAV_KEY = "pre_nav"
 SINA_RETURN_KEY = "nav_pct"
-SINA_POINT_KEYS = ("pre_nav", "nav_pct", "pre_nav2", "nav2_pct", "pre_date", "min_time")
+SINA_POINT_KEYS = (
+    "symbol", "pre_nav", "nav_pct", "pre_nav2", "nav2_pct",
+    "pre_date", "min_time", "growthrate", "growthrate2",
+)
 EASTMONEY_HISTORY_URL = "https://api.fund.eastmoney.com/f10/lsjz"
 EASTMONEY_PING_URL_TEMPLATE = "https://fund.eastmoney.com/pingzhongdata/{code}.js"
 EASTMONEY_INDEX_KLINE_URL = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -366,9 +369,13 @@ class CompositeFundEstimateProvider:
                     successes[SINA_ESTIMATE_SOURCE_NAME].append(code)
                 else:
                     existing_est = estimates[code]
-                    sina_dt = _parse_estimate_datetime(sina_est.estimated_at)
-                    existing_dt = _parse_estimate_datetime(existing_est.estimated_at)
-                    if sina_dt is not None and existing_dt is not None and sina_dt > existing_dt:
+                    sina_dt = parse_estimate_datetime(sina_est.estimated_at)
+                    existing_dt = parse_estimate_datetime(existing_est.estimated_at)
+                    if (
+                        sina_dt is not None and existing_dt is not None
+                        and (sina_dt.tzinfo is None) == (existing_dt.tzinfo is None)
+                        and sina_dt > existing_dt
+                    ):
                         estimates[code] = sina_est
                         if code in successes.get(existing_est.source, []):
                             successes[existing_est.source].remove(code)
@@ -476,7 +483,7 @@ class CompositeFundEstimateProvider:
                 for key in (
                     "FCODE", "QDCODE", "SHORTNAME", previous_nav_key,
                     previous_nav_fallback, previous_date_key, previous_date_fallback,
-                    "GSZ", "GSZZL", "GZTIME",
+                    "GSZ", "GSZZL", "GZTIME", "PTYPE", "RZDF",
                 )
                 if key and key in row
             }
@@ -1025,11 +1032,7 @@ def _parse_sina_estimate(
     point_d, point_time, latest = max(candidates, key=lambda item: (item[0], item[1]))
     point_date = point_d.isoformat()
     estimated_at = f"{point_date} {point_time[0]:02d}:{point_time[1]:02d}:{point_time[2]:02d}"
-    selected_point = {
-        key: latest.get(key)
-        for key in SINA_POINT_KEYS
-        if key in latest
-    }
+    selected_point = {key: latest[key] for key in SINA_POINT_KEYS if key in latest}
     previous_nav = _float_or_none(data.get("worth"))
     previous_nav_date = _text_or_none(data.get("worth_date"))
     estimated_nav = float(_float_or_none(latest.get(SINA_NAV_KEY)))
@@ -1063,7 +1066,12 @@ def _parse_sina_estimate(
             "field_pair": f"{SINA_NAV_KEY}/{SINA_RETURN_KEY}",
             "worth": data.get("worth"),
             "worth_date": data.get("worth_date"),
+            "worth_rate": data.get("worth_rate"),
             "time_range": data.get("time_range"),
+            "detail_page_type": data.get("detail_page_type"),
+            "zx_page_type": data.get("zx_page_type"),
+            "heavy_stock_us_flag": data.get("heavy_stock_us_flag"),
+            "desc": data.get("desc"),
             "note": "仅保存选中的完整分钟点；另一组 pre_nav2/nav2_pct 只留档，不参与计算。",
         },
     )
@@ -1166,16 +1174,14 @@ def _date_prefix(value: str) -> date | None:
         return None
 
 
-def _parse_estimate_datetime(value: Any) -> datetime | None:
+def parse_estimate_datetime(value: Any) -> datetime | None:
     text = str(value or "").strip()
     if not text:
         return None
-    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
-        try:
-            return datetime.strptime(text[:19], fmt)
-        except ValueError:
-            continue
-    return None
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
 
 
 def _eastmoney_trend_date(value: Any) -> date | None:

@@ -5,18 +5,41 @@ import hashlib
 import json
 import logging
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+from urllib.parse import urlsplit
 
-from ..fund_data import FundIntradayEstimate, FundMarketData
-from ..fund_metadata import INITIAL_FUND_METADATA, FundMetadata
+from ..fund_data import (
+    CHINA_TZ,
+    EASTMONEY_CORE_SOURCE_NAME,
+    TIANTIAN_VALUATION_SOURCE_NAME,
+    FundIntradayEstimate,
+    FundMarketData,
+    parse_estimate_datetime,
+)
+from ..fund_metadata import INITIAL_FUND_METADATA, RULE_CN_SAME_DAY_NIGHT, FundMetadata
 from ..market_quotes import MarketQuote
 from ..models import PortfolioHolding
+from ..today_profit import (
+    NAV_RATIO_TOLERANCE_PCT,
+    assess_estimate_basis,
+    is_overseas_estimate,
+    parse_iso_date,
+)
+from ..trading_calendar import CALENDAR_CN_STOCK, get_previous_trading_day, is_trading_day
 from .holdings_entry import ENTRY_OPTIONAL_FIELDS, entry_differs, validate_profit_snapshot
 
 CNY_QUANT = Decimal("0.01")
+
+
+def _beijing_quote_time(value: Any) -> datetime | None:
+    """仅用于已确认北京时间的境内报价，不推断海外报价时区。"""
+    stamp = parse_estimate_datetime(value)
+    if stamp is None:
+        return None
+    return (stamp.replace(tzinfo=CHINA_TZ) if stamp.tzinfo is None else stamp).astimezone(CHINA_TZ)
 
 
 def _decimal_or_none(value: Any) -> Decimal | None:
@@ -91,8 +114,8 @@ def _lastrowid(cursor: sqlite3.Cursor) -> int:
 class LocalStorage:
     """SQLite boundary for the valuation MVP.
 
-    Initialization is additive only. Existing non-MVP tables are deliberately
-    left untouched so an older database can be opened without data loss.
+    Existing tables outside the workbench are left untouched. Accuracy schema
+    migration preserves historical rows and their original reconciliation.
     """
 
     def __init__(self, db_path: Path | str):
@@ -279,6 +302,12 @@ class LocalStorage:
 
     @staticmethod
     def _create_estimate_daily_accuracy_table(conn: sqlite3.Connection) -> None:
+        columns = [row["name"] for row in conn.execute("PRAGMA table_info(fund_estimate_daily_accuracy)")]
+        migrate = bool(columns) and "evidence_json" not in columns
+        if migrate:
+            if not conn.in_transaction:
+                conn.execute("BEGIN IMMEDIATE")
+            conn.execute("ALTER TABLE fund_estimate_daily_accuracy RENAME TO estimate_accuracy_legacy")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS fund_estimate_daily_accuracy (
@@ -297,10 +326,20 @@ class LocalStorage:
                 reconciled_at        TEXT,
                 created_at           TEXT NOT NULL,
                 updated_at           TEXT NOT NULL,
-                UNIQUE(code, observed_date)
+                evidence_json        TEXT,
+                attribution_reason   TEXT DEFAULT 'legacy_evidence_missing',
+                estimate_fingerprint TEXT,
+                UNIQUE(code, estimate_source, estimate_fingerprint)
             )
             """
         )
+        if migrate:
+            names = ", ".join(f'"{name}"' for name in columns)
+            conn.execute(
+                f"INSERT INTO fund_estimate_daily_accuracy ({names}) "
+                f"SELECT {names} FROM estimate_accuracy_legacy"
+            )
+            conn.execute("DROP TABLE estimate_accuracy_legacy")
         conn.execute(
             """
             CREATE INDEX IF NOT EXISTS idx_feda_code_date
@@ -653,6 +692,31 @@ class LocalStorage:
     def save_fund_intraday_estimate(self, data: FundIntradayEstimate) -> None:
         now = datetime.now().astimezone().isoformat()
         with contextlib.closing(self._get_conn()) as conn, conn:
+            existing = conn.execute(
+                "SELECT estimated_at, source FROM fund_intraday_estimates WHERE code = ?",
+                (data.code,),
+            ).fetchone()
+            if existing is not None:
+                new_at = parse_estimate_datetime(data.estimated_at)
+                old_at = parse_estimate_datetime(existing["estimated_at"])
+                metadata = self.get_fund_metadata(data.code) or {}
+                known_sources = {EASTMONEY_CORE_SOURCE_NAME, TIANTIAN_VALUATION_SOURCE_NAME}
+                if (
+                    metadata.get("nav_disclosure_rule") == RULE_CN_SAME_DAY_NIGHT
+                    and not is_overseas_estimate(metadata, None)
+                    and data.source in known_sources and existing["source"] in known_sources
+                ):
+                    new_at = _beijing_quote_time(data.estimated_at)
+                    old_at = _beijing_quote_time(existing["estimated_at"])
+                if new_at is None:
+                    return
+                if old_at is not None:
+                    comparable = (new_at.tzinfo is None) == (old_at.tzinfo is None)
+                    if comparable and (new_at.tzinfo is not None or data.source == existing["source"]):
+                        if new_at < old_at:
+                            return
+                    elif data.source == existing["source"]:
+                        return
             conn.execute(
                 """
                 INSERT INTO fund_intraday_estimates (
@@ -827,195 +891,253 @@ class LocalStorage:
             ]
 
     @staticmethod
-    def _resolve_target_nav_date(estimate: "FundIntradayEstimate", observed_date: str) -> str | None:
-        """境内普通基金：收盘后（15:00–20:00 本地时间）估值对应当日净值；其余情况留空。"""
-        estimated_at = estimate.estimated_at
-        if not estimated_at:
-            return None
+    def _resolve_target_nav_date(
+        estimate: FundIntradayEstimate, allow_same_day_target: bool,
+    ) -> tuple[str | None, str]:
+        # 只有已确认的境内规则；海外报价不附加猜测的时区或净值日。
+        if not allow_same_day_target:
+            return None, "source_date_unverified"
+        if estimate.source not in {EASTMONEY_CORE_SOURCE_NAME, TIANTIAN_VALUATION_SOURCE_NAME}:
+            return None, "source_mode_unverified"
+        if estimate.payload.get("PTYPE") not in (None, "F"):
+            return None, "source_mode_unverified"
+        stamp = parse_estimate_datetime(estimate.estimated_at)
+        fetched = parse_estimate_datetime(estimate.fetched_at)
+        if stamp is None or fetched is None or fetched.tzinfo is None:
+            return None, "quote_time_invalid"
+        local = (stamp.replace(tzinfo=CHINA_TZ) if stamp.tzinfo is None else stamp).astimezone(CHINA_TZ)
+        if local > fetched + timedelta(minutes=5):
+            return None, "quote_time_invalid"
         try:
-            dt = datetime.fromisoformat(estimated_at)
-            local_dt = dt.astimezone()
-            hour = local_dt.hour
-            if 15 <= hour < 20 and local_dt.strftime("%Y-%m-%d") == observed_date:
-                return observed_date
-        except (ValueError, TypeError):
-            pass
-        return None
+            trading = is_trading_day(CALENDAR_CN_STOCK, local.date())
+        except ValueError:
+            return None, "calendar_uncovered"
+        if not trading or not time(15) <= local.time() < time(20):
+            return None, "not_session_close"
+        return local.date().isoformat(), "official_missing"
 
     def upsert_estimate_daily_sample(
         self,
-        estimate: "FundIntradayEstimate",
+        estimate: FundIntradayEstimate,
         observed_date: str,
         *,
         allow_same_day_target: bool = False,
     ) -> None:
-        """保存或更新当日估值样本。同一 (code, observed_date) 只保留 estimated_at 更晚的记录。"""
+        """追加报价候选；重复采集保留首次证据，允许有效采集解除临时时间阻断。"""
         if estimate.estimated_return_pct is None:
             return
-        target_nav_date = (
-            self._resolve_target_nav_date(estimate, observed_date)
-            if allow_same_day_target
-            else None
+        metadata = self.get_fund_metadata(estimate.code)
+        domestic = allow_same_day_target and not is_overseas_estimate(metadata, None)
+        target_nav_date, reason = self._resolve_target_nav_date(estimate, domestic)
+        stamp = parse_estimate_datetime(estimate.estimated_at)
+        if stamp is not None and stamp.tzinfo is None and domestic:
+            stamp = stamp.replace(tzinfo=CHINA_TZ)
+        canonical_stamp = (
+            stamp.astimezone(timezone.utc).isoformat() if stamp and stamp.tzinfo
+            else stamp.isoformat() if stamp else estimate.estimated_at
         )
+        endpoint = urlsplit(estimate.source_url or "")
+        # 不把名称、告警、采集时间、URL 批次参数或未选中的估值组写入指纹。
+        identity = {
+            "quoted_at": canonical_stamp,
+            "estimated_nav": estimate.estimated_nav,
+            "estimated_return_pct": estimate.estimated_return_pct,
+            "previous_nav": estimate.previous_nav,
+            "previous_nav_date": str(parse_iso_date(estimate.previous_nav_date)),
+            "domestic_rule": domestic,
+            "endpoint": (endpoint.netloc, endpoint.path),
+            "mode": {key: estimate.payload.get(key) for key in (
+                "PTYPE", "field_pair", "time_range", "detail_page_type",
+                "zx_page_type", "heavy_stock_us_flag",
+            )},
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(identity, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
+        evidence = estimate.to_dict()
+        evidence["domestic_rule_confirmed"] = domestic
+        evidence["last_fetched_at"] = estimate.fetched_at
+        if target_nav_date is not None:
+            evidence["first_valid_fetched_at"] = estimate.fetched_at
         now = datetime.now().astimezone().isoformat()
         with contextlib.closing(self._get_conn()) as conn, conn:
             existing = conn.execute(
-                """SELECT id, estimated_at, official_nav, official_return_pct,
-                          official_nav_date, reconciled_at
+                """SELECT id, evidence_json, target_nav_date, attribution_reason
                    FROM fund_estimate_daily_accuracy
-                   WHERE code = ? AND observed_date = ?""",
-                (estimate.code, observed_date),
+                   WHERE code = ? AND estimate_source = ? AND estimate_fingerprint = ?""",
+                (estimate.code, estimate.source, fingerprint),
             ).fetchone()
             if existing is not None:
-                # 只有更新的 estimated_at 才覆盖
-                existing_at = str(existing["estimated_at"] or "")
-                new_at = str(estimate.estimated_at or "")
-                if new_at <= existing_at:
-                    return
-                keeps_reconciliation = bool(
-                    target_nav_date
-                    and existing["official_nav_date"] == target_nav_date
-                    and existing["official_return_pct"] is not None
-                )
-                official_return_pct = (
-                    float(existing["official_return_pct"])
-                    if keeps_reconciliation
-                    else None
-                )
-                conn.execute(
-                    """
-                    UPDATE fund_estimate_daily_accuracy
-                    SET target_nav_date = ?, estimated_nav = ?, estimated_return_pct = ?,
-                        estimated_at = ?, estimate_source = ?, official_nav = ?,
-                        official_return_pct = ?, official_nav_date = ?,
-                        error_pct_points = ?, reconciled_at = ?, updated_at = ?
-                    WHERE code = ? AND observed_date = ?
-                    """,
-                    (
-                        target_nav_date,
-                        estimate.estimated_nav,
-                        estimate.estimated_return_pct,
-                        estimate.estimated_at,
-                        estimate.source,
-                        existing["official_nav"] if keeps_reconciliation else None,
-                        official_return_pct,
-                        existing["official_nav_date"] if keeps_reconciliation else None,
-                        estimate.estimated_return_pct - official_return_pct
-                        if official_return_pct is not None
-                        else None,
-                        existing["reconciled_at"] if keeps_reconciliation else None,
-                        now,
-                        estimate.code,
-                        observed_date,
-                    ),
-                )
-            else:
-                conn.execute(
-                    """
-                    INSERT INTO fund_estimate_daily_accuracy (
-                        code, observed_date, target_nav_date,
-                        estimated_nav, estimated_return_pct, estimated_at,
-                        estimate_source, created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        estimate.code,
-                        observed_date,
-                        target_nav_date,
-                        estimate.estimated_nav,
-                        estimate.estimated_return_pct,
-                        estimate.estimated_at,
-                        estimate.source,
-                        now,
-                        now,
-                    ),
-                )
-
-    def reconcile_accuracy_samples(
-        self,
-        code: str,
-        official_nav: float,
-        official_return_pct: float,
-        official_nav_date: str,
-    ) -> None:
-        """官方净值到达后，对 target_nav_date 匹配的历史样本写入误差。"""
-        if not official_nav_date:
-            return
-        now = datetime.now().astimezone().isoformat()
-        with contextlib.closing(self._get_conn()) as conn, conn:
+                saved = json.loads(existing["evidence_json"])
+                old_fetched = parse_estimate_datetime(saved["last_fetched_at"])
+                new_fetched = parse_estimate_datetime(estimate.fetched_at)
+                recovered = existing["attribution_reason"] == "quote_time_invalid" and target_nav_date is not None
+                updated = False
+                if (
+                    new_fetched is not None and new_fetched.tzinfo is not None
+                    and (old_fetched is None or old_fetched.tzinfo is None or new_fetched > old_fetched)
+                ):
+                    saved["last_fetched_at"] = estimate.fetched_at
+                    updated = True
+                if recovered:
+                    saved["first_valid_fetched_at"] = estimate.fetched_at
+                if updated or recovered:
+                    conn.execute(
+                        """UPDATE fund_estimate_daily_accuracy SET evidence_json = ?, updated_at = ?,
+                           target_nav_date = ?, attribution_reason = ? WHERE id = ?""",
+                        (json.dumps(saved, ensure_ascii=False), now,
+                         target_nav_date if recovered else existing["target_nav_date"],
+                         reason if recovered else existing["attribution_reason"], existing["id"]),
+                    )
+                return
             conn.execute(
-                """
-                UPDATE fund_estimate_daily_accuracy
-                SET official_nav = ?,
-                    official_return_pct = ?,
-                    official_nav_date = ?,
-                    error_pct_points = estimated_return_pct - ?,
-                    reconciled_at = ?,
-                    updated_at = ?
-                WHERE code = ?
-                  AND target_nav_date = ?
-                  AND reconciled_at IS NULL
-                  AND estimated_return_pct IS NOT NULL
-                """,
-                (
-                    official_nav,
-                    official_return_pct,
-                    official_nav_date,
-                    official_return_pct,
-                    now,
-                    now,
-                    code,
-                    official_nav_date,
-                ),
+                """INSERT INTO fund_estimate_daily_accuracy (
+                    code, observed_date, target_nav_date, estimated_nav, estimated_return_pct,
+                    estimated_at, estimate_source, evidence_json, attribution_reason,
+                    estimate_fingerprint, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (estimate.code, observed_date, target_nav_date, estimate.estimated_nav,
+                 estimate.estimated_return_pct, estimate.estimated_at, estimate.source,
+                 json.dumps(evidence, ensure_ascii=False), reason, fingerprint, now, now),
             )
 
+    def reconcile_accuracy_samples(
+        self, code: str, official_nav: float | None = None,
+        official_return_pct: float | None = None, official_nav_date: str | None = None,
+    ) -> None:
+        """按收盘候选与历史官方基准对账；历史无证据结果保留但不重新认证。"""
+        now = datetime.now().astimezone().isoformat()
+        with contextlib.closing(self._get_conn()) as conn, conn:
+            official = {}
+            if conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'fund_nav_history'").fetchone():
+                official.update({row["trade_date"]: (row["unit_nav"], row["daily_return_pct"])
+                                 for row in conn.execute(
+                                     "SELECT trade_date, unit_nav, daily_return_pct FROM fund_nav_history WHERE fund_code = ?",
+                                     (code,),
+                                 )})
+            official.update({row["nav_date"]: (row["official_nav"], row["official_return_pct"])
+                             for row in conn.execute(
+                                 "SELECT nav_date, official_nav, official_return_pct FROM fund_official_daily_profit WHERE code = ?",
+                                 (code,),
+                             )})
+            if official_nav_date and official_nav is not None and official_return_pct is not None:
+                official[official_nav_date] = (official_nav, official_return_pct)
+            groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
+            revisions: dict[tuple[str, datetime], list[dict[str, Any]]] = {}
+            for row in conn.execute(
+                """SELECT * FROM fund_estimate_daily_accuracy
+                   WHERE code = ? AND evidence_json IS NOT NULL""",
+                (code,),
+            ):
+                sample = dict(row)
+                evidence = json.loads(sample["evidence_json"])
+                if evidence.get("domestic_rule_confirmed") and sample["estimate_source"] in {
+                    EASTMONEY_CORE_SOURCE_NAME, TIANTIAN_VALUATION_SOURCE_NAME,
+                }:
+                    stamp = _beijing_quote_time(evidence["estimated_at"])
+                    if stamp is not None:
+                        revisions.setdefault((sample["estimate_source"], stamp), []).append(sample)
+                if sample["target_nav_date"] is not None:
+                    groups.setdefault((sample["target_nav_date"], sample["estimate_source"]), []).append(sample)
+            for (target, _source), candidates in groups.items():
+                def quote_time(row: Mapping[str, Any]) -> datetime:
+                    evidence = json.loads(row["evidence_json"])
+                    stamp = _beijing_quote_time(evidence["estimated_at"])
+                    assert stamp is not None
+                    return stamp
+
+                latest = max(quote_time(row) for row in candidates)
+                finalists = [row for row in candidates if quote_time(row) == latest]
+                for row in candidates:
+                    candidate_reason = "superseded" if quote_time(row) < latest else "quote_revision_ambiguous"
+                    conn.execute(
+                        "UPDATE fund_estimate_daily_accuracy SET attribution_reason = ? WHERE id = ?",
+                        (candidate_reason, row["id"]),
+                    )
+                if len(finalists) != 1 or len(revisions[(_source, latest)]) != 1:
+                    continue
+                selected = finalists[0]
+                evidence = json.loads(selected["evidence_json"])
+                nav_date = date.fromisoformat(target)
+                previous_date: str | None
+                try:
+                    previous_date = get_previous_trading_day(CALENDAR_CN_STOCK, nav_date).isoformat()
+                except ValueError:
+                    previous_date = None
+                result = official.get(target)
+                previous = official.get(previous_date) if previous_date else None
+                reason = None
+                nav = _decimal_or_none(result[0]) if result else None
+                rate = _decimal_or_none(result[1]) if result else None
+                previous_nav = _decimal_or_none(previous[0]) if previous else None
+                estimate_previous = _decimal_or_none(evidence.get("previous_nav"))
+                if previous_date is None:
+                    reason = "calendar_uncovered"
+                elif nav is None or nav <= 0 or rate is None:
+                    reason = "official_missing"
+                elif (
+                    previous_nav is None or previous_nav <= 0 or estimate_previous is None
+                    or parse_iso_date(evidence.get("previous_nav_date")) is None
+                ):
+                    reason = "baseline_missing"
+                elif (
+                    str(parse_iso_date(evidence.get("previous_nav_date"))) != previous_date
+                    or abs(estimate_previous - previous_nav) > Decimal("0.00005")
+                    or abs((nav / previous_nav - 1) * 100 - rate) > NAV_RATIO_TOLERANCE_PCT
+                    or not assess_estimate_basis(evidence, today=nav_date, metadata={"market": "CN"})["usable_for_inclusion"]
+                ):
+                    reason = "baseline_mismatch"
+                matched_nav = float(nav) if nav is not None and reason is None else None
+                matched_rate = float(rate) if rate is not None and reason is None else None
+                conn.execute(
+                    """UPDATE fund_estimate_daily_accuracy SET
+                        official_nav = ?, official_return_pct = ?, official_nav_date = ?,
+                        error_pct_points = ?, reconciled_at = ?, attribution_reason = ?, updated_at = ?
+                        WHERE id = ?""",
+                    (matched_nav, matched_rate,
+                     target if reason is None else None,
+                     selected["estimated_return_pct"] - matched_rate if matched_rate is not None else None,
+                     now if reason is None else None, reason, now, selected["id"]),
+                )
+
     def get_accuracy_summary(
-        self,
-        code: str,
-        estimate_source: str,
-        window: int = 30,
+        self, code: str, estimate_source: str, window: int = 30,
     ) -> dict[str, Any] | None:
-        """返回指定来源最近 window 个已对账样本的误差摘要，并附带待对账数量。"""
+        """只统计通过新校验的唯一净值日；待核验按观察日去重。"""
         with contextlib.closing(self._get_conn()) as conn:
             rows = conn.execute(
-                """
-                SELECT error_pct_points
-                FROM fund_estimate_daily_accuracy
-                WHERE code = ?
-                  AND estimate_source = ?
-                  AND reconciled_at IS NOT NULL
-                  AND error_pct_points IS NOT NULL
-                ORDER BY observed_date DESC
-                LIMIT ?
-                """,
+                """SELECT official_nav_date, error_pct_points
+                   FROM fund_estimate_daily_accuracy
+                   WHERE code = ? AND estimate_source = ? AND evidence_json IS NOT NULL
+                     AND attribution_reason IS NULL AND reconciled_at IS NOT NULL
+                     AND error_pct_points IS NOT NULL
+                   ORDER BY official_nav_date DESC LIMIT ?""",
                 (code, estimate_source, window),
             ).fetchall()
             pending_count = conn.execute(
-                """
-                SELECT COUNT(*)
-                FROM fund_estimate_daily_accuracy
-                WHERE code = ?
-                  AND estimate_source = ?
-                  AND reconciled_at IS NULL
-                  AND estimated_return_pct IS NOT NULL
-                """,
-                (code, estimate_source),
+                """SELECT COUNT(DISTINCT observed_date) FROM fund_estimate_daily_accuracy
+                   WHERE code = ? AND estimate_source = ? AND estimated_return_pct IS NOT NULL
+                     AND attribution_reason IS NOT NULL AND attribution_reason != 'superseded'
+                     AND observed_date NOT IN (
+                         SELECT observed_date FROM fund_estimate_daily_accuracy
+                         WHERE code = ? AND estimate_source = ? AND evidence_json IS NOT NULL
+                           AND attribution_reason IS NULL AND reconciled_at IS NOT NULL
+                           AND error_pct_points IS NOT NULL
+                     )""",
+                (code, estimate_source, code, estimate_source),
             ).fetchone()[0]
         sample_count = len(rows)
         if sample_count == 0 and pending_count == 0:
             return None
         result: dict[str, Any] = {
-            "source": estimate_source,
-            "sample_count": sample_count,
-            "pending_count": int(pending_count),
-            "window": window,
+            "source": estimate_source, "sample_count": sample_count,
+            "pending_count": int(pending_count), "window": window,
         }
         if sample_count >= 3:
             errors = [float(row["error_pct_points"]) for row in rows]
-            abs_errors = [abs(e) for e in errors]
-            result["mae_pct_points"] = round(sum(abs_errors) / sample_count, 4)
+            result["mae_pct_points"] = round(sum(abs(e) for e in errors) / sample_count, 4)
             result["bias_pct_points"] = round(sum(errors) / sample_count, 4)
-            result["max_abs_error_pct_points"] = round(max(abs_errors), 4)
+            result["max_abs_error_pct_points"] = round(max(abs(e) for e in errors), 4)
         return result
 
     def get_accuracy_summaries_by_code(

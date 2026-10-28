@@ -1,0 +1,1455 @@
+{
+  "scope": "本轮仅来源契约调查和文档留证；不是估值归属实现、精度验收或生产刷新。",
+  "created_at": "2026-10-28T08:26:36.352784+00:00",
+  "conclusion": "insufficient_evidence_do_not_implement",
+  "release_evidence": "qdii-production-release-20261028.json",
+  "production_read": {
+    "queried_at": "2026-10-28T08:19:56.634126+00:00",
+    "read_only": true,
+    "rows": [
+      {
+        "id": 462,
+        "code": "012922",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "012922",
+          "name": "易方达全球成长精选混合(QDII)人民币C",
+          "previous_nav": 3.2187,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 3.2197,
+          "estimated_return_pct": 0.03,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "012922",
+            "QDCODE": "012922",
+            "SHORTNAME": "易方达全球成长精选混合(QDII)人民币C",
+            "DWJZ": 3.2187,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 3.2197,
+            "GSZZL": 0.03,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": 0.29
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      },
+      {
+        "id": 466,
+        "code": "014002",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "014002",
+          "name": "浦银全球智能科技(QDII)C",
+          "previous_nav": 3.2391,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 3.2403,
+          "estimated_return_pct": 0.04,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "014002",
+            "QDCODE": "014002",
+            "SHORTNAME": "浦银全球智能科技(QDII)C",
+            "DWJZ": 3.2391,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 3.2403,
+            "GSZZL": 0.04,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": 0.98
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      },
+      {
+        "id": 464,
+        "code": "016665",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "016665",
+          "name": "天弘全球高端制造混合(QDII)C",
+          "previous_nav": 2.1166,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 2.117,
+          "estimated_return_pct": 0.02,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "016665",
+            "QDCODE": "016665",
+            "SHORTNAME": "天弘全球高端制造混合(QDII)C",
+            "DWJZ": 2.1166,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 2.117,
+            "GSZZL": 0.02,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": -0.8
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      },
+      {
+        "id": 456,
+        "code": "016702",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "016702",
+          "name": "银华海外数字经济量化选股混合发起式(QDII)C",
+          "previous_nav": 2.011,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 2.0119,
+          "estimated_return_pct": 0.05,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "016702",
+            "QDCODE": "016702",
+            "SHORTNAME": "银华海外数字经济量化选股混合发起式(QDII)C",
+            "DWJZ": 2.011,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 2.0119,
+            "GSZZL": 0.05,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": 1.22
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      },
+      {
+        "id": 458,
+        "code": "017731",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 15:00:00",
+        "estimate_source": "sina_fund_estimate",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "017731",
+          "name": null,
+          "previous_nav": 3.3223,
+          "previous_nav_date": "20261026",
+          "estimated_nav": 3.4284,
+          "estimated_return_pct": 3.1925,
+          "estimated_at": "2026-10-28 15:00:00",
+          "source": "sina_fund_estimate",
+          "source_url": "https://stock.finance.sina.com.cn/fundInfo/api/openapi.php/FdFundService.getEstimateNetworthPic?symbol=017731",
+          "fetched_at": "2026-10-28T07:55:15+00:00",
+          "status": "available",
+          "warnings": [
+            {
+              "stage": "intraday_estimate",
+              "message": "新浪估值基于公开披露持仓计算，可能滞后于基金实际调仓，仅供参考。"
+            },
+            {
+              "stage": "estimate_basis",
+              "message": "未将估值点日期当作海外收益归属日"
+            }
+          ],
+          "payload": {
+            "selected_point": {
+              "symbol": "017731",
+              "pre_nav": "3.4284",
+              "nav_pct": "3.1925",
+              "pre_nav2": "3.3243",
+              "nav2_pct": "0.0604",
+              "pre_date": "2026-10-28",
+              "min_time": "15:00:00",
+              "growthrate": 0.031925,
+              "growthrate2": "0.000604"
+            },
+            "field_pair": "pre_nav/nav_pct",
+            "worth": "3.3223",
+            "worth_date": "20261026",
+            "worth_rate": -0.0099532139344996,
+            "time_range": [
+              [
+                "09:30",
+                "11:30"
+              ],
+              [
+                "13:00",
+                "15:00"
+              ]
+            ],
+            "detail_page_type": 2,
+            "zx_page_type": 1,
+            "heavy_stock_us_flag": 1,
+            "desc": {
+              "text_base": "【风险提示】前十大重仓均涨幅展示该基金截至上一季度前十大重仓股、重仓债券、重仓ETF的加权平均涨跌幅，存在滞后性，不能作为基金单位净值走势参考，不能代表板块涨跌，请投资者理性投资，注意风险!",
+              "text_link": "",
+              "link_url": ""
+            },
+            "note": "仅保存选中的完整分钟点；另一组 pre_nav2/nav2_pct 只留档，不参与计算。"
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:12+00:00"
+        }
+      },
+      {
+        "id": 461,
+        "code": "018036",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "018036",
+          "name": "长城全球新能源车股票发起式(QDII)C",
+          "previous_nav": 2.3437,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 2.3446,
+          "estimated_return_pct": 0.04,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "018036",
+            "QDCODE": "018036",
+            "SHORTNAME": "长城全球新能源车股票发起式(QDII)C",
+            "DWJZ": 2.3437,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 2.3446,
+            "GSZZL": 0.04,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": 1.05
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      },
+      {
+        "id": 463,
+        "code": "021277",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "021277",
+          "name": "广发全球精选股票(QDII)人民币C",
+          "previous_nav": 5.5458,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 5.5475,
+          "estimated_return_pct": 0.03,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "021277",
+            "QDCODE": "021277",
+            "SHORTNAME": "广发全球精选股票(QDII)人民币C",
+            "DWJZ": 5.5458,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 5.5475,
+            "GSZZL": 0.03,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": 0.3
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      },
+      {
+        "id": 457,
+        "code": "021842",
+        "observed_date": "2026-10-28",
+        "target_nav_date": null,
+        "estimated_at": "2026-10-28 04:00",
+        "estimate_source": "eastmoney_fund_core_diy",
+        "attribution_reason": "source_date_unverified",
+        "evidence": {
+          "code": "021842",
+          "name": "国富全球科技互联混合(QDII)人民币C",
+          "previous_nav": 6.2509,
+          "previous_nav_date": "2026-10-26",
+          "estimated_nav": 6.2536,
+          "estimated_return_pct": 0.04,
+          "estimated_at": "2026-10-28 04:00",
+          "source": "eastmoney_fund_core_diy",
+          "source_url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=024481%2C021528%2C006503%2C015060%2C027138%2C014674%2C016702%2C021842%2C017731%2C002207%2C021740%2C018036%2C012922%2C021277%2C016665%2C009860%2C014002%2C540010&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+          "fetched_at": "2026-10-28T07:55:14+00:00",
+          "status": "available",
+          "warnings": [],
+          "payload": {
+            "FCODE": "021842",
+            "QDCODE": "021842",
+            "SHORTNAME": "国富全球科技互联混合(QDII)人民币C",
+            "DWJZ": 6.2509,
+            "NAV": "--",
+            "FSRQ": "2026-10-26",
+            "JZRQ": "--",
+            "GSZ": 6.2536,
+            "GSZZL": 0.04,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "RZDF": 1.47
+          },
+          "domestic_rule_confirmed": false,
+          "last_fetched_at": "2026-10-28T08:00:11+00:00"
+        }
+      }
+    ],
+    "counts": [
+      {
+        "code": "012922",
+        "rows": 28,
+        "reliable": 0
+      },
+      {
+        "code": "014002",
+        "rows": 23,
+        "reliable": 0
+      },
+      {
+        "code": "016665",
+        "rows": 33,
+        "reliable": 0
+      },
+      {
+        "code": "016702",
+        "rows": 28,
+        "reliable": 0
+      },
+      {
+        "code": "017731",
+        "rows": 33,
+        "reliable": 0
+      },
+      {
+        "code": "018036",
+        "rows": 28,
+        "reliable": 0
+      },
+      {
+        "code": "021277",
+        "rows": 28,
+        "reliable": 0
+      },
+      {
+        "code": "021842",
+        "rows": 28,
+        "reliable": 0
+      }
+    ]
+  },
+  "public_api_samples": {
+    "raw-core": {
+      "id": "raw-core",
+      "url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=012922%2C014002%2C016665%2C016702%2C017731%2C018036%2C021277%2C021842&FIELDS=SHORTNAME%2CRZDF%2CDWJZ%2CJZRQ%2CFSRQ%2CNAV%2CGSZZL%2CGZTIME%2CGSZ%2CFCODE%2CQDCODE%2CPTYPE&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+      "started_at": "2026-10-28T08:20:42.016846+00:00",
+      "status": 200,
+      "headers": {
+        "Date": "Wed, 28 Oct 2026 08:20:42 GMT",
+        "Content-Type": "application/json"
+      },
+      "sha256": "c9e91f74ff07e22cf69c45e759f3e3641cbbf18f89eefc469b0d97cf1580a201",
+      "bytes": 1947,
+      "completed_at": "2026-10-28T08:20:42.133315+00:00",
+      "classification": "observation",
+      "payload": {
+        "data": [
+          {
+            "NAV": "--",
+            "DWJZ": 3.2187,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "易方达全球成长精选混合(QDII)人民币C",
+            "QDCODE": "012922",
+            "FCODE": "012922",
+            "RZDF": 0.29,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": 0.03,
+            "GSZ": 3.2197
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 3.2391,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "浦银全球智能科技(QDII)C",
+            "QDCODE": "014002",
+            "FCODE": "014002",
+            "RZDF": 0.98,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": 0.04,
+            "GSZ": 3.2403
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 2.1166,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "天弘全球高端制造混合(QDII)C",
+            "QDCODE": "016665",
+            "FCODE": "016665",
+            "RZDF": -0.8,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": 0.02,
+            "GSZ": 2.117
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 2.0495,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "银华海外数字经济量化选股混合发起式(QDII)C",
+            "QDCODE": "016702",
+            "FCODE": "016702",
+            "RZDF": 1.91,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-27",
+            "GSZZL": 0.05,
+            "GSZ": 2.0119
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 3.3223,
+            "GZTIME": "",
+            "PTYPE": "F",
+            "SHORTNAME": "嘉实全球产业升级股票发起式(QDII)C",
+            "QDCODE": "017731",
+            "FCODE": "017731",
+            "RZDF": -1.0,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": "",
+            "GSZ": ""
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 2.3437,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "长城全球新能源车股票发起式(QDII)C",
+            "QDCODE": "018036",
+            "FCODE": "018036",
+            "RZDF": 1.05,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": 0.04,
+            "GSZ": 2.3446
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 5.5458,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "广发全球精选股票(QDII)人民币C",
+            "QDCODE": "021277",
+            "FCODE": "021277",
+            "RZDF": 0.3,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": 0.03,
+            "GSZ": 5.5475
+          },
+          {
+            "NAV": "--",
+            "DWJZ": 6.2509,
+            "GZTIME": "2026-10-28 04:00",
+            "PTYPE": "F",
+            "SHORTNAME": "国富全球科技互联混合(QDII)人民币C",
+            "QDCODE": "021842",
+            "FCODE": "021842",
+            "RZDF": 1.47,
+            "JZRQ": "--",
+            "FSRQ": "2026-10-26",
+            "GSZZL": 0.04,
+            "GSZ": 6.2536
+          }
+        ],
+        "errorCode": 0,
+        "firstError": null,
+        "success": true,
+        "hasWrongToken": null,
+        "totalCount": 8,
+        "expansion": null,
+        "jf": "prod"
+      }
+    },
+    "raw-valuation-tiantian": {
+      "id": "raw-valuation-tiantian",
+      "url": "https://fundcomapi.tiantianfunds.com/mm/newCore/FundValuationLast?FCODES=012922%2C014002%2C016665%2C016702%2C017731%2C018036%2C021277%2C021842&FIELDS=FCODE%2CSHORTNAME%2CGSZZL%2CGZTIME%2CGSZ%2CNAV%2CPDATE",
+      "started_at": "2026-10-28T08:20:42.017291+00:00",
+      "status": 200,
+      "headers": {
+        "Date": "Wed, 28 Oct 2026 08:20:42 GMT",
+        "Content-Type": "application/json"
+      },
+      "sha256": "9885ca03cb96420445ccde1aaafca9c7bb529480d00b4188471c4b059010c998",
+      "bytes": 1326,
+      "completed_at": "2026-10-28T08:20:42.142249+00:00",
+      "classification": "observation",
+      "payload": {
+        "data": [
+          {
+            "NAV": 3.2187,
+            "GZTIME": null,
+            "SHORTNAME": "易方达全球成长精选混合(QDII)人民币C",
+            "FCODE": "012922",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 3.2391,
+            "GZTIME": null,
+            "SHORTNAME": "浦银全球智能科技(QDII)C",
+            "FCODE": "014002",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 2.1166,
+            "GZTIME": null,
+            "SHORTNAME": "天弘全球高端制造混合(QDII)C",
+            "FCODE": "016665",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 2.0495,
+            "GZTIME": null,
+            "SHORTNAME": "银华海外数字经济量化选股混合发起式(QDII)C",
+            "FCODE": "016702",
+            "PDATE": "2026-10-27",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 3.3223,
+            "GZTIME": null,
+            "SHORTNAME": "嘉实全球产业升级股票发起式(QDII)C",
+            "FCODE": "017731",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 2.3437,
+            "GZTIME": null,
+            "SHORTNAME": "长城全球新能源车股票发起式(QDII)C",
+            "FCODE": "018036",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 5.5458,
+            "GZTIME": null,
+            "SHORTNAME": "广发全球精选股票(QDII)人民币C",
+            "FCODE": "021277",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 6.2509,
+            "GZTIME": null,
+            "SHORTNAME": "国富全球科技互联混合(QDII)人民币C",
+            "FCODE": "021842",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          }
+        ],
+        "errorCode": 0,
+        "firstError": null,
+        "success": true,
+        "hasWrongToken": null,
+        "totalCount": 29435,
+        "expansion": null,
+        "jf": "ali"
+      }
+    },
+    "raw-valuation-eastmoney": {
+      "id": "raw-valuation-eastmoney",
+      "url": "https://fundcomapi.eastmoney.com/mm/newCore/FundValuationLast?FCODES=012922%2C014002%2C016665%2C016702%2C017731%2C018036%2C021277%2C021842&FIELDS=FCODE%2CSHORTNAME%2CGSZZL%2CGZTIME%2CGSZ%2CNAV%2CPDATE",
+      "started_at": "2026-10-28T08:20:42.017374+00:00",
+      "status": 200,
+      "headers": {
+        "Date": "Wed, 28 Oct 2026 08:20:42 GMT",
+        "Content-Type": "application/json"
+      },
+      "sha256": "4fcb02a3ee28de350fdd466492c929e94bb495ab3f22f306c6da6eb5eee8c11a",
+      "bytes": 1327,
+      "completed_at": "2026-10-28T08:20:42.130002+00:00",
+      "classification": "observation",
+      "payload": {
+        "data": [
+          {
+            "NAV": 3.2187,
+            "GZTIME": null,
+            "SHORTNAME": "易方达全球成长精选混合(QDII)人民币C",
+            "FCODE": "012922",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 3.2391,
+            "GZTIME": null,
+            "SHORTNAME": "浦银全球智能科技(QDII)C",
+            "FCODE": "014002",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 2.1166,
+            "GZTIME": null,
+            "SHORTNAME": "天弘全球高端制造混合(QDII)C",
+            "FCODE": "016665",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 2.0495,
+            "GZTIME": null,
+            "SHORTNAME": "银华海外数字经济量化选股混合发起式(QDII)C",
+            "FCODE": "016702",
+            "PDATE": "2026-10-27",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 3.3223,
+            "GZTIME": null,
+            "SHORTNAME": "嘉实全球产业升级股票发起式(QDII)C",
+            "FCODE": "017731",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 2.3437,
+            "GZTIME": null,
+            "SHORTNAME": "长城全球新能源车股票发起式(QDII)C",
+            "FCODE": "018036",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 5.5458,
+            "GZTIME": null,
+            "SHORTNAME": "广发全球精选股票(QDII)人民币C",
+            "FCODE": "021277",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          },
+          {
+            "NAV": 6.2509,
+            "GZTIME": null,
+            "SHORTNAME": "国富全球科技互联混合(QDII)人民币C",
+            "FCODE": "021842",
+            "PDATE": "2026-10-26",
+            "GSZZL": null,
+            "GSZ": null
+          }
+        ],
+        "errorCode": 0,
+        "firstError": null,
+        "success": true,
+        "hasWrongToken": null,
+        "totalCount": 29435,
+        "expansion": null,
+        "jf": "prod"
+      }
+    },
+    "raw-sina-016665": {
+      "id": "raw-sina-016665",
+      "url": "https://stock.finance.sina.com.cn/fundInfo/api/openapi.php/FdFundService.getEstimateNetworthPic?symbol=016665",
+      "started_at": "2026-10-28T08:20:42.017452+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Wed, 28 Oct 2026 08:20:42 GMT"
+      },
+      "sha256": "4c49c5607b4cb6a7cdcfcc426b0e6065dd059ec54841d9d46b70f03e6e67c743",
+      "bytes": 132139,
+      "completed_at": "2026-10-28T08:20:42.332336+00:00",
+      "classification": "observation",
+      "selected_response_fields": {
+        "worth": "2.1166",
+        "worth_date": "20261026",
+        "worth_rate": -0.0079677540307461,
+        "detail_page_type": 2,
+        "zx_page_type": 1,
+        "heavy_stock_us_flag": 1,
+        "time_range": [
+          [
+            "09:30",
+            "11:30"
+          ],
+          [
+            "13:00",
+            "16:00"
+          ]
+        ],
+        "desc": {
+          "text_base": "【风险提示】前十大重仓均涨幅展示该基金截至上一季度前十大重仓股、重仓债券、重仓ETF的加权平均涨跌幅，存在滞后性，不能作为基金单位净值走势参考，不能代表板块涨跌，请投资者理性投资，注意风险!",
+          "text_link": "",
+          "link_url": ""
+        },
+        "pre_income": ""
+      },
+      "point_count": 338,
+      "first_point": {
+        "symbol": "016665",
+        "min_time": "09:28:00",
+        "pre_nav": "2.1228",
+        "nav_pct": "0.2952",
+        "pre_nav2": "2.1367",
+        "nav2_pct": "0.9478",
+        "pre_date": "2026-10-28",
+        "growthrate": 0.002952,
+        "growthrate2": "0.009478"
+      },
+      "last_array_point": {
+        "symbol": "016665",
+        "min_time": "16:04:00",
+        "pre_nav": "2.1259",
+        "nav_pct": "0.4372",
+        "pre_nav2": "2.1406",
+        "nav2_pct": "1.1322",
+        "pre_date": "2026-10-28",
+        "growthrate": 0.004372,
+        "growthrate2": "0.011322"
+      },
+      "selected_in_window_point": {
+        "symbol": "016665",
+        "min_time": "16:00:00",
+        "pre_nav": "2.1259",
+        "nav_pct": "0.4372",
+        "pre_nav2": "2.1406",
+        "nav2_pct": "1.1322",
+        "pre_date": "2026-10-28",
+        "growthrate": 0.004372,
+        "growthrate2": "0.011322"
+      }
+    },
+    "raw-sina-016702": {
+      "id": "raw-sina-016702",
+      "url": "https://stock.finance.sina.com.cn/fundInfo/api/openapi.php/FdFundService.getEstimateNetworthPic?symbol=016702",
+      "started_at": "2026-10-28T08:20:42.130149+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Wed, 28 Oct 2026 08:20:42 GMT"
+      },
+      "sha256": "d6b09e0fa9fe7ca1d33e3d02edb2ae225f521c2fffd6d718432be57edb0591d0",
+      "bytes": 132795,
+      "completed_at": "2026-10-28T08:20:42.493494+00:00",
+      "classification": "observation",
+      "selected_response_fields": {
+        "worth": "2.0110",
+        "worth_date": "20261026",
+        "worth_rate": 0.012180390577814,
+        "detail_page_type": 2,
+        "zx_page_type": 1,
+        "heavy_stock_us_flag": 1,
+        "time_range": [
+          [
+            "09:30",
+            "11:30"
+          ],
+          [
+            "13:00",
+            "15:00"
+          ]
+        ],
+        "desc": {
+          "text_base": "【风险提示】前十大重仓均涨幅展示该基金截至上一季度前十大重仓股、重仓债券、重仓ETF的加权平均涨跌幅，存在滞后性，不能作为基金单位净值走势参考，不能代表板块涨跌，请投资者理性投资，注意风险!",
+          "text_link": "",
+          "link_url": ""
+        },
+        "pre_income": ""
+      },
+      "point_count": 338,
+      "first_point": {
+        "symbol": "016702",
+        "min_time": "09:28:00",
+        "pre_nav": "2.0098",
+        "nav_pct": "-0.0621",
+        "pre_nav2": "2.0110",
+        "nav2_pct": "0.0000",
+        "pre_date": "2026-10-28",
+        "growthrate": -0.000621,
+        "growthrate2": "0.000000"
+      },
+      "last_array_point": {
+        "symbol": "016702",
+        "min_time": "16:04:00",
+        "pre_nav": "2.0098",
+        "nav_pct": "-0.0585",
+        "pre_nav2": "2.0110",
+        "nav2_pct": "0.0000",
+        "pre_date": "2026-10-28",
+        "growthrate": -0.000585,
+        "growthrate2": "0.000000"
+      },
+      "selected_in_window_point": {
+        "symbol": "016702",
+        "min_time": "15:00:00",
+        "pre_nav": "2.0097",
+        "nav_pct": "-0.0630",
+        "pre_nav2": "2.0110",
+        "nav2_pct": "0.0000",
+        "pre_date": "2026-10-28",
+        "growthrate": -0.00063,
+        "growthrate2": "0.000000"
+      }
+    },
+    "raw-sina-017731": {
+      "id": "raw-sina-017731",
+      "url": "https://stock.finance.sina.com.cn/fundInfo/api/openapi.php/FdFundService.getEstimateNetworthPic?symbol=017731",
+      "started_at": "2026-10-28T08:20:42.133449+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Wed, 28 Oct 2026 08:20:42 GMT"
+      },
+      "sha256": "17b499599f84f51471275abface9e9825e7e40ef98ac2830db9f9c25b4540d27",
+      "bytes": 132287,
+      "completed_at": "2026-10-28T08:20:42.413830+00:00",
+      "classification": "observation",
+      "selected_response_fields": {
+        "worth": "3.3223",
+        "worth_date": "20261026",
+        "worth_rate": -0.0099532139344996,
+        "detail_page_type": 2,
+        "zx_page_type": 1,
+        "heavy_stock_us_flag": 1,
+        "time_range": [
+          [
+            "09:30",
+            "11:30"
+          ],
+          [
+            "13:00",
+            "15:00"
+          ]
+        ],
+        "desc": {
+          "text_base": "【风险提示】前十大重仓均涨幅展示该基金截至上一季度前十大重仓股、重仓债券、重仓ETF的加权平均涨跌幅，存在滞后性，不能作为基金单位净值走势参考，不能代表板块涨跌，请投资者理性投资，注意风险!",
+          "text_link": "",
+          "link_url": ""
+        },
+        "pre_income": ""
+      },
+      "point_count": 338,
+      "first_point": {
+        "symbol": "017731",
+        "min_time": "09:28:00",
+        "pre_nav": "3.3660",
+        "nav_pct": "1.3145",
+        "pre_nav2": "3.3276",
+        "nav2_pct": "0.1600",
+        "pre_date": "2026-10-28",
+        "growthrate": 0.013145,
+        "growthrate2": "0.001600"
+      },
+      "last_array_point": {
+        "symbol": "017731",
+        "min_time": "16:04:00",
+        "pre_nav": "3.4284",
+        "nav_pct": "3.1925",
+        "pre_nav2": "3.3243",
+        "nav2_pct": "0.0604",
+        "pre_date": "2026-10-28",
+        "growthrate": 0.031925,
+        "growthrate2": "0.000604"
+      },
+      "selected_in_window_point": {
+        "symbol": "017731",
+        "min_time": "15:00:00",
+        "pre_nav": "3.4284",
+        "nav_pct": "3.1925",
+        "pre_nav2": "3.3243",
+        "nav2_pct": "0.0604",
+        "pre_date": "2026-10-28",
+        "growthrate": 0.031925,
+        "growthrate2": "0.000604"
+      }
+    }
+  },
+  "source_pages": [
+    {
+      "id": "page-eastmoney-full",
+      "url": "https://fund.eastmoney.com/016665.html",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:19:43.868584+00:00",
+      "content_sha256": "0da24682c5edc01630b3ebb8c7e17d6f02cfd45b90ade4920536c32fa5d94fba",
+      "content_length": 35555,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 3185,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 3185
+            }
+          ]
+        }
+      ],
+      "excerpt": "成立以来，总计分红 [0](http://fundf10.eastmoney.com/fhsp_016665.html) 次，拆分 [0](http://fundf10.eastmoney.com/fhsp_016665.html) 次\n\n\n\n|\n|\n\n\n\n[更多分红信息>](http://fundf10.eastmoney.com/fhsp_016665.html)\n\n- | 评级机构 | 评级"
+    },
+    {
+      "id": "page-sina-full",
+      "url": "https://finance.sina.com.cn/fund/quotes/016665/bc.shtml",
+      "provider": "Firecrawl Scrape (acct-b)",
+      "recorded_at": "2026-10-28T08:19:43.307290+00:00",
+      "content_sha256": "8da203776a2f1563ac3da8718ffbf69943f4311d90c012dad033a724e305d3a9",
+      "content_length": 21312,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 2626,
+          "sub_attempts": 2,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "error",
+              "latency_ms": 975,
+              "error": "firecrawl scrape failed: Post \"https://api.firecrawl.dev/v2/scrape\": EOF"
+            },
+            {
+              "name": "acct-b",
+              "status": "ok",
+              "latency_ms": 1650
+            }
+          ]
+        }
+      ],
+      "excerpt": "(--)最新估值：--\n\n单位净值\n\n2.1166\n\n涨跌幅\n\n-0.80%\n\n近3月涨幅\n\n--\n\n近1年涨幅\n\n--\n\n近3年涨幅\n\n--\n\n数据日期：2026-10-26\n\n单位净值\n\n2.1166\n\n涨跌幅排名\n\n--\n\n近3月涨幅排名\n\n--\n\n近1年涨幅排名\n\n--\n\n近3年涨幅排名\n\n--\n\n数据日期：2026-10-26\n\n成立日期：2023年04月26日\n\n累计单位净值：2.11"
+    },
+    {
+      "id": "help-411",
+      "url": "https://help.1234567.com.cn/question_411.html",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:25:07.212115+00:00",
+      "content_sha256": "2ac7efd3b4d475a9c85c802a19f976ada3bc5e157e636b3fb29fea20cbb3158a",
+      "content_length": 11661,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 8124,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 8124
+            }
+          ]
+        }
+      ],
+      "excerpt": "**答：**\n\n目前天天基金支持对QDII产品进行估值，但新成立的QDII产品及无对应指数除外。QDII基金一般都是T+2公布净值，我司平台QDII基金净值的更新是及时准确的。\n\n以上是否解决了您的问题\n\n是，已经解决\n\n否，尚未解决\n\n您的反馈信息已成功提交，谢谢您的反馈。×关闭\n\n太简单，用不上\n字太多，不想看\n太复杂，看不懂\n其他×关闭\n\n![](https://help.1234567.c"
+    },
+    {
+      "id": "help-912",
+      "url": "https://help.1234567.com.cn/question_912.html",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:25:09.178462+00:00",
+      "content_sha256": "e2a4557adbe1abaad7ce2599d32c0f4bca62b8259fc88ef954ebac1c82253f5c",
+      "content_length": 11916,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 10090,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 10090
+            }
+          ]
+        }
+      ],
+      "excerpt": "**答：**\n\n通常根据基金合同、招募说明书等有关规定，基金申购和赎回的开放日为投资人或基金份额持有人办理申购、赎回等业务的上海证券交易所、深圳证券交易所及基金投资的主要市场(纽约证券交易所、伦敦交易所、香港交易所等境外交易所)同时开放交易的工作日。\n\n因此，一般情况下，QDII基金在其投资的境外市场节假日时，基金公司将暂停相应基金的基金申购、赎回和定期定额投资业务，并自节假日的下一开放日恢复相应基金的日常申购、赎回和定期定额投资等业务。\n\n以下为处于上海和深圳证券交易所交易日的境外主要市场节假日。基金公司届时可能不再另行公告，请投资者知晓此类情况，及早做好交易安排。\n\n![](http://z1.dfcfw.com/2016/8/"
+    },
+    {
+      "id": "page-estimate",
+      "url": "https://fund.eastmoney.com/fundguzhi.html",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:23:43.028222+00:00",
+      "content_sha256": "fcecc0fcf5c665e73704e3c9f29564b5cb0acbeec1c818fc820e78b465580436",
+      "content_length": 228,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 4117,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 4117
+            }
+          ]
+        }
+      ],
+      "excerpt": "出错啦~~\n\n~~您访问的页面不存在！~~\n\n**5** 秒后进入首页 [立即进入天天基金首页](http://fund.eastmoney.com/) \\| [意见与建议](http://fund.eastmoney.com/contactus/)"
+    },
+    {
+      "id": "page-eastmoney-qdii",
+      "url": "https://fund.eastmoney.com/qdii",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:22:29.687767+00:00",
+      "content_sha256": "2ab515bb3a9679058fb0b2af818dfa3d460c139716f496ad0e822b6e99127a5f",
+      "content_length": 13325,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 4980,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 4979
+            }
+          ]
+        }
+      ],
+      "excerpt": "估值排行\n- 阶段排行\n\n日期： [更多](http://fund.eastmoney.com/fundguzhi.html)\n\n| 代码 | 基金名称 | 估算净值 | 估值涨幅 |\n| --- | --- | --- | --- |\n\n| 代码 | 基金名称 | 近1月 | 近3月 |\n| --- | --- | --- | --- |\n\n### [热销QDII基金](http://fund."
+    },
+    {
+      "id": "sina-js-tab",
+      "url": "https://n.sinaimg.cn/finance/fund/quotes/index_tab2_new.js?v=2026102215",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:21:12.530266+00:00",
+      "content_sha256": "fe4496ff2527f956080570cda82d0a3246ede276044fec8327e756e0fba1d3f4",
+      "content_length": 19412,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 3132,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 3132
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sina-js-charts",
+      "url": "https://n.sinaimg.cn/finance/fund/quotes/index_charts.js",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:21:12.061627+00:00",
+      "content_sha256": "9dbb82bfdc30aa078408912a98f8a33bf766b5f5beb08e46aaed01b48bc1cfd8",
+      "content_length": 20249,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 2663,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 2663
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sina-fundchart",
+      "url": "https://n.sinaimg.cn/finance/fund/details/FundChart.js",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:22:03.958808+00:00",
+      "content_sha256": "29785a9bb0495e0430448e3f1a1288720189f16f69020cfd31d79b1b2f8b4de1",
+      "content_length": 29658,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 3798,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 3798
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core-default",
+      "url": "https://fundcomapi.eastmoney.com/mm/newCore/FundCoreDiyNew?FCODES=016665&deviceid=1234567.py.service&version=6.5.5&product=EFund&plat=web",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:25:35.100657+00:00",
+      "content_sha256": "960d8fe330dbcd1eef98c353f556e765186835f2141239a4182d8aaeb282b08f",
+      "content_length": 202,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 2023,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 2023
+            }
+          ]
+        }
+      ],
+      "extracted_response": "0true0prod\n\n<ApiNewResponse>\n\n<data/>\n\n<errorCode>0</errorCode>\n\n<firstError/>\n\n<success>true</success>\n\n<hasWrongToken/>\n\n<totalCount>0</totalCount>\n\n<expansion/>\n\n<jf>prod</jf>\n\n...\n\n</ApiNewResponse>"
+    },
+    {
+      "id": "valuation-default",
+      "url": "https://fundcomapi.eastmoney.com/mm/newCore/FundValuationLast?FCODES=016665",
+      "provider": "Firecrawl Scrape (acct-a)",
+      "recorded_at": "2026-10-28T08:25:36.034924+00:00",
+      "content_sha256": "960d8fe330dbcd1eef98c353f556e765186835f2141239a4182d8aaeb282b08f",
+      "content_length": 202,
+      "route_decision": [
+        {
+          "capability": "web_fetch",
+          "provider": "firecrawl-scrape",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 2957,
+          "sub_attempts": 1,
+          "sub_attempt_details": [
+            {
+              "name": "acct-a",
+              "status": "ok",
+              "latency_ms": 2957
+            }
+          ]
+        }
+      ],
+      "extracted_response": "0true0prod\n\n<ApiNewResponse>\n\n<data/>\n\n<errorCode>0</errorCode>\n\n<firstError/>\n\n<success>true</success>\n\n<hasWrongToken/>\n\n<totalCount>0</totalCount>\n\n<expansion/>\n\n<jf>prod</jf>\n\n...\n\n</ApiNewResponse>"
+    }
+  ],
+  "searches": [
+    {
+      "id": "search-eastmoney",
+      "recorded_at": "2026-10-28T08:21:41.551440+00:00",
+      "warnings": [
+        "query mentions site.eastmoney.com but top results did not match that domain"
+      ],
+      "selected_sources": [
+        {
+          "id": "S1",
+          "url": "https://fund.eastmoney.com/qdii",
+          "domain": "fund.eastmoney.com",
+          "quality_score": 40,
+          "quality": "low",
+          "reason": "query_relevance:3",
+          "score": 4
+        }
+      ],
+      "use": "search-help 的 question_411 和 question_912 已 fetch 核验；无关结果不用于契约结论。"
+    },
+    {
+      "id": "search-sina",
+      "recorded_at": "2026-10-28T08:20:47.812146+00:00",
+      "warnings": [
+        "query mentions site.sina.com.cn but top results did not match that domain"
+      ],
+      "selected_sources": [
+        {
+          "id": "S1",
+          "url": "https://finance.sina.com.cn/jjxw/2026-03-17/doc-inhrhavx8219813.shtml",
+          "domain": "finance.sina.com.cn",
+          "quality_score": 100,
+          "quality": "high",
+          "reason": "repeated_domain:14; recent_date_in_url; query_relevance:2",
+          "score": 14.25
+        },
+        {
+          "id": "S2",
+          "url": "https://finance.sina.com.cn/money/fund/jjzl/2025-04-13/doc-inesyumu2934247.shtml",
+          "domain": "finance.sina.com.cn",
+          "quality_score": 100,
+          "quality": "high",
+          "reason": "repeated_domain:14; recent_date_in_url; query_relevance:2",
+          "score": 14.25
+        },
+        {
+          "id": "S3",
+          "url": "https://finance.sina.com.cn/money/fund/video/2026-10-26/detail-iniwnzcy2569065.d.html",
+          "domain": "finance.sina.com.cn",
+          "quality_score": 100,
+          "quality": "high",
+          "reason": "repeated_domain:14; recent_date_in_url; query_relevance:2",
+          "score": 14.25
+        },
+        {
+          "id": "S4",
+          "url": "https://finance.sina.com.cn/roll/2025-03-19/doc-ineqeanr1778658.shtml",
+          "domain": "finance.sina.com.cn",
+          "quality_score": 100,
+          "quality": "high",
+          "reason": "repeated_domain:14; recent_date_in_url; query_relevance:2",
+          "score": 14.25
+        },
+        {
+          "id": "S5",
+          "url": "https://finance.sina.com.cn/roll/2025-08-22/doc-infmvcyi8768646.shtml",
+          "domain": "finance.sina.com.cn",
+          "quality_score": 100,
+          "quality": "high",
+          "reason": "repeated_domain:14; recent_date_in_url; query_relevance:2",
+          "score": 14.25
+        }
+      ],
+      "use": "search-help 的 question_411 和 question_912 已 fetch 核验；无关结果不用于契约结论。"
+    },
+    {
+      "id": "search-help",
+      "recorded_at": "2026-10-28T08:24:14.290212+00:00",
+      "engine": "Exa Search",
+      "query": "site:help.1234567.com.cn 净值估算 QDII 汇率",
+      "requested_profile": "default",
+      "effective_profile": "default",
+      "fallback": "exa",
+      "grok_error": "all 5 grok endpoints failed for profile \"default\": wykon-web-fast: grok request failed: context deadline exceeded; (deadline reached: context deadline exceeded)",
+      "route_decision": [
+        {
+          "capability": "main_search",
+          "provider": "grok-pool",
+          "attempt": 1,
+          "status": "timeout",
+          "latency_ms": 180000,
+          "fallback_reason": "timeout",
+          "fallback_detail": "all 5 grok endpoints failed for profile \"default\": wykon-web-fast: grok request failed: context deadline exceeded; (deadline reached: context deadline exceeded)",
+          "sub_attempts": 7
+        },
+        {
+          "capability": "main_search",
+          "provider": "tinyfish-search",
+          "attempt": 2,
+          "status": "error",
+          "latency_ms": 2796,
+          "fallback_reason": "upstream_error",
+          "fallback_detail": "all 4 tinyfish keys failed: acct-a: empty results; acct-b: empty results; acct-c: empty results; acct-d: empty results",
+          "sub_attempts": 4
+        },
+        {
+          "capability": "main_search",
+          "provider": "exa-search",
+          "attempt": 3,
+          "status": "ok",
+          "latency_ms": 2094
+        }
+      ],
+      "source_urls": [
+        "http://help.1234567.com.cn/question_411.html",
+        "https://help.1234567.com.cn/question_531.html",
+        "http://help.1234567.com.cn/question_238.html",
+        "http://help.1234567.com.cn/question_355.html",
+        "http://help.1234567.com.cn/question_912.html"
+      ],
+      "use": "search-help 的 question_411 和 question_912 已 fetch 核验；无关结果不用于契约结论。"
+    },
+    {
+      "id": "search-fields",
+      "recorded_at": "2026-10-28T08:23:14.189614+00:00",
+      "engine": "wykon-web-fast",
+      "query": "\"FundCoreDiyNew\" \"GZTIME\" 时区 QDII \"FundValuationLast\"",
+      "requested_profile": "default",
+      "effective_profile": "default",
+      "route_decision": [
+        {
+          "capability": "main_search",
+          "provider": "grok-pool",
+          "attempt": 1,
+          "status": "ok",
+          "latency_ms": 124792,
+          "sub_attempts": 7
+        }
+      ],
+      "source_urls": [
+        "https://hypestat.com/info/gztimes.com",
+        "https://ko-fi.com/gztime",
+        "https://hub.docker.com/u/gztime",
+        "https://docker.ecosyste.ms/packages/gztime%2Fmysql-yydb",
+        "https://host.io/gztimes.co.zw",
+        "https://invest-nav.com/tools/qdii-quota/",
+        "https://invest-nav.com/tutorials/qdii-funds/text/",
+        "https://cn.investing.com/funds/guotai-nasdaq-100-index-fund-qdii-advanced-chart",
+        "https://cn.investing.com/etfs/huaan-global-leading-dax-qdii-news",
+        "https://news.futunn.com/en/notice/1001504792/boshi-nasdaq-100-exchange-traded-open-end-index-fund-qdii",
+        "https://github.com/promise96319/qdii",
+        "https://hk.investing.com/etfs/guotai-nasdaq-100-qdii-news/73",
+        "https://cn.investing.com/funds/cifm-japan-select-eq(qdii)-advanced-chart",
+        "https://cn.investing.com/etfs/guotai-nasdaq-100-qdii-news/11",
+        "https://github.com/xiaopc/qdii-value/blob/master/README.md",
+        "https://jindage.com/en/skills/qdii-lof-premium-monitor",
+        "https://cn.investing.com/funds/harvest-glbl-internet-eq-rmb-qdii",
+        "https://pl.investing.com/funds/gf-american-estate-index-qdii-usd",
+        "https://kmcha.com/similar/qdii-reits",
+        "https://kmcha.com/similar/qdii-fof",
+        "https://funds.hexun.com/qdii/",
+        "http://www.tetegu.com/niusans/qdii",
+        "https://qdiifund.com/tags/qdii/",
+        "https://gr.investing.com/etfs/guotai-nasdaq-100-qdii"
+      ],
+      "use": "search-help 的 question_411 和 question_912 已 fetch 核验；无关结果不用于契约结论。"
+    },
+    {
+      "id": "search-contract",
+      "recorded_at": "2026-10-28T08:26:42.714357+00:00",
+      "use": "TinyFish 回退返回净值列表、无关基金和第三方介绍，未取得可绑定的来源契约，不用于契约结论。",
+      "engine": "TinyFish Search",
+      "query": "请查找东方财富或天天基金自身发布的QDII净值估算说明，重点是估算时间时区、对应净值日期、汇率与估算涨幅的基准期间。请提供原始说明页面链接，不要推荐第三方估值工具。",
+      "requested_profile": "default",
+      "effective_profile": "default",
+      "fallback": "tinyfish",
+      "grok_error": "all 5 grok endpoints failed for profile \"default\": wykon-web-fast: grok request failed: context deadline exceeded; (deadline reached: context deadline exceeded)",
+      "route_decision": [
+        {
+          "capability": "main_search",
+          "provider": "grok-pool",
+          "attempt": 1,
+          "status": "timeout",
+          "latency_ms": 180001,
+          "fallback_reason": "timeout",
+          "fallback_detail": "all 5 grok endpoints failed for profile \"default\": wykon-web-fast: grok request failed: context deadline exceeded; (deadline reached: context deadline exceeded)",
+          "sub_attempts": 7
+        },
+        {
+          "capability": "main_search",
+          "provider": "tinyfish-search",
+          "attempt": 2,
+          "status": "ok",
+          "latency_ms": 3802,
+          "sub_attempts": 4
+        }
+      ],
+      "source_urls": [
+        "https://fund.eastmoney.com/GP_ljjz.html",
+        "https://fund.eastmoney.com/QDII_bzdm.html",
+        "https://fundf10.eastmoney.com/jjgg_012920_1.html",
+        "https://fundf10.eastmoney.com/jjgg_862011_1.html",
+        "https://www.simuwang.com/baike/1114",
+        "https://h5.1234567.com.cn/app/fund-details/?fCode=006370",
+        "https://fundf10.eastmoney.com/jjgg_862001_3.html",
+        "https://caifuhao.eastmoney.com/news/20260629132455117089950",
+        "https://h5.1234567.com.cn/app/fund-details/?fCode=160141"
+      ]
+    }
+  ],
+  "limits": [
+    "公开响应为独立时间点，不与生产读取组成原子快照。",
+    "直接公开 API 取样 6 次，另经 SourceMux 获取 Core、新浪和两个不指定 FIELDS 的响应。",
+    "SourceMux 页面为提取文本，recorded_at 是本地结果保存时间，不是来源发布时间。",
+    "原始完整响应仅保存在 reports/qdii-source-contract-20261028/；本文件保存选定字段和原始字节哈希。",
+    "FIELDS 限制了东财返回字段；不带 FIELDS 的两次 SourceMux 请求均为空 data，不能据此声称已穷尽接口字段。",
+    "未咨询来源客服，未覆盖新的夜盘、夏令时切换或休市实测。"
+  ]
+}

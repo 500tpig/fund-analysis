@@ -1,0 +1,2453 @@
+{
+  "scope": "本地隔离库验收；数据沿用任务 1 的只读快照，未重新访问生产；未回填或修改原字段。",
+  "snapshot_captured_at": "2026-10-28T06:05:36.155560+00:00",
+  "rows_before": 448,
+  "rows_after": 448,
+  "original_fields_identical": true,
+  "integrity_check": "ok",
+  "old_error_samples_all": 189,
+  "new_verified_samples_all": 0,
+  "excluded_old_error_samples": {
+    "legacy_evidence_missing": 189
+  },
+  "old_error_samples_current_holdings": 185,
+  "new_verified_samples_current_holdings": 0,
+  "qdii": [
+    {
+      "code": "012922",
+      "retained": 27,
+      "reliably_paired": 0,
+      "unpaired": 27,
+      "reasons": {
+        "legacy_evidence_missing": 27
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "014002",
+      "retained": 22,
+      "reliably_paired": 0,
+      "unpaired": 22,
+      "reasons": {
+        "legacy_evidence_missing": 22
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "016665",
+      "retained": 32,
+      "reliably_paired": 0,
+      "unpaired": 32,
+      "reasons": {
+        "legacy_evidence_missing": 32
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "016702",
+      "retained": 27,
+      "reliably_paired": 0,
+      "unpaired": 27,
+      "reasons": {
+        "legacy_evidence_missing": 27
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "017731",
+      "retained": 32,
+      "reliably_paired": 0,
+      "unpaired": 32,
+      "reasons": {
+        "legacy_evidence_missing": 32
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "018036",
+      "retained": 27,
+      "reliably_paired": 0,
+      "unpaired": 27,
+      "reasons": {
+        "legacy_evidence_missing": 27
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "021277",
+      "retained": 27,
+      "reliably_paired": 0,
+      "unpaired": 27,
+      "reasons": {
+        "legacy_evidence_missing": 27
+      },
+      "source_date_contract": "unverified"
+    },
+    {
+      "code": "021842",
+      "retained": 27,
+      "reliably_paired": 0,
+      "unpaired": 27,
+      "reasons": {
+        "legacy_evidence_missing": 27
+      },
+      "source_date_contract": "unverified"
+    }
+  ],
+  "domestic_and_former_holdings": [
+    {
+      "code": "002207",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "006503",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "009860",
+      "currently_held": true,
+      "retained": 21,
+      "old_error_samples": 18,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 18,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "011452",
+      "currently_held": false,
+      "retained": 5,
+      "old_error_samples": 4,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 4,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "014674",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "015060",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "021528",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "021740",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "022184",
+      "currently_held": false,
+      "retained": 8,
+      "old_error_samples": 0,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 0,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "024481",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "027138",
+      "currently_held": true,
+      "retained": 22,
+      "old_error_samples": 19,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 19,
+      "reason": "legacy_evidence_missing"
+    },
+    {
+      "code": "540010",
+      "currently_held": true,
+      "retained": 17,
+      "old_error_samples": 15,
+      "new_verified_samples": 0,
+      "excluded_from_new_metrics": 15,
+      "reason": "legacy_evidence_missing"
+    }
+  ],
+  "qdii_sample_columns": [
+    "code",
+    "estimate_source",
+    "estimated_at",
+    "target_nav_date",
+    "estimated_return_pct",
+    "official_return_pct",
+    "error_pct_points",
+    "attribution_reason"
+  ],
+  "qdii_samples": [
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-09-03 04:00",
+      null,
+      0.49,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-09-03 04:00",
+      null,
+      0.4,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-03 21:30:00",
+      null,
+      -1.0029,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-09-03 04:00",
+      null,
+      0.42,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-09-03 04:00",
+      null,
+      0.24,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-09-03 04:00",
+      null,
+      0.26,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-03 21:30:00",
+      null,
+      -0.111,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-09-04 04:00",
+      null,
+      0.99,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-09-04 04:00",
+      null,
+      0.81,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-04 21:30:00",
+      null,
+      -0.8571,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-09-04 04:00",
+      null,
+      0.84,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-09-04 04:00",
+      null,
+      0.48,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-09-04 04:00",
+      null,
+      0.53,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-04 21:30:00",
+      null,
+      -1.137,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-09-07 15:00:00",
+      null,
+      0.0,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-09-07 15:00:00",
+      null,
+      0.0,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-07 15:00:00",
+      null,
+      2.8931,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-09-07 15:00:00",
+      null,
+      0.0222,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-09-07 15:00:00",
+      null,
+      3.323,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-09-07 15:40:00",
+      null,
+      -0.1328,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-07 15:40:00",
+      null,
+      4.9096,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-09-08 15:00:00",
+      null,
+      0.0,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-09-08 15:00:00",
+      null,
+      0.0,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-08 15:00:00",
+      null,
+      -0.6303,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-09-08 15:00:00",
+      null,
+      -0.1889,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-09-08 15:00:00",
+      null,
+      -0.4327,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-09-08 16:00:00",
+      null,
+      -1.7546,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-08 16:00:00",
+      null,
+      -1.2057,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-09-09 04:00",
+      null,
+      -1.08,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-09-09 04:00",
+      null,
+      -0.88,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-09 10:13:00",
+      null,
+      0.6926,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-09-09 04:00",
+      null,
+      -0.91,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-09-09 04:00",
+      null,
+      -0.52,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-09-09 04:00",
+      null,
+      -0.57,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-09 10:13:00",
+      null,
+      1.5629,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-09-26 04:00",
+      null,
+      0.81,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-09-26 04:00",
+      null,
+      0.67,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-26 05:04:00",
+      null,
+      -1.2979,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-09-26 04:00",
+      null,
+      0.69,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-09-26 04:00",
+      null,
+      0.4,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-09-26 04:00",
+      null,
+      0.43,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-26 05:04:00",
+      null,
+      -2.019,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "eastmoney_fund_core_diy",
+      "2026-09-26 04:00",
+      null,
+      0.68,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -0.0592,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -0.0965,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -0.9626,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -0.1078,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -1.1426,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      0.1608,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -1.4218,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-09-28 10:17:00",
+      null,
+      -0.0376,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-09-30 04:00",
+      null,
+      -0.2,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-09-30 04:00",
+      null,
+      -0.16,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-09-30 23:49:00",
+      null,
+      -1.1094,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-09-30 04:00",
+      null,
+      -0.17,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-09-30 04:00",
+      null,
+      -0.1,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-09-30 04:00",
+      null,
+      -0.11,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-09-30 23:49:00",
+      null,
+      -0.8763,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "eastmoney_fund_core_diy",
+      "2026-09-30 04:00",
+      null,
+      -0.17,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-01 23:29:00",
+      null,
+      -1.2718,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-01 23:29:00",
+      null,
+      -0.9035,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-10-01 04:00",
+      null,
+      -0.7,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-10-01 04:00",
+      null,
+      -0.57,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-10-01 04:00",
+      null,
+      -0.6,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-10-01 04:00",
+      null,
+      -0.34,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-10-01 04:00",
+      null,
+      -0.37,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "eastmoney_fund_core_diy",
+      "2026-10-01 04:00",
+      null,
+      -0.59,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-02 23:29:00",
+      null,
+      -1.2718,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-02 23:29:00",
+      null,
+      -0.9035,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-10-02 04:00",
+      null,
+      0.03,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-10-02 04:00",
+      null,
+      0.02,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-10-02 04:00",
+      null,
+      0.02,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-10-02 04:00",
+      null,
+      0.01,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-10-02 04:00",
+      null,
+      0.01,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "eastmoney_fund_core_diy",
+      "2026-10-02 04:00",
+      null,
+      0.02,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-03 03:29:00",
+      null,
+      -1.2718,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-03 03:29:00",
+      null,
+      -0.9035,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-05 23:29:00",
+      null,
+      -1.2718,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-05 23:29:00",
+      null,
+      -0.9035,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-06 23:29:00",
+      null,
+      -2.2615,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-06 23:29:00",
+      null,
+      -1.335,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-10-06 04:00",
+      null,
+      0.14,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-10-06 04:00",
+      null,
+      0.12,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-10-06 04:00",
+      null,
+      0.12,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-10-06 04:00",
+      null,
+      0.07,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-10-06 04:00",
+      null,
+      0.08,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "eastmoney_fund_core_diy",
+      "2026-10-06 04:00",
+      null,
+      0.12,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-07 23:29:00",
+      null,
+      -2.2615,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-07 23:29:00",
+      null,
+      -1.335,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "eastmoney_fund_core_diy",
+      "2026-10-07 04:00",
+      null,
+      0.45,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "eastmoney_fund_core_diy",
+      "2026-10-07 04:00",
+      null,
+      0.37,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "eastmoney_fund_core_diy",
+      "2026-10-07 04:00",
+      null,
+      0.38,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "eastmoney_fund_core_diy",
+      "2026-10-07 04:00",
+      null,
+      0.22,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "eastmoney_fund_core_diy",
+      "2026-10-07 04:00",
+      null,
+      0.24,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "eastmoney_fund_core_diy",
+      "2026-10-07 04:00",
+      null,
+      0.38,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-08 04:00:00",
+      null,
+      -0.0317,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-08 04:00:00",
+      null,
+      0.0655,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-08 23:49:00",
+      null,
+      -2.4085,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-08 04:00:00",
+      null,
+      0.2417,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-08 04:00:00",
+      null,
+      -1.477,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-08 04:00:00",
+      null,
+      -1.0538,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-08 23:49:00",
+      null,
+      -2.5436,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-08 04:00:00",
+      null,
+      0.1076,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-09 04:00:00",
+      null,
+      -0.0564,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-09 04:00:00",
+      null,
+      0.0655,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-09 23:49:00",
+      null,
+      -0.8441,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-09 04:00:00",
+      null,
+      -0.4893,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-09 04:00:00",
+      null,
+      -1.8759,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-09 04:00:00",
+      null,
+      -0.7881,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-09 23:49:00",
+      null,
+      -1.2282,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-09 04:00:00",
+      null,
+      0.1201,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-10 03:29:00",
+      null,
+      -0.7665,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-10 03:29:00",
+      null,
+      -1.1774,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -0.8993,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -2.1534,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -2.4867,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -1.6459,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -3.0896,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -1.1674,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -3.7498,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-12 23:49:00",
+      null,
+      -1.7735,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-13 04:00:00",
+      null,
+      -1.1243,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-13 04:00:00",
+      null,
+      -2.3692,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-13 23:49:00",
+      null,
+      -0.8842,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-13 04:00:00",
+      null,
+      -1.9802,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-13 04:00:00",
+      null,
+      -3.3011,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-13 04:00:00",
+      null,
+      -1.301,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-13 23:49:00",
+      null,
+      -0.5919,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-13 04:00:00",
+      null,
+      -1.9805,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-14 04:00:00",
+      null,
+      0.0162,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-14 04:00:00",
+      null,
+      -0.2533,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-14 23:49:00",
+      null,
+      -3.1891,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-14 04:00:00",
+      null,
+      -0.3643,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-14 04:00:00",
+      null,
+      -0.035,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-14 04:00:00",
+      null,
+      -0.3854,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-14 23:49:00",
+      null,
+      -3.2235,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-14 04:00:00",
+      null,
+      -0.3136,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-15 04:00:00",
+      null,
+      -2.513,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-15 04:00:00",
+      null,
+      -2.625,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-15 23:49:00",
+      null,
+      -2.2698,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-15 04:00:00",
+      null,
+      -3.2702,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-15 04:00:00",
+      null,
+      -3.554,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-15 04:00:00",
+      null,
+      -2.4626,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-15 23:49:00",
+      null,
+      -4.5987,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-15 04:00:00",
+      null,
+      -2.5573,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-16 04:00:00",
+      null,
+      -0.3547,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-16 04:00:00",
+      null,
+      -0.6311,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-16 23:49:00",
+      null,
+      -1.4032,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-16 04:00:00",
+      null,
+      -0.7889,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-16 04:00:00",
+      null,
+      -2.2824,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-16 04:00:00",
+      null,
+      -1.2242,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-16 23:49:00",
+      null,
+      -1.8005,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-16 04:00:00",
+      null,
+      -0.9927,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-17 03:29:00",
+      null,
+      -2.0246,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-17 03:29:00",
+      null,
+      -2.1057,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      2.5107,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      3.1666,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      1.1083,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      2.603,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      1.6696,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      1.3784,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      0.705,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-19 23:49:00",
+      null,
+      2.9111,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-20 04:00:00",
+      null,
+      1.4322,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-20 04:00:00",
+      null,
+      1.5607,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-20 23:49:00",
+      null,
+      -0.34,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-20 04:00:00",
+      null,
+      1.2673,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-20 04:00:00",
+      null,
+      0.6651,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-20 04:00:00",
+      null,
+      0.6386,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-20 23:49:00",
+      null,
+      -0.7234,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-20 04:00:00",
+      null,
+      1.5739,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-21 04:00:00",
+      null,
+      -0.4768,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-21 04:00:00",
+      null,
+      -0.7382,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-21 23:49:00",
+      null,
+      1.0325,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-21 04:00:00",
+      null,
+      -0.6809,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-21 04:00:00",
+      null,
+      -0.7178,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-21 04:00:00",
+      null,
+      -0.6241,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-21 23:49:00",
+      null,
+      0.6257,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-21 04:00:00",
+      null,
+      -0.1038,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-22 04:00:00",
+      null,
+      1.1729,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-22 04:00:00",
+      null,
+      1.2478,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-22 23:49:00",
+      null,
+      -6.1561,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-22 04:00:00",
+      null,
+      0.4187,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-22 04:00:00",
+      null,
+      0.5681,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-22 04:00:00",
+      null,
+      0.8601,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-22 23:49:00",
+      null,
+      -7.5331,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-22 04:00:00",
+      null,
+      1.1515,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-23 04:00:00",
+      null,
+      -4.0878,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-23 04:00:00",
+      null,
+      -5.1438,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-23 23:49:00",
+      null,
+      1.3927,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-23 04:00:00",
+      null,
+      -4.8238,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-23 04:00:00",
+      null,
+      -5.5618,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-23 04:00:00",
+      null,
+      -3.93,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-23 23:49:00",
+      null,
+      1.8618,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-23 04:00:00",
+      null,
+      -4.3545,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-24 03:29:00",
+      null,
+      0.9688,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-24 03:29:00",
+      null,
+      1.507,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      1.6722,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      2.6077,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      -0.3147,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      1.7352,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      -0.2451,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      0.7367,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      -1.2376,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-26 23:49:00",
+      null,
+      1.9794,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-27 04:00:00",
+      null,
+      1.2152,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-27 04:00:00",
+      null,
+      2.023,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-27 23:49:00",
+      null,
+      -0.4656,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-27 04:00:00",
+      null,
+      1.1625,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-27 04:00:00",
+      null,
+      -0.5475,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-27 04:00:00",
+      null,
+      0.3323,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-27 23:49:00",
+      null,
+      -1.1014,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-27 04:00:00",
+      null,
+      1.4866,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016702",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      1.3383,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021842",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      2.1067,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "017731",
+      "sina_fund_estimate",
+      "2026-10-28 14:04:00",
+      null,
+      2.5926,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "018036",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      1.4677,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "012922",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      0.4669,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "021277",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      1.6781,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "016665",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      -1.0424,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ],
+    [
+      "014002",
+      "sina_fund_estimate",
+      "2026-10-28 04:00:00",
+      null,
+      2.4039,
+      null,
+      null,
+      "legacy_evidence_missing"
+    ]
+  ],
+  "reliable_qdii_metrics": {
+    "sample_count": 0,
+    "mean_absolute_error_pct_points": null,
+    "maximum_absolute_error_pct_points": null,
+    "direction_match_rate": null
+  },
+  "synthetic_parser_to_api_flow": {
+    "nature": "仅验证程序，不代表真实估值精度",
+    "days": 3,
+    "sample_count": 3,
+    "pending_count": 0,
+    "mean_absolute_error_pct_points": 0.2,
+    "maximum_absolute_error_pct_points": 0.3,
+    "source_requests": {
+      "official": 3,
+      "core": 3
+    }
+  },
+  "uncompleted": [
+    "016665 至少 5 个可靠海外配对净值日",
+    "来源时区、展示模式、收益期间与基金净值日契约",
+    "独立评审",
+    "生产迁移与部署（未经授权）"
+  ]
+}
