@@ -21,7 +21,7 @@
 | 项目 | 核查结果 |
 | --- | --- |
 | 服务器 | `ocvps`，Ubuntu 24.04、aarch64、4 核、约 24 GB 内存，根分区使用 24% |
-| 应用监听 | `fund-analysis.service` 仅监听 `127.0.0.1:8765`；应用本身无登录、无 Host 校验，FastAPI 默认的 `/docs`、`/openapi.json` 未关闭 |
+| 应用监听 | `fund-analysis.service` 仅监听 `127.0.0.1:8765`；应用本身无登录，写请求已有来源与可信 Host 校验（第 10 节），FastAPI 默认的 `/docs`、`/openapi.json` 未关闭 |
 | 公网入站 | 主机 `iptables` 的 INPUT 链仅放行 TCP 22、3030 与已建立连接，其余 REJECT；OpenResty 虽监听 80/443，但主机层不放行。云侧安全列表未核查 |
 | cloudflared | 已安装并运行（2026.3.0，systemd `cloudflared.service`，自 2026-10-20 12:29 UTC 随服务器重启启动）。以令牌方式运行，路由由 Cloudflare 控制台远程托管，只有出站连接，本地 `127.0.0.1:20241` 提供就绪与配置只读接口 |
 | 既有隧道内容 | 配置版本 54，6 条既有主机名路由加 1 条末尾默认规则（404）。这些路由属于服务器上的其他应用，与本项目无关，不得停止、重启或修改 |
@@ -48,7 +48,8 @@
                                                          └─▶ http://127.0.0.1:8765 （fund-analysis.service）
 ```
 
-复用服务器上已运行的隧道，只在 Cloudflare 控制台新增一条已发布应用路由；服务器无需任何改动。
+复用服务器上已运行的隧道，只在 Cloudflare 控制台新增一条已发布应用路由；服务器侧只增加一个环境变量
+（`FUND_ANALYSIS_WRITE_HOSTS` 写入子域，见第 10 节），其余不动。
 路由的服务地址写 `http://127.0.0.1:8765`，不写 `localhost`，避免解析到未监听的 IPv6 地址。
 
 备选：新建专用隧道，在服务器新增一个 systemd 服务和令牌文件。隔离性更好，但多出服务器变更与一份新凭据，
@@ -81,6 +82,7 @@
 | S0 | 用户 | 回答第 8 节的待确认事项 | 无 |
 | S1 | 用户 | Zero Trust 中创建自托管 Access 应用（子域、单邮箱 Allow 策略、24 小时会话） | 主机名尚无 DNS，不可达 |
 | S2 | 本方 | 只读基线：隧道配置版本与路由数、模拟账户状态与版本、两个服务与 timer 状态、持仓表指纹 | 无 |
+| S2b | 本方 | 在 `/etc/fund-analysis.env` 增加 `FUND_ANALYSIS_WRITE_HOSTS=<子域>` 并重启 `fund-analysis.service`；重启前确认采集 timer 不在运行 | 只重启 Web，无对外影响 |
 | S3 | 用户 | 现有隧道上添加已发布应用路由（子域 → `http://127.0.0.1:8765`），控制台会同时创建代理 DNS 记录 | 主机名开始可达，已受 Access 保护 |
 | S4 | 本方 | 立即做未登录外部探测（第 6 节）；任一探测拿到应用内容则立即回滚 | 无 |
 | S5 | 用户 | 手机验收（第 7 节 A–C） | 只读 |
@@ -93,7 +95,7 @@
 
 | 范围 | 影响 |
 | --- | --- |
-| 服务器文件、服务、防火墙、代码 | 无变更，不重启任何服务，采集与模拟 timer 不受影响 |
+| 服务器文件、服务、防火墙、代码 | 只改 `/etc/fund-analysis.env` 并重启 `fund-analysis.service`；不重启 cloudflared，采集与模拟 timer 不受影响 |
 | 既有隧道 | 路由配置由控制台下发并热加载，版本由 54 变为 55，路由数 6 变为 7；其他 6 条路由不应变化，S2、S7 对比确认 |
 | Cloudflare 账户 | 新增 1 个 Access 应用、1 条策略、1 条路由、1 条 DNS 记录；Zero Trust Free 需登记付款方式，不扣费 |
 | 数据面 | 页面与 API 流量在 Cloudflare 边缘终止 TLS，持仓金额、模拟账户数据与上传截图在技术上可被 Cloudflare 读取。这是 Cloudflare Tunnel 方案固有的特性，需用户接受 |
@@ -133,6 +135,10 @@
 ### A. 保护有效性
 
 第 6 节全部通过；Zero Trust 的 Access 登录日志出现用户本人的登录事件。
+
+再加一项同源写验证：已登录浏览器对新子域发起一次写请求（持仓页保存，或模拟页暂停／恢复），
+必须返回 2xx。返回 403 说明隧道的 `X-Forwarded-Proto` 或原始 `Host` 没有按预期传到应用，
+先查 `/etc/fund-analysis.env` 的 `FUND_ANALYSIS_WRITE_HOSTS` 与转发头，不要继续后续验收。
 
 ### B. 手机查看（只读）
 
@@ -221,26 +227,26 @@
 4. 是否接受页面与 API 流量经 Cloudflare 边缘终止 TLS。
 5. 手机机型、系统与浏览器，以及是否有第二个邮箱用于 C1 的拒绝测试。
 6. 生产暂停／恢复的日期与时段（隔离测试已通过，可定；建议仍选非受理窗口，下个窗口为 2026-11-04 14:00）。
-7. 第 10 节跨站请求检查的处理：是否在对外开放前补应用侧保护。
+7. 第 10 节跨站请求检查的处理已按该节第 2 项实现（统一来源与可信 Host 校验）；仅剩发布与合并时机待定。
 
 ## 9. 风险与限制
 
 - 共用隧道：拥有该 Cloudflare 账户权限者可修改任一路由。应用不校验 Access 令牌，路由配置错误即等于公开。
   可选加固是源站校验 `Cf-Access-Jwt-Assertion`，需改代码并发布，本次不做。
 - 一次性 PIN 的安全性取决于邮箱本身，丢失邮箱即丢失访问控制。
-- 应用自身没有认证与跨站请求防护。第 10 节实测：持仓创建与录入确认可被不带自定义头的跨站简单请求写入，
-  风险详情与处理选项见该节。模拟写接口因要求自定义请求头 `Idempotency-Key` 而不受影响。
+- 应用自身没有认证。跨站写请求已有统一来源与可信 Host 校验（第 10 节）：修复前持仓创建、录入确认、
+  刷新与识图可被不带自定义头的跨站简单请求触发，实测记录见该节；能自行构造请求头的非浏览器客户端仍不受限。
 - 会话过期时已打开页面的接口请求会失败，需手动刷新页面（见 C3）。
 - 刷新接口耗时接近但低于代理等待上限；若日后启用识图，需单独评估超时。
 - Zero Trust Free 为 50 用户上限，无服务等级承诺；本项目仅 1 个用户。
 - 隧道配置只在控制台可见，仓库内没有对应记录；本文是唯一的变更记录来源，实施时需补写最终子域与设置值。
 
-## 10. 写接口跨站请求检查（2026-10-28）
+## 10. 写接口跨站请求检查与处理（2026-10-28）
 
 检查对象：应用全部写路由。方法：在隔离的临时库上，用 `TestClient` 发送浏览器跨站「简单请求」——带
 `Origin: https://evil.example`、不带任何自定义头、`Content-Type` 为 `text/plain`、表单或 multipart、
 无请求体。简单请求无需预检，页面脚本可直接发出；带自定义头或使用 PUT／DELETE 的请求必须先通过预检。
-未接触生产、未改任何源码。
+检查阶段未接触生产、未改源码；处理见本节末。
 
 | 写路由 | 简单请求结果 | 判断 |
 | --- | --- | --- |
@@ -259,15 +265,33 @@
 
 实际影响取决于浏览器是否会在跨站请求中携带 Access 的会话 cookie（`CF_Authorization`）。其 `SameSite`
 属性默认值未能从官方文档确认。若为 `Lax` 或 `Strict`，跨站 POST 不会带上该 cookie，会在 Access 层被拦；
-若为 `None`，上表「可被跨站写入」的接口在用户已登录时会生效。验收时需在已登录浏览器检查 `Set-Cookie` 的
-实际 `SameSite` 值并写入验收记录。
+若为 `None`，上表「可被跨站写入」的接口在用户已登录时会生效，应用侧来源校验已独立拦住这类请求。
+验收时仍要在已登录浏览器检查 `Set-Cookie` 的实际 `SameSite` 值并写入验收记录。
 
-可选处理（均未实施；模拟写接口已有保护，下列为持仓类接口的补充）：
+处理（2026-10-28 已实施并在本地提交，`9bed5e7`；未推送、未发布）：
 
-1. 在 Access 应用的 cookie 设置中选择 `Lax` 或 `Strict`（若控制台提供该选项），不改代码。
-2. 应用侧加一个对非 GET 请求的 Origin 校验：存在 `Origin` 且主机与 `Host` 不一致则拒绝。
-   同源前端不受影响；已有 SSH 隧道访问同样同源。需要改代码并发布。
-3. 对 JSON 接口要求 `Content-Type: application/json`。前端已按此发送；同样需要改代码并发布。
+第 2 项已落地，并扩展为统一的写请求来源校验（`src/fund_analysis/web/app.py` 的 `check_write_origin`）：
 
-建议在对外开放前至少落实第 1 项并验证实际值；第 2 项改动小、覆盖面最广，是否实施由用户决定。
-本检查只报告，未修复。
+- `POST`／`PUT`／`PATCH`／`DELETE` 在读取请求体前统一校验，失败返回 `403`。
+- `Host` 主机名必须在可信列表内，默认 `127.0.0.1`、`localhost`、`::1`；隧道子域用
+  `/etc/fund-analysis.env` 的 `FUND_ANALYSIS_WRITE_HOSTS` 显式加入。这一层同时挡住 DNS rebinding：
+  Host 与 Origin 同为攻击者域名的请求不再可写。
+- `Origin` 必须等于 `scheme://原始 Host`，`Sec-Fetch-Site` 存在时必须是 `same-origin`；
+  无 `Origin` 时校验 `Referer`；三种来源头都缺失时只放行不带 Cookie 的请求，保留 `collect` CLI。
+- `fund-analysis web` 固定 `forwarded_allow_ips="127.0.0.1"`；Vite 代理改回 `changeOrigin: false`
+  以保留原始 `Host`。
+
+验证方式：隔离环境下用真实浏览器（携 `SameSite=None` Cookie）与真实 Uvicorn／HTTPS 代理核对，
+修复前跨站简单请求可写库，修复后主库与模拟库指纹、上游调用和识图调用均不变；
+回归测试见 `tests/test_write_origin.py`。真实 Tunnel 与 Access Cookie 的实际属性仍未验证，
+按第 7 节 A 项在对外开放前确认。
+
+本地复核（2026-10-28，隔离临时库 + 真实 Uvicorn，`python -m fund_analysis web`，
+`FUND_ANALYSIS_WRITE_HOSTS=fund.example`）：跨站重绑定（Host 与 Origin 同为 `evil.example`）、
+未知 Host、伪造 `X-Forwarded-Host` 三种形态均返回 403；本机 loopback、Vite `localhost:5173`、
+无来源头的 `collect` CLI 形态均返回 201；隧道形态（`Host: fund.example` + `Origin: https://fund.example`
++ 来自 `127.0.0.1` 的 `X-Forwarded-Proto: https`）返回 201。同一隧道请求若缺失 `X-Forwarded-Proto`
+返回 403，因此隧道侧必须按第 7 节 A 项确认该头确有转发。全套后端测试 382 项通过。
+
+第 1 项（Access 应用 cookie 设为 `Lax`／`Strict`，若控制台提供）仍建议落实并记录实际值，作为与来源校验
+并列的第二层。第 3 项（要求 `Content-Type: application/json`）未实施，来源校验已覆盖同类风险。
