@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import unittest
+from unittest import mock
 from datetime import datetime, timezone
+from io import BytesIO
 from zoneinfo import ZoneInfo
 
 from fund_analysis.market_quotes import (
@@ -10,57 +12,146 @@ from fund_analysis.market_quotes import (
     MarketQuoteFetchError,
     build_market_quotes_payload,
     market_session,
+    parse_backup_quote,
 )
 
 
 VERIFIED_EASTMONEY_PAYLOADS = {
     "1.000985": {
         "rc": 0,
-        "data": {
-            "f43": 586718,
-            "f57": "000985",
-            "f58": "中证全指",
-            "f59": 2,
-            "f60": 586085,
-            "f86": 1788423114,
-            "f169": 633,
-            "f170": 11,
-        },
+        "data": {"diff": [{
+            "f2": 586718,
+            "f12": "000985",
+            "f14": "中证全指",
+            "f1": 2,
+            "f18": 586085,
+            "f124": 1788423114,
+            "f4": 633,
+            "f3": 11, "f13": 1,
+        }]},
     },
     "118.AU9999": {
         "rc": 0,
-        "data": {
-            "f43": 97230,
-            "f57": "AU9999",
-            "f58": "黄金9999",
-            "f59": 2,
-            "f60": 95750,
-            "f86": 1788451404,
-            "f169": 1480,
-            "f170": 155,
-        },
+        "data": {"diff": [{
+            "f2": 97230,
+            "f12": "AU9999",
+            "f14": "黄金9999",
+            "f1": 2,
+            "f18": 95750,
+            "f124": 1788451404,
+            "f4": 1480,
+            "f3": 155, "f13": 118,
+        }]},
     },
-    "100.NDX": {
+    "100.NDX100": {
         "rc": 0,
-        "data": {
-            "f43": 2658964,
-            "f57": "NDX",
-            "f58": "纳斯达克",
-            "f59": 2,
-            "f60": 2621783,
-            "f86": 1788451410,
-            "f169": 37181,
-            "f170": 142,
-        },
+        "data": {"diff": [{
+            "f2": 2910381,
+            "f12": "NDX100",
+            "f14": "纳斯达克100",
+            "f1": 2,
+            "f18": 2982252,
+            "f124": 1792687104,
+            "f4": -71871,
+            "f3": -241, "f13": 100,
+        }]},
     },
 }
 
 
 def _payload_for_params(_url: str, params: dict[str, str]) -> dict[str, object]:
-    return VERIFIED_EASTMONEY_PAYLOADS[params["secid"]]
+    return VERIFIED_EASTMONEY_PAYLOADS[params["secids"]]
+
+
+VERIFIED_SINA_GOLD_QUOTE = (
+    'var hq_str_SGE_AU9999="AU9999,沪  金99,Au99.99,869.00,867.94,860.31,'
+    '862.50,873.00,860.20,860.70,867.50,868.50,110.00,50.00,643198.00,'
+    '558261248000.00,2026-10-28 15:30:09,0.96%";'
+)
+
+
+class GoldBackupQuoteTest(unittest.TestCase):
+    def test_uses_previous_close_instead_of_previous_average(self):
+        quote = parse_backup_quote("AU9999", VERIFIED_SINA_GOLD_QUOTE)
+        self.assertEqual((quote.last_price, quote.previous_close), (869.00, 860.70))
+        self.assertEqual((quote.change_value, quote.change_pct), (8.30, 0.96))
+        self.assertEqual(quote.quoted_at, "2026-10-28T15:30:09+08:00")
+        self.assertEqual(quote.trade_date, "2026-10-28")
+        self.assertEqual(quote.source, "sina_market_quote")
+        self.assertEqual(quote.payload["fields"][5], "860.31")
+
+    def test_rejects_invalid_close_and_inconsistent_percentage(self):
+        for old, new in (
+            ("860.70", "0"), ("860.70", "-1"), ("860.70", ""),
+            ("860.70", "nan"), ("860.70", "860.31"),
+            ("0.96%", "1.01%"), ("0.96%", "-0.96%"),
+            ("Au99.99", "Au99.95"),
+        ):
+            with self.subTest(old=old, new=new), self.assertRaises(MarketQuoteFetchError):
+                parse_backup_quote("AU9999", VERIFIED_SINA_GOLD_QUOTE.replace(old, new))
+
+    def test_primary_failure_uses_gold_backup_and_preserves_failure_evidence(self):
+        def get_json(url, params):
+            if params["secids"] == "118.AU9999":
+                raise MarketQuoteFetchError("HTTP Error 502: Bad Gateway")
+            return _payload_for_params(url, params)
+
+        provider = EastmoneyMarketQuoteProvider(json_getter=get_json)
+        for raw, succeeds in (
+            (VERIFIED_SINA_GOLD_QUOTE, True),
+            (VERIFIED_SINA_GOLD_QUOTE.replace("0.96%", "1.01%"), False),
+        ):
+            with self.subTest(succeeds=succeeds), mock.patch(
+                "fund_analysis.market_quotes.urlopen", return_value=BytesIO(raw.encode("gb18030"))
+            ):
+                batch = provider.fetch_all()
+            self.assertEqual(set(batch.quotes) - {"AU9999"}, {"CSI_ALL_SHARE", "NDX"})
+            if succeeds:
+                self.assertFalse(batch.failures)
+                quote = batch.quotes["AU9999"]
+                self.assertEqual((quote.source, quote.previous_close), ("sina_market_quote", 860.70))
+                self.assertEqual(quote.warnings, [{
+                    "code": "primary_source_failed", "message": "HTTP Error 502: Bad Gateway",
+                }])
+            else:
+                self.assertNotIn("AU9999", batch.quotes)
+                self.assertIn("502", batch.failures["AU9999"])
+                self.assertIn("inconsistent quote prices and change", batch.failures["AU9999"])
 
 
 class MarketQuoteProviderTest(unittest.TestCase):
+    def setUp(self):
+        patcher = mock.patch.object(EastmoneyMarketQuoteProvider, "_fetch_backup", side_effect=MarketQuoteFetchError("backup down"))
+        self.backup = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_backup_gold_and_index_preserve_source_time_and_reject_wrong_instrument(self):
+        gold = 'var hq_str_SGE_AU9999="AU9999,沪 金99,Au99.99,868.60,874.16,880.30,874.50,883.98,868.60,880.30,868.60,877.90,39.00,1.00,55654.00,48650100000.00,2026-10-23 00:48:19,-1.33%";'
+        fields = ["0"] * 33
+        for i, value in {2: ".NDX", 3: "28974.21", 4: "29822.52", 30: "2026-10-22 12:51:39", 31: "-848.31", 32: "-2.84"}.items():
+            fields[i] = value
+        ndx = 'v_usNDX="' + "~".join(fields) + '";'
+        g = parse_backup_quote("AU9999", gold)
+        n = parse_backup_quote("NDX", ndx)
+        self.assertEqual((g.last_price, g.previous_close, g.source), (868.60, 880.30, "sina_market_quote"))
+        self.assertEqual(n.quoted_at, "2026-10-22T12:51:39-04:00")
+        self.assertEqual(n.source, "tencent_market_quote")
+        for raw in (ndx.replace(".NDX", "OTHER"), ndx.replace("28974.21", "0"), 'v_usNDX="";'):
+            with self.assertRaises(MarketQuoteFetchError):
+                parse_backup_quote("NDX", raw)
+        fields[2], fields[3], fields[4] = "000985", "5154.03", "5283.50"
+        fields[30], fields[31], fields[32] = "20261022161450", "-129.47", "-2.45"
+        csi = parse_backup_quote("CSI_ALL_SHARE", 'v_sh000985="' + "~".join(fields) + '";')
+        self.assertEqual(csi.quoted_at, "2026-10-22T16:14:50+08:00")
+        with self.assertRaises(MarketQuoteFetchError):
+            parse_backup_quote("AU9999", gold.replace("-1.33%", "1.33%"))
+        self.backup.side_effect = None
+        self.backup.return_value = n
+        provider = EastmoneyMarketQuoteProvider(json_getter=lambda *_: (_ for _ in ()).throw(MarketQuoteFetchError("502")))
+        batch = provider.fetch_all()
+        self.assertFalse(batch.failures)
+        self.assertEqual(batch.quotes["NDX"].warnings[0]["message"], "502")
+
     def test_parses_verified_eastmoney_fields_for_all_symbols(self) -> None:
         calls: list[tuple[str, dict[str, str]]] = []
 
@@ -74,7 +165,7 @@ class MarketQuoteProviderTest(unittest.TestCase):
         ndx = provider.fetch("NDX")
 
         self.assertEqual([item[0] for item in calls], [EASTMONEY_MARKET_QUOTE_URL] * 3)
-        self.assertEqual([item[1]["secid"] for item in calls], ["1.000985", "118.AU9999", "100.NDX"])
+        self.assertEqual([item[1]["secids"] for item in calls], ["1.000985", "118.AU9999", "100.NDX100"])
 
         self.assertEqual(csi.name, "中证全指")
         self.assertEqual(csi.last_price, 5867.18)
@@ -93,21 +184,21 @@ class MarketQuoteProviderTest(unittest.TestCase):
         self.assertEqual(gold.quoted_at, "2026-09-04T00:03:24+08:00")
 
         self.assertEqual(ndx.name, "纳斯达克 100")
-        self.assertEqual(ndx.last_price, 26589.64)
-        self.assertEqual(ndx.previous_close, 26217.83)
-        self.assertEqual(ndx.change_value, 371.81)
-        self.assertEqual(ndx.change_pct, 1.42)
-        self.assertEqual(ndx.trade_date, "2026-09-03")
-        self.assertEqual(ndx.quoted_at, "2026-09-03T12:03:30-04:00")
+        self.assertEqual(ndx.last_price, 29103.81)
+        self.assertEqual(ndx.previous_close, 29822.52)
+        self.assertEqual(ndx.change_value, -718.71)
+        self.assertEqual(ndx.change_pct, -2.41)
+        self.assertEqual(ndx.trade_date, "2026-10-22")
+        self.assertEqual(ndx.quoted_at, "2026-10-22T12:38:24-04:00")
 
     def test_gold_night_session_uses_next_calendar_trade_date(self) -> None:
         evening = int(datetime(2026, 9, 3, 20, 0, 5, tzinfo=ZoneInfo("Asia/Shanghai")).timestamp())
 
         def get_json(_url: str, _params: dict[str, str]):
             payload = {
-                "data": dict(VERIFIED_EASTMONEY_PAYLOADS["118.AU9999"]["data"]),
+                "data": {"diff": [dict(VERIFIED_EASTMONEY_PAYLOADS["118.AU9999"]["data"]["diff"][0])]},
             }
-            payload["data"]["f86"] = evening
+            payload["data"]["diff"][0]["f124"] = evening
             return payload
 
         quote = EastmoneyMarketQuoteProvider(json_getter=get_json).fetch("AU9999")
@@ -117,15 +208,16 @@ class MarketQuoteProviderTest(unittest.TestCase):
     def test_rejects_wrong_upstream_symbol(self) -> None:
         provider = EastmoneyMarketQuoteProvider(
             json_getter=lambda _url, _params: {
-                "data": {
-                    "f43": 1,
-                    "f57": "OTHER",
-                    "f59": 2,
-                    "f60": 1,
-                    "f86": 1788451404,
-                    "f169": 0,
-                    "f170": 0,
-                }
+                "data": {"diff": [{
+                    "f13": 100,
+                    "f2": 1,
+                    "f12": "NDX",
+                    "f1": 2,
+                    "f18": 1,
+                    "f124": 1788451404,
+                    "f4": 0,
+                    "f3": 0,
+                }]}
             }
         )
         with self.assertRaisesRegex(MarketQuoteFetchError, "unexpected upstream symbol"):
@@ -133,29 +225,29 @@ class MarketQuoteProviderTest(unittest.TestCase):
 
     def test_rejects_empty_numeric_fields_and_zero_timestamp(self) -> None:
         def missing_price(_url: str, _params: dict[str, str]):
-            payload = {"data": dict(VERIFIED_EASTMONEY_PAYLOADS["1.000985"]["data"])}
-            payload["data"]["f43"] = "-"
+            payload = {"data": {"diff": [dict(VERIFIED_EASTMONEY_PAYLOADS["1.000985"]["data"]["diff"][0])]}}
+            payload["data"]["diff"][0]["f2"] = "-"
             return payload
 
         def zero_timestamp(_url: str, _params: dict[str, str]):
-            payload = {"data": dict(VERIFIED_EASTMONEY_PAYLOADS["1.000985"]["data"])}
-            payload["data"]["f86"] = 0
+            payload = {"data": {"diff": [dict(VERIFIED_EASTMONEY_PAYLOADS["1.000985"]["data"]["diff"][0])]}}
+            payload["data"]["diff"][0]["f124"] = 0
             return payload
 
-        with self.assertRaisesRegex(MarketQuoteFetchError, "invalid numeric quote field f43"):
+        with self.assertRaisesRegex(MarketQuoteFetchError, "invalid numeric quote field f2"):
             EastmoneyMarketQuoteProvider(json_getter=missing_price).fetch("CSI_ALL_SHARE")
         with self.assertRaisesRegex(MarketQuoteFetchError, "invalid quote timestamp"):
             EastmoneyMarketQuoteProvider(json_getter=zero_timestamp).fetch("CSI_ALL_SHARE")
 
     def test_fetch_all_keeps_successes_when_one_symbol_fails(self) -> None:
         def get_json(url: str, params: dict[str, str]):
-            if params["secid"] == "100.NDX":
+            if params["secids"] == "100.NDX100":
                 raise MarketQuoteFetchError("NDX timeout")
             return _payload_for_params(url, params)
 
         batch = EastmoneyMarketQuoteProvider(json_getter=get_json).fetch_all()
         self.assertEqual(set(batch.quotes), {"CSI_ALL_SHARE", "AU9999"})
-        self.assertEqual(batch.failures, {"NDX": "NDX timeout"})
+        self.assertEqual(batch.failures, {"NDX": "NDX timeout; backup: backup down"})
 
     def test_fetch_all_records_each_failure_when_all_fail(self) -> None:
         def get_json(_url: str, _params: dict[str, str]):
@@ -164,7 +256,7 @@ class MarketQuoteProviderTest(unittest.TestCase):
         batch = EastmoneyMarketQuoteProvider(json_getter=get_json).fetch_all()
         self.assertEqual(batch.quotes, {})
         self.assertEqual(set(batch.failures), {"CSI_ALL_SHARE", "AU9999", "NDX"})
-        self.assertTrue(all(error == "upstream down" for error in batch.failures.values()))
+        self.assertTrue(all(error == "upstream down; backup: backup down" for error in batch.failures.values()))
 
 
 class MarketQuotePayloadTest(unittest.TestCase):

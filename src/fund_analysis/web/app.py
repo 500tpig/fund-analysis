@@ -373,6 +373,8 @@ def _refresh_market_quotes(storage: LocalStorage, provider: Any) -> dict[str, An
         error_message=_summarize_failures(failure_rows),
         evidence={
             "success_symbols": list(quotes),
+            "sources": {symbol: quote.source for symbol, quote in quotes.items()},
+            "warnings": {symbol: quote.warnings for symbol, quote in quotes.items() if quote.warnings},
             "failures": failures,
         },
     )
