@@ -18,6 +18,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fund_analysis.simulation.acceptance import at, FIXTURE_CODE
+from fund_analysis.simulation.nav_sources import NavObservation
 from fund_analysis.simulation.rules import FIXTURE_QDII_C_V1, fixture_variant
 from fund_analysis.simulation.service import (
     DAILY_CLOSE_SLOT,
@@ -50,6 +51,23 @@ CYCLE_DAY = datetime.date(2026, 10, 21)
 PREV_NAV_DAY = datetime.date(2026, 10, 16)
 STRATEGY_SEEN = at(2026, 10, 21, 13, 0)
 NAV_SEEN = at(2026, 10, 16, 18, 30)
+
+
+class ScriptedNavSource:
+    """按测试脚本披露净值：`available` 里有的日期才取得到，最新查询返回其中最晚一天。"""
+
+    name = "scripted_nav"
+
+    def __init__(self, available: dict[datetime.date, str]):
+        self.available = dict(available)
+
+    def fetch(self, code: str, nav_date: datetime.date | None, observed_at: datetime.datetime) -> NavObservation | None:
+        if code != FIXTURE_CODE or not self.available:
+            return None
+        day = max(self.available) if nav_date is None else nav_date
+        if day not in self.available:
+            return None
+        return NavObservation(code, day, Decimal(self.available[day]), self.name, observed_at)
 
 
 class SimulationStage7TestCase(unittest.TestCase):
@@ -954,6 +972,89 @@ class ScheduledTickTest(SimulationStage7TestCase):
         )
         actions = service.scheduled_tick(now=at(2026, 10, 14, 23, 35), settle=False)["actions"]
         self.assertEqual([action["action"] for action in actions], ["cycles", "daily_close"])
+
+
+class PausedSettlementTickTest(SimulationStage7TestCase):
+    """暂停后既有订单经调度入口继续结算（隔离 fixture 库，模拟生产的分阶段推进）。
+
+    生产场景：周三受理的订单在暂停后，经 tick 的结算槽依次完成「等净值 → 待确认 → 已完成」，
+    暂停只阻止新增买入。这里用可控净值来源复现该时序，覆盖在三个不同阶段暂停。
+    """
+
+    STEPS = (
+        # 受理（窗口内，不在结算槽）
+        (at(2026, 10, 21, 14, 5), "awaiting_nav"),
+        # 18:30 结算槽：10-21 净值尚未披露，订单继续等待
+        (at(2026, 10, 22, 18, 35), "awaiting_nav"),
+        # 21:30 结算槽：净值已披露，转待确认
+        (at(2026, 10, 22, 21, 35), "awaiting_confirmation"),
+        # 确认到期（T+2 工作日 18:00）后的 18:30 结算槽
+        (at(2026, 10, 23, 18, 35), "settled"),
+    )
+
+    def run_schedule(self, pause_after: int) -> tuple[SimulationService, str, str]:
+        service = self.service(name=f"paused-after-{pause_after}.db")
+        account_id = self.strategy_account(service)
+        self.seed_nav(service)
+        source = ScriptedNavSource({PREV_NAV_DAY: "1.3000"})
+        order_id = ""
+        for index, (when, expected) in enumerate(self.STEPS):
+            if index == 2:
+                source.available[CYCLE_DAY] = "1.2500"
+            service.scheduled_tick(now=when, nav_source=source)
+            orders = service.list_orders(account_id)["items"]
+            self.assertEqual(len(orders), 1, f"步骤 {index} 订单数")
+            self.assertEqual(orders[0]["status"], expected, f"步骤 {index} 订单状态")
+            order_id = orders[0]["id"]
+            if index == pause_after:
+                paused = service.pause(
+                    account_id, "p", service.account_view(account_id)["version"],
+                    now=when + datetime.timedelta(minutes=1),
+                )
+                self.assertEqual((paused["status"], paused["pause_reason"]), ("paused", "manual"))
+            account = service.account_view(account_id)
+            expected_status = "paused" if index >= pause_after else "active"
+            self.assertEqual(account["status"], expected_status, f"步骤 {index} 账户状态")
+        return service, account_id, order_id
+
+    def test_pause_at_each_stage_does_not_block_settlement(self) -> None:
+        stages = {0: "受理后等净值", 1: "净值未披露的结算槽后", 2: "已待确认"}
+        for pause_after, label in stages.items():
+            with self.subTest(stage=label):
+                service, account_id, order_id = self.run_schedule(pause_after)
+                detail = service.order_detail(order_id)
+                self.assertEqual(
+                    (detail["status"], detail["nav_value"], detail["confirmed_shares"], detail["fee"]),
+                    ("settled", "1.2500", "400.00", "0.00"),
+                )
+                view = service.account_view(account_id)
+                self.assertEqual((view["status"], view["pause_reason"]), ("paused", "manual"))
+                self.assertEqual(view["balances"]["available"], "199500.00")
+                self.assertEqual(view["balances"]["frozen"], "0.00")
+                self.assertEqual(service.positions_view(account_id)[0]["shares"], "400.00")
+                # 暂停期间没有产生第二笔订单或第二条运行记录
+                self.assertEqual(len(service.list_orders(account_id)["items"]), 1)
+                self.assertEqual(len(service.list_runs(account_id)["items"]), 1)
+                self.assertEqual(service.verify(), [])
+
+    def test_paused_account_keeps_closing_and_skips_next_cycle(self) -> None:
+        service, account_id, order_id = self.run_schedule(0)
+        source = ScriptedNavSource({PREV_NAV_DAY: "1.3000", CYCLE_DAY: "1.2500"})
+        # 暂停账户的日终快照照常生成
+        actions = service.scheduled_tick(now=at(2026, 10, 23, 23, 35), nav_source=source)["actions"]
+        close = [action for action in actions if action["action"] == "daily_close"]
+        self.assertEqual(len(close), 1)
+        self.assertTrue(close[0]["created"])
+        # 下一个周三窗口内：运行已落定为 completed，该基金项因暂停跳过，不产生订单
+        actions = service.scheduled_tick(now=at(2026, 10, 28, 14, 5), nav_source=source)["actions"]
+        runs = {run["cycle_date"]: run for run in actions[0]["runs"]}
+        self.assertEqual(runs["2026-10-28"]["status"], "completed")
+        item = self.item(service, runs["2026-10-28"]["id"])
+        self.assertEqual((item["status"], item["reason_code"], item["order_id"]), ("skipped", "account_paused", None))
+        self.assertEqual(len(service.list_orders(account_id)["items"]), 1)
+        self.assertEqual(service.order_detail(order_id)["status"], "settled")
+        self.assertEqual(service.account_view(account_id)["status"], "paused")
+        self.assertEqual(service.verify(), [])
 
 
 class ProductionBoundaryTest(SimulationStage7TestCase):
