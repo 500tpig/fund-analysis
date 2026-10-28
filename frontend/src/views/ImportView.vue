@@ -54,9 +54,11 @@ const blockingIssues = new Set([
   'share_class_mismatch',
   'share_class_ambiguous',
   'skipped_non_fund',
+  'profit_conflict',
 ])
 
 const issueLabels: Record<string, string> = {
+  profit_conflict: '多图收益不一致，请核对收益字段',
   code_missing: '缺少基金代码',
   name_missing: '缺少基金名称',
   amount_missing: '缺少持仓金额',
@@ -152,7 +154,7 @@ function entryItems(): HoldingsEntryItem[] {
       name: candidate.name?.trim() ?? '',
       amount: candidate.amount?.trim() ?? '',
     }
-    for (const field of ['shares', 'cost', 'holding_profit_rate', 'daily_profit', 'cumulative_profit'] as const) {
+    for (const field of ['shares', 'cost', 'holding_profit_rate', 'daily_profit', 'cumulative_profit', 'imported_holding_profit', 'profit_snapshot_date', 'profit_source', 'daily_profit_date'] as const) {
       const value = candidate[field]?.trim()
       if (value) item[field] = value
     }
@@ -527,6 +529,22 @@ onUnmounted(() => {
           <details class="entry-optional-fields">
             <summary>其他识别字段</summary>
             <div class="entry-field-grid mt-3">
+              <label><span>截图持有收益</span><Input
+                v-model="candidate.imported_holding_profit"
+                inputmode="decimal"
+              /></label>
+              <label><span>截图日期</span><Input
+                v-model="candidate.profit_snapshot_date"
+                type="date"
+              /></label>
+              <label><span>收益来源</span><Input
+                v-model="candidate.profit_source"
+                maxlength="80"
+              /></label>
+              <label><span>日收益日期</span><Input
+                v-model="candidate.daily_profit_date"
+                type="date"
+              /></label>
               <label><span>持有收益率</span><Input
                 v-model="candidate.holding_profit_rate"
                 inputmode="decimal"
@@ -539,6 +557,13 @@ onUnmounted(() => {
                 v-model="candidate.cumulative_profit"
                 inputmode="decimal"
               /></label>
+              <Button
+                v-if="candidate.issues.includes('profit_conflict')"
+                variant="secondary"
+                @click="candidate.issues = candidate.issues.filter((issue) => issue !== 'profit_conflict')"
+              >
+                已核对收益字段
+              </Button>
             </div>
           </details>
         </article>
@@ -614,7 +639,21 @@ onUnmounted(() => {
             v-for="row in preview.rows.filter((item) => item.action !== 'remove')"
             :key="`${row.action}-${row.code}`"
           >
-            <div><strong>{{ row.name }}</strong><code>{{ row.code }}</code></div><span class="font-numeric">¥{{ row.amount }}</span><span :class="`entry-action entry-action--${row.action}`">{{ actionLabel(row.action) }}</span>
+            <div>
+              <strong>{{ row.name }}</strong><code>{{ row.code }}</code>
+              <div
+                v-if="row.imported_holding_profit != null"
+                class="text-xs text-(--text-secondary)"
+              >
+                {{ row.profit_source }} · {{ row.profit_snapshot_date }} · 持有收益 {{ row.imported_holding_profit }}
+              </div>
+              <div
+                v-if="row.daily_profit_date"
+                class="text-xs text-(--text-secondary)"
+              >
+                {{ row.daily_profit_date }} 收益 {{ row.daily_profit }}
+              </div>
+            </div><span class="font-numeric">¥{{ row.amount }}</span><span :class="`entry-action entry-action--${row.action}`">{{ actionLabel(row.action) }}</span>
           </article>
         </div>
 

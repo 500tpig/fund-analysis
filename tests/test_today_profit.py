@@ -88,6 +88,20 @@ def payload(
     )
 
 
+class ImportedProfitSnapshotTest(unittest.TestCase):
+    def test_dated_imports_group_by_date_and_source_and_keep_zero(self) -> None:
+        rows = []
+        for code, day, source, value in [("000001", "2026-09-08", "支付宝", "10.01"), ("000002", "2026-09-07", "支付宝", "-20.02"), ("000003", "2026-09-08", "其他平台", "0.00")]:
+            rows.append({**holding(code, 1000, daily_profit=float(value)), "daily_profit_date": day, "profit_source": source})
+        result = payload(rows)
+        today = result["summary"]["today"]
+        self.assertEqual(len(today["imported_dated"]), 3)
+        self.assertEqual(sum(item["count"] for item in today["imported_dated"]), 3)
+        self.assertIsNone(today["verifiable"]["profit"])
+        self.assertIsNone(today["imported_undated"]["profit"])
+        self.assertFalse(any("imported_undated" in row["today_profit"]["reason_codes"] for row in result["rows"]))
+
+
 class TodayProfitSelectionTest(unittest.TestCase):
     def test_monitoring_without_amount_date_and_official_switch(self) -> None:
         holdings = [holding("A", 10000, daily_profit=999)]

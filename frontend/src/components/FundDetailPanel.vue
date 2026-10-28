@@ -335,7 +335,7 @@ function selectCurveTab(value: string): void {
       </div>
       <div class="metric-band__item">
         <div class="metric-band__label">
-          持有收益
+          {{ fund.holding_profit_amount_source === 'imported_snapshot' ? `${fund.profit_source}持有收益` : '持有收益' }}
         </div>
         <div
           class="metric-band__value"
@@ -348,6 +348,7 @@ function selectCurveTab(value: string): void {
           :class="valueStateClass(fund.holding_profit_rate_state, 'muted')"
         >
           <span>{{ formatPercent(fund.holding_profit_rate) }}</span>
+          <span v-if="fund.profit_snapshot_date"> · {{ fund.profit_snapshot_date }}</span>
           <span v-if="fund.holding_profit_conflict"> · 口径冲突</span>
         </div>
       </div>
@@ -535,7 +536,7 @@ function selectCurveTab(value: string): void {
           >{{ signedMoney(fund.official_scenario?.amount ?? null) }}</span>
         </div>
         <div class="compare-sheet__row">
-          <span class="compare-sheet__label">导入收益</span>
+          <span class="compare-sheet__label">{{ fund.imported_daily_profit?.dated ? `${fund.imported_daily_profit.return_date} 收益` : '导入收益' }}</span>
           <span class="compare-sheet__value">{{ fund.imported_daily_profit ? signedMoney(fund.imported_daily_profit.amount) : '—' }}</span>
         </div>
         <div class="compare-sheet__row">

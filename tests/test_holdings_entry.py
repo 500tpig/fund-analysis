@@ -204,6 +204,60 @@ class HoldingsEntryApiTest(unittest.TestCase):
                 response = client.post("/api/holdings/entry/recognize", files=self._files())
                 self.assertEqual((response.status_code, response.json()["detail"]), (status, detail))
 
+    def test_snapshot_profit_round_trip_preserves_cost_and_does_not_double_count(self) -> None:
+        self.storage.add_holding({"code": "110011", "name": "测试基金", "amount": "1000", "cost": "1800"})
+        item = {
+            "code": "110011", "name": "测试基金", "amount": "900.00",
+            "imported_holding_profit": "-100.00", "holding_profit_rate": "-10.00",
+            "profit_snapshot_date": "2026-10-23", "profit_source": "支付宝",
+            "daily_profit": "-12.34", "daily_profit_date": "2026-10-22",
+        }
+        response = self.client.post("/api/holdings/entry/confirm", json={"mode": "merge", "items": [item]})
+        self.assertEqual(response.status_code, 200, response.text)
+        raw = self.storage.get_all_holdings()[0]
+        self.assertEqual(raw["cost"], 1800)
+        result = self.client.get("/api/holdings").json()
+        row = result["rows"][0]
+        self.assertEqual(row["holding_profit"], -100)
+        self.assertEqual(row["holding_profit_amount_source"], "imported_snapshot")
+        self.assertEqual(row["profit_snapshot_date"], "2026-10-23")
+        self.assertFalse(row["holding_profit_conflict"])
+        self.assertTrue(row["imported_daily_profit"]["dated"])
+        self.assertEqual(row["imported_daily_profit"]["return_date"], "2026-10-22")
+        today = result["summary"]["today"]
+        self.assertEqual(today["imported_dated"], [{"return_date": "2026-10-22", "source": "支付宝", "count": 1, "profit": -12.34}])
+        self.assertEqual(today["imported_undated"]["count"], 0)
+        self.assertIsNone(today["verifiable"]["profit"])
+
+        # 手工改金额使持有收益快照失效，已注明日期的日收益仍是历史事实。
+        self.storage.update_holding(raw["id"], {"amount": "901"})
+        changed = self.storage.get_all_holdings()[0]
+        self.assertIsNone(changed["imported_holding_profit"])
+        self.assertIsNone(changed["profit_snapshot_date"])
+        self.assertIsNone(changed["holding_profit_rate"])
+        self.assertEqual(changed["daily_profit_date"], "2026-10-22")
+
+    def test_profit_snapshot_requires_provenance_and_valid_dates(self) -> None:
+        base = {"code": "110011", "name": "测试基金", "amount": "900"}
+        for extra in (
+            {"imported_holding_profit": "0"},
+            {"imported_holding_profit": "NaN", "profit_snapshot_date": "2026-10-23", "profit_source": "支付宝"},
+            {"daily_profit_date": "2026-10-22", "profit_source": "支付宝"},
+            {"daily_profit": "0", "daily_profit_date": "2026-02-30", "profit_source": "支付宝"},
+            {"daily_profit": "0", "daily_profit_date": "2026-10-22garbage", "profit_source": "支付宝"},
+        ):
+            with self.subTest(extra=extra):
+                response = self.client.post("/api/holdings/entry/preview", json={"mode": "merge", "items": [{**base, **extra}]})
+                self.assertEqual(response.status_code, 400, response.text)
+        self.assertEqual(self.storage.get_all_holdings(), [])
+
+    def test_merge_invalidates_snapshot_without_reconfirming_it(self) -> None:
+        data = {"code": "110011", "name": "测试基金", "amount": "900", "cost": "1800", "imported_holding_profit": "0", "profit_snapshot_date": "2026-10-23", "profit_source": "支付宝"}
+        self.storage.add_holding(data)
+        self.storage.apply_holdings_entry([{"code": "110011", "name": "测试基金", "amount": "901"}], "merge")
+        self.assertIsNone(self.storage.get_all_holdings()[0]["imported_holding_profit"])
+        self.assertEqual(self.storage.get_all_holdings()[0]["cost"], 1800)
+
     def test_preview_is_dry_run_and_rejects_duplicates(self) -> None:
         self.storage.add_holding({"code": "000001", "name": "保留基金", "amount": 500})
         payload = {

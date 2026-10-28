@@ -252,6 +252,13 @@ def holding_profit_quality(
     holding: Mapping[str, Any],
     profit_amount: float | None,
 ) -> dict[str, Any]:
+    if decimal_or_none(holding.get("imported_holding_profit")) is not None:
+        return {
+            "holding_profit_amount_source": "imported_snapshot",
+            "holding_profit_rate_source": "imported_snapshot" if holding.get("holding_profit_rate") is not None else None,
+            "holding_profit_conflict": False,
+            "holding_profit_conflict_reason_codes": [],
+        }
     cost = decimal_or_none(holding.get("cost"))
     imported_rate = decimal_or_none(holding.get("holding_profit_rate"))
     amount_source = (
@@ -327,6 +334,8 @@ def build_row_profit_fields(
             official_scenario=None,
             estimate_scenario=None,
             imported_daily=imported_daily,
+            imported_date=parse_iso_date(holding.get("daily_profit_date")),
+            imported_source=holding.get("profit_source"),
             amount_nav_date=amount_nav_date,
             amount_basis_status=BASIS_UNKNOWN,
             amount_basis_source=None,
@@ -403,7 +412,7 @@ def build_row_profit_fields(
             reasons.extend(estimate_scenario["reason_codes"])
         else:
             reasons.extend(amount_reasons)
-        if imported_daily is not None:
+        if imported_daily is not None and not holding.get("daily_profit_date"):
             reasons.append("imported_undated")
         today_profit = empty_profit(
             basis_amount=basis_amount,
@@ -417,6 +426,8 @@ def build_row_profit_fields(
         official_scenario=official_scenario,
         estimate_scenario=estimate_scenario,
         imported_daily=imported_daily,
+        imported_date=parse_iso_date(holding.get("daily_profit_date")),
+        imported_source=holding.get("profit_source"),
         amount_nav_date=amount_nav_date,
         amount_basis_status=amount_basis_status,
         amount_basis_source=amount_basis_source if amount_nav_date else None,
@@ -430,6 +441,8 @@ def _row_profit_payload(
     official_scenario: dict[str, Any] | None,
     estimate_scenario: dict[str, Any] | None,
     imported_daily: float | None,
+    imported_date: date | None,
+    imported_source: str | None,
     amount_nav_date: date | None,
     amount_basis_status: str,
     amount_basis_source: str | None,
@@ -447,8 +460,10 @@ def _row_profit_payload(
             if imported_daily is None
             else {
                 "amount": imported_daily,
-                "dated": False,
-                "label": "历史导入收益，日期未记录",
+                "dated": imported_date is not None,
+                "return_date": imported_date.isoformat() if imported_date else None,
+                "source": imported_source,
+                "label": f"{imported_source} {imported_date.isoformat()} 收益" if imported_date else "历史导入收益，日期未记录",
             }
         ),
         "estimate_basis_status": estimate_basis.get("status"),
@@ -794,7 +809,20 @@ def build_today_summary(
         for row in fund_rows
         if isinstance(row.get("imported_daily_profit"), Mapping)
         and row["imported_daily_profit"].get("amount") is not None
+        and not row["imported_daily_profit"].get("dated")
     ]
+
+    imported_dated: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in fund_rows:
+        item = row.get("imported_daily_profit")
+        if not item or not item.get("dated"):
+            continue
+        key = (item["return_date"], item["source"])
+        bucket = imported_dated.setdefault(key, {"return_date": key[0], "source": key[1], "profit": Decimal("0.00"), "count": 0})
+        bucket["profit"] += cny_decimal(item["amount"])
+        bucket["count"] += 1
+    for bucket in imported_dated.values():
+        bucket["profit"] = float(bucket["profit"])
 
     verifiable = _bucket_from_today(included_rows)
     official_measurement = _bucket_from_today(official_included)
@@ -895,6 +923,7 @@ def build_today_summary(
         "amount_basis_coverage": _coverage(len(amount_basis_rows), amount_basis_rows),
         "verifiable_coverage": _coverage(len(included_rows), included_rows),
         "excluded": excluded,
+        "imported_dated": sorted(imported_dated.values(), key=lambda item: item["return_date"], reverse=True),
         "imported_undated": {
             "count": len(imported_rows),
             "profit": float(imported_profit) if imported_present else None,

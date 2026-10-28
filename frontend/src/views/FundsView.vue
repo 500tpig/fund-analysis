@@ -319,6 +319,13 @@ const heroItems = computed<HeroMetric[]>(() => {
       value: holdingProfit == null ? '暂无' : signedCompactMoney(holdingProfit),
       state: pnlState(holdingProfit),
     },
+    ...(today?.imported_dated ?? []).map((item) => ({
+      key: `imported-${item.return_date}-${item.source}`,
+      label: `${item.return_date.slice(5)} ${item.source}收益`,
+      value: signedCompactMoney(item.profit),
+      hint: `${item.count}/${funds.value?.summary.fund_holding_count ?? 0} 只`,
+      state: pnlState(item.profit),
+    })),
   ]
 })
 

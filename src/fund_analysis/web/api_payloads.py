@@ -145,6 +145,9 @@ def build_data_freshness_api_payload(
 
 
 def _holding_profit_amount(holding: Mapping[str, Any]) -> float | None:
+    imported = _cny_money(holding.get("imported_holding_profit"))
+    if imported is not None:
+        return imported
     amount = _float_or_none(holding.get("amount"))
     cost = _float_or_none(holding.get("cost"))
     rate = _float_or_none(holding.get("holding_profit_rate"))
@@ -162,6 +165,8 @@ def _holding_profit_rate(
     rate = _float_or_none(holding.get("holding_profit_rate"))
     if rate is not None:
         return rate
+    if holding.get("imported_holding_profit") is not None:
+        return None
     cost = _float_or_none(holding.get("cost"))
     if cost is not None and cost != 0 and profit_amount is not None:
         return profit_amount / cost * 100
@@ -517,6 +522,8 @@ def build_holdings_api_payload(
                     else (estimate_failures_by_code.get(code) or None)
                 ),
                 "holding_profit": _cny_money(holding_profit),
+                "profit_snapshot_date": holding.get("profit_snapshot_date"),
+                "profit_source": holding.get("profit_source"),
                 "holding_profit_state": _value_state(holding_profit),
                 "holding_profit_rate": _percent(holding_profit_rate),
                 "holding_profit_rate_state": _value_state(holding_profit_rate),

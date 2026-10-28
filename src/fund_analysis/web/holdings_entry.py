@@ -32,7 +32,12 @@ ENTRY_OPTIONAL_FIELDS = (
     "daily_profit",
     "cumulative_profit",
     "amount_nav_date",
+    "imported_holding_profit",
+    "profit_snapshot_date",
+    "profit_source",
+    "daily_profit_date",
 )
+PROFIT_DATE_FIELDS = {"profit_snapshot_date", "daily_profit_date"}
 BLOCKING_ISSUES = {
     "code_missing",
     "name_missing",
@@ -41,6 +46,7 @@ BLOCKING_ISSUES = {
     "share_class_mismatch",
     "share_class_ambiguous",
     "skipped_non_fund",
+    "profit_conflict",
 }
 _SHARE_CLASS_RE = re.compile(r"[（(]?\s*([ABCEH])\s*[）)]?$", re.IGNORECASE)
 
@@ -114,8 +120,12 @@ class StructuredHoldingsRecognizer:
                                 "提取截图中的中国公募基金持仓。只返回 JSON，格式为 "
                                 '{"funds":[{"code":null,"name":null,"amount":null,'
                                 '"shares":null,"cost":null,"holding_profit_rate":null,'
-                                '"daily_profit":null,"cumulative_profit":null}]}。'
+                                '"daily_profit":null,"cumulative_profit":null,'
+                                '"imported_holding_profit":null,"profit_snapshot_date":null,'
+                                '"profit_source":null,"daily_profit_date":null}]}。'
                                 "金额和份额使用十进制字符串；看不清的字段返回 null，不推算。"
+                                "持有收益原值填 imported_holding_profit；来源填截图平台。"
+                                "日期仅提取明确的 YYYY-MM-DD，昨日不推断日期，快照日期不是净值日期。"
                             ),
                         },
                         {
@@ -333,6 +343,10 @@ def _normalize_candidate(
         "cumulative_profit": _candidate_decimal(
             raw.get("cumulative_profit"), MONEY_QUANT
         ),
+        "imported_holding_profit": _candidate_decimal(raw.get("imported_holding_profit"), MONEY_QUANT),
+        "profit_snapshot_date": raw.get("profit_snapshot_date") if isinstance(raw.get("profit_snapshot_date"), str) else None,
+        "daily_profit_date": raw.get("daily_profit_date") if isinstance(raw.get("daily_profit_date"), str) else None,
+        "profit_source": raw.get("profit_source") if isinstance(raw.get("profit_source"), str) else None,
         "issues": issues,
         "verification": verification,
         "confidence": "low" if issues or inferred else "high",
@@ -419,12 +433,18 @@ def validate_entry_request(payload: Mapping[str, Any]) -> tuple[str, list[dict[s
             value = raw.get(field)
             if value in (None, ""):
                 continue
-            if field == "amount_nav_date":
-                date_text = str(value).strip()[:10]
+            if field == "profit_source":
+                source = str(value).strip()
+                if not source or len(source) > 80:
+                    raise ValueError("收益来源须为 1–80 个字符")
+                item[field] = source
+                continue
+            if field == "amount_nav_date" or field in PROFIT_DATE_FIELDS:
+                date_text = str(value).strip()
                 try:
                     item[field] = date_cls.fromisoformat(date_text).isoformat()
                 except ValueError as exc:
-                    raise ValueError(f"基金代码 {code} 的金额基准日期无效") from exc
+                    raise ValueError(f"基金代码 {code} 的 {field} 日期无效") from exc
                 continue
             quant = SHARES_QUANT if field == "shares" else MONEY_QUANT
             normalized_value = _strict_decimal(
@@ -438,8 +458,31 @@ def validate_entry_request(payload: Mapping[str, Any]) -> tuple[str, list[dict[s
                 label = "份额" if field == "shares" else "金额字段"
                 raise ValueError(f"基金代码 {code} 的{label}无效")
             item[field] = normalized_value
+        validate_profit_snapshot(item)
         items.append(item)
     return mode, items
+
+
+def validate_profit_snapshot(item: Mapping[str, Any]) -> None:
+    source = item.get("profit_source")
+    if source is not None and (not isinstance(source, str) or not source.strip() or len(source) > 80):
+        raise ValueError("收益来源须为 1–80 个字符")
+    if item.get("profit_snapshot_date") is not None and item.get("imported_holding_profit") is None:
+        raise ValueError("快照日期须同时提供持有收益")
+    for field in PROFIT_DATE_FIELDS:
+        if item.get(field) is not None:
+            try:
+                date_cls.fromisoformat(str(item[field]))
+            except ValueError as exc:
+                raise ValueError(f"{field} 须为有效日期") from exc
+    if item.get("imported_holding_profit") is not None:
+        if _strict_decimal(item["imported_holding_profit"], MONEY_QUANT) is None:
+            raise ValueError("截图持有收益须为有效金额")
+        if not item.get("profit_snapshot_date") or not item.get("profit_source"):
+            raise ValueError("截图持有收益须同时提供快照日期和来源")
+    if item.get("daily_profit_date") is not None:
+        if item.get("daily_profit") is None or not item.get("profit_source"):
+            raise ValueError("日收益日期须同时提供收益金额和来源")
 
 
 def build_entry_preview(
@@ -500,6 +543,10 @@ def entry_differs(existing: Mapping[str, Any], item: Mapping[str, Any]) -> bool:
         return True
     for field in ENTRY_OPTIONAL_FIELDS:
         if field not in item:
+            continue
+        if field == "profit_source" or field in PROFIT_DATE_FIELDS:
+            if existing.get(field) != item.get(field):
+                return True
             continue
         if field == "amount_nav_date":
             existing_date = str(existing.get("amount_nav_date") or "").strip()[:10] or None

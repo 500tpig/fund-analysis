@@ -78,7 +78,9 @@ export interface ProfitMeasurement {
 
 export interface ImportedDailyProfit {
   amount: number
-  dated: false
+  dated: boolean
+  return_date: string | null
+  source: string | null
   label: string
 }
 
@@ -140,6 +142,7 @@ export interface TodayProfitSummary {
   verifiable_coverage: CoverageSlice
   excluded: Array<{ code: string; amount: number | null; reason_codes: string[] }>
   imported_undated: { count: number; profit: number | null }
+  imported_dated: Array<{ return_date: string; source: string; count: number; profit: number }>
   fund_count: number
   fund_amount: number | null
 }
@@ -203,8 +206,10 @@ export interface HoldingRow {
   holding_profit_state: ValueState
   holding_profit_rate: number | null
   holding_profit_rate_state: ValueState
-  holding_profit_amount_source: 'cost_measurement' | 'imported_rate' | null
-  holding_profit_rate_source: 'cost_measurement' | 'imported_rate' | null
+  holding_profit_amount_source: 'cost_measurement' | 'imported_rate' | 'imported_snapshot' | null
+  holding_profit_rate_source: 'cost_measurement' | 'imported_rate' | 'imported_snapshot' | null
+  profit_snapshot_date: string | null
+  profit_source: string | null
   holding_profit_conflict: boolean
   holding_profit_conflict_reason_codes: string[]
   cumulative_profit: number | null
@@ -534,6 +539,10 @@ export interface HoldingsEntryNameMatch {
 }
 
 export interface HoldingsEntryCandidate {
+  imported_holding_profit?: string | null
+  profit_snapshot_date?: string | null
+  profit_source?: string | null
+  daily_profit_date?: string | null
   source_image_index: number
   code: string | null
   ocr_name: string | null
@@ -552,6 +561,10 @@ export interface HoldingsEntryCandidate {
 }
 
 export interface HoldingsEntryItem {
+  imported_holding_profit?: string | null
+  profit_snapshot_date?: string | null
+  profit_source?: string | null
+  daily_profit_date?: string | null
   code: string
   name: string
   amount: string

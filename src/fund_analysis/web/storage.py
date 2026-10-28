@@ -14,7 +14,7 @@ from ..fund_data import FundIntradayEstimate, FundMarketData
 from ..fund_metadata import INITIAL_FUND_METADATA, FundMetadata
 from ..market_quotes import MarketQuote
 from ..models import PortfolioHolding
-from .holdings_entry import ENTRY_OPTIONAL_FIELDS, entry_differs
+from .holdings_entry import ENTRY_OPTIONAL_FIELDS, entry_differs, validate_profit_snapshot
 
 CNY_QUANT = Decimal("0.01")
 
@@ -70,6 +70,10 @@ HOLDING_COLUMNS: dict[str, str] = {
     "year_profit": "REAL",
     "amount_nav_date": "TEXT",
     "amount_basis_source": "TEXT",
+    "imported_holding_profit": "TEXT",
+    "profit_snapshot_date": "TEXT",
+    "profit_source": "TEXT",
+    "daily_profit_date": "TEXT",
 }
 ADDITIVE_HOLDING_COLUMNS = {**HOLDING_COLUMNS, "created_at": "TEXT", "updated_at": "TEXT"}
 
@@ -412,6 +416,27 @@ class LocalStorage:
         incoming: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         payload = dict(incoming or row)
+        validate_profit_snapshot(payload)
+        # 金额、份额或基金变化后，未重新确认的截图持有收益失效；历史日收益保留日期。
+        changed = existing is not None and any(
+            key in payload and (
+                cls._amounts_differ(existing.get(key), payload.get(key)) if key == "amount"
+                else str(existing.get(key) or "") != str(payload.get(key) or "")
+            ) for key in ("amount", "shares", "code")
+        )
+        source_changed = existing is not None and "profit_source" in payload and payload["profit_source"] != existing.get("profit_source")
+        if (changed or source_changed) and "imported_holding_profit" not in payload:
+            row["imported_holding_profit"] = None
+            row["profit_snapshot_date"] = None
+            if "holding_profit_rate" not in payload:
+                row["holding_profit_rate"] = None
+        if "imported_holding_profit" in payload and "holding_profit_rate" not in payload:
+            row["holding_profit_rate"] = None
+        if source_changed and "daily_profit" not in payload:
+            row["daily_profit"] = None
+            row["daily_profit_date"] = None
+        if "daily_profit" in payload and "daily_profit_date" not in payload:
+            row["daily_profit_date"] = None
         date_in_payload = incoming is None or "amount_nav_date" in payload
         raw_date = payload.get("amount_nav_date") if date_in_payload else None
         date_text = str(raw_date).strip()[:10] if raw_date not in (None, "") else None
