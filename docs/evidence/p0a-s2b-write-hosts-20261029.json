@@ -68,5 +68,34 @@
   "重启未影响既有 loopback 与 SSH 隧道访问；采集与模拟 timer 未停止。",
   "真实隧道是否转发 X-Forwarded-Proto: https 尚未验证，S4 前必查；缺该头时子域写请求会 403。",
   "未做任何 Cloudflare 或 DNS 变更；隧道配置仍为版本 54、6 条既有路由加默认 404。"
- ]
+ ],
+ "post_change_scheduled_slot": {
+  "slot_started_at_beijing": "2026-10-29T01:30:01+08:00",
+  "purpose": "确认重启 Web 后第一个真实采集槽不受影响",
+  "runs": [
+   {
+    "source_key": "eastmoney_fundmobapi",
+    "job_type": "fund_market_snapshot",
+    "status": "success",
+    "row_count": 18
+   },
+   {
+    "source_key": "fund_intraday_composite",
+    "job_type": "fund_intraday_estimate",
+    "status": "success",
+    "row_count": 18
+   },
+   {
+    "source_key": "eastmoney_market_quote",
+    "job_type": "market_quote",
+    "status": "success",
+    "row_count": 3
+   }
+  ],
+  "failures": [],
+  "notes": [
+   "行情源按既有备用路径接管（东财 push2 仍 502，实际来源 sina／tencent），与发布前状态一致。",
+   "服务重启后 scheduled 采集、估值与行情写入均正常。"
+  ]
+ }
 }
