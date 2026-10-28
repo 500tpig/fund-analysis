@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import tempfile
 import time
 import unittest
@@ -223,6 +224,20 @@ class FakeCurveProvider:
             "points": [],
             "warning": "仅供参考",
         }
+
+
+# 测试客户端使用假 Host（testserver，异步用例为 test），显式列入可信写来源。
+_WRITE_HOSTS = patch.dict(
+    os.environ, {"FUND_ANALYSIS_WRITE_HOSTS": "testserver,test"}
+)
+
+
+def setUpModule() -> None:
+    _WRITE_HOSTS.start()
+
+
+def tearDownModule() -> None:
+    _WRITE_HOSTS.stop()
 
 
 class WebApiTest(unittest.TestCase):

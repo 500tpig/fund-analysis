@@ -195,6 +195,28 @@ fund-analysis web --db-path data/fund_analysis.db
 - 可在持仓页手工维护成本和金额基准日期；截图候选可以保留当日收益、累计收益等可选字段，
   截图流程不推断金额基准日期。
 
+## 写请求来源校验
+
+`POST`、`PUT`、`PATCH`、`DELETE` 在读取请求体和进入业务处理前统一校验来源，失败返回 `403`。
+`Host` 的主机名必须在可信列表内：默认只有 `127.0.0.1`、`localhost` 和 `::1`；隧道子域与局域网主机名
+用环境变量 `FUND_ANALYSIS_WRITE_HOSTS`（逗号分隔，可写 `主机名`、`主机名:端口` 或 `[IPv6]`；
+按主机名匹配，端口只做校验不参与匹配；不支持通配符）显式加入，写法非法时启动即失败。
+这一层挡住 Host 与 Origin 同为攻击者域名的 DNS rebinding 形态。
+
+携带 `Origin` 时，只接受与请求协议及原始 `Host`（含端口）完全一致的来源；拒绝 `null` 与任何异源值，
+重复出现完全相同的合法值不再误判。`Sec-Fetch-Site` 一旦存在，必须为 `same-origin`，`same-site` 也不放行。
+
+无 `Origin` 时，存在 `Referer` 则校验其完整来源；无 `Referer` 则接受 `Sec-Fetch-Site: same-origin`。
+三种来源头均缺失时，不携带 Cookie 的请求继续放行，保留现有 `collect` CLI；携带 Cookie 则拒绝。
+这些检查不提供账户认证，也不限制能自行构造请求头的非浏览器客户端。
+
+`fund-analysis web` 固定只信任来自 `127.0.0.1` 的 Uvicorn 转发头，不受 `FORWARDED_ALLOW_IPS` 扩大影响；
+不采用 `X-Forwarded-Host` 或 `Forwarded`。Vite 保留原始 `Host`。Cloudflare Tunnel 接入时也须保留原始 `Host`，
+外部 HTTPS 由可信本机代理传入的 `X-Forwarded-Proto` 还原；Cloudflare 会覆盖客户端伪造的该头，
+见 [Cloudflare HTTP headers](https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#x-forwarded-proto)。
+隧道子域还要写进 `/etc/fund-analysis.env` 的 `FUND_ANALYSIS_WRITE_HOSTS`，否则经隧道的写请求会被拒绝。
+本次没有新增 CORS 放行。
+
 ## 检查
 
 ```bash
@@ -232,6 +254,7 @@ ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:18765:127.0.0.1:8765 ocvps
 | 定时任务 | `fund-analysis-collect.timer` → `fund-analysis-collect.service` |
 | 服务账户 | `fund-analysis`，无登录 shell，数据目录 `0700`、数据库 `0600` |
 | 可选敏感配置 | `/etc/fund-analysis.env`，由 root 管理，权限 `0600`，不写 Git |
+| 可信写来源主机名 | 同文件中的 `FUND_ANALYSIS_WRITE_HOSTS`（隧道子域用；loopback 已内置） |
 
 Web 和 timer 进程设置 `TZ=Asia/Shanghai`，系统时区仍为 UTC。Web 保持单进程；采集命令向
 localhost 的既有刷新 API 发请求，网页和后台共用一把锁。不要另起直接写库的采集进程或多个 Web worker。

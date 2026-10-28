@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import ipaddress
 import threading
 from datetime import date, datetime
 from math import isfinite
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -39,7 +41,7 @@ from .api_payloads import (
     is_fund_asset,
     snapshot_failures_from_runs,
 )
-from .defaults import DEFAULT_DB_PATH
+from .defaults import DEFAULT_DB_PATH, resolve_write_hosts
 from .holdings_entry import (
     MAX_IMAGE_BYTES,
     MAX_IMAGE_COUNT,
@@ -671,6 +673,57 @@ async def api_confirm_holdings_entry(request: Request) -> dict[str, Any]:
 register_legacy_redirects(router)
 
 
+def _is_ipv6(text: str) -> bool:
+    try:
+        ipaddress.IPv6Address(text)
+    except ValueError:
+        return False
+    return True
+
+
+def _valid_port(text: str) -> bool:
+    return text.isascii() and text.isdigit() and 0 < int(text) < 65536
+
+
+def _host_name(value: str) -> str | None:
+    """取主机名：去端口、去 IPv6 方括号、小写。
+
+    只接受 `主机名`、`主机名:端口`、`[IPv6]` 与 `[IPv6]:端口`。出现查询串、片段、反斜杠、
+    空白、控制字符或越界端口时返回 None，不做任何截断改写。
+    """
+    text = value.strip()
+    if not text or any(char in text for char in "/*@?#\\"):
+        return None
+    if any(char.isspace() or not char.isprintable() for char in text):
+        return None
+    if text.startswith("["):
+        host, sep, rest = text[1:].partition("]")
+        if not sep or not _is_ipv6(host):
+            return None
+        if rest and (not rest.startswith(":") or not _valid_port(rest[1:])):
+            return None
+        return host.lower()
+    if "[" in text or "]" in text:
+        return None
+    if _is_ipv6(text):
+        return text.lower()
+    host, sep, port = text.partition(":")
+    if not sep:
+        return text.lower()
+    return host.lower() if host and _valid_port(port) else None
+
+
+def _normalize_write_hosts(hosts: Sequence[str]) -> frozenset[str]:
+    """校验可信写请求 Host，返回用于匹配的主机名集合；非法写法直接报错。"""
+    normalized: set[str] = set()
+    for entry in hosts:
+        name = _host_name(str(entry))
+        if name is None:
+            raise ValueError(f"invalid trusted write host: {entry!r}")
+        normalized.add(name)
+    return frozenset(normalized)
+
+
 def create_app(
     db_path: Path | str = DEFAULT_DB_PATH,
     *,
@@ -684,8 +737,39 @@ def create_app(
     holdings_recognizer: Any | None = None,
     simulation_db_path: Path | str | None = None,
     simulation_service: Any | None = None,
+    write_origin_hosts: Sequence[str] | None = None,
 ) -> FastAPI:
     web_app = FastAPI(title="基金估值")
+
+    @web_app.middleware("http")
+    async def check_write_origin(request: Request, call_next):
+        if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+            # scheme 由 Uvicorn 仅对可信 loopback 代理采用转发值；不读取转发 Host。
+            host = request.headers.get("host", "")
+            target = f"{request.url.scheme}://{host}"
+            origins = request.headers.getlist("origin")
+            fetch_sites = request.headers.getlist("sec-fetch-site")
+            # Host 名必须在白名单内；同源形式的 DNS rebinding 目标不在其中。
+            rejected = _host_name(host) not in web_app.state.write_origin_hosts
+            rejected |= any(value != "same-origin" for value in fetch_sites)
+            if origins:
+                rejected |= any(origin != target for origin in origins)
+            elif "referer" in request.headers:
+                for value in request.headers.getlist("referer"):
+                    try:
+                        referer = urlsplit(value)
+                        rejected |= f"{referer.scheme}://{referer.netloc}" != target
+                    except ValueError:
+                        rejected = True
+            elif not fetch_sites:
+                # 保留无浏览器来源头的 CLI；携 Cookie 且无来源凭据的写入拒绝。
+                rejected |= "cookie" in request.headers
+            if rejected:
+                return JSONResponse(
+                    status_code=403, content={"detail": "Cross-origin write request forbidden"}
+                )
+        return await call_next(request)
+
     web_app.state.db_path = Path(db_path)
     web_app.state.storage = storage
     # 模拟库独立于真实库，首次访问 /api/simulation 时才打开。
@@ -701,6 +785,9 @@ def create_app(
     web_app.state.holdings_recognizer = holdings_recognizer or StructuredHoldingsRecognizer()
     web_app.state.refresh_lock = threading.Lock()
     web_app.state.last_refresh_result = None
+    web_app.state.write_origin_hosts = _normalize_write_hosts(
+        resolve_write_hosts() if write_origin_hosts is None else write_origin_hosts
+    )
     if storage is None and not lazy_storage:
         web_app.state.storage = LocalStorage(web_app.state.db_path)
     web_app.include_router(router)

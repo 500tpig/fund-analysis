@@ -59,6 +59,8 @@ def _run_web(args: argparse.Namespace) -> int:
         ),
         host=args.host,
         port=args.port,
+        # 仅信任本机 cloudflared；不允许环境变量扩大转发头信任范围。
+        forwarded_allow_ips="127.0.0.1",
     )
     return 0
 

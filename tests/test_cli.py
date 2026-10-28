@@ -61,6 +61,12 @@ class CliTest(unittest.TestCase):
                 self.assertEqual(main(["collect"]), 1)
                 self.assertEqual(main(["collect", "--port", "0"]), 2)
 
+    def test_web_pins_proxy_trust_to_loopback(self) -> None:
+        with tempfile.TemporaryDirectory() as root, patch("uvicorn.run") as run:
+            with patch.dict("os.environ", {"FORWARDED_ALLOW_IPS": "*"}):
+                self.assertEqual(main(["web", "--db-path", str(Path(root) / "test.db")]), 0)
+            self.assertEqual(run.call_args.kwargs["forwarded_allow_ips"], "127.0.0.1")
+
 
 if __name__ == "__main__":
     unittest.main()

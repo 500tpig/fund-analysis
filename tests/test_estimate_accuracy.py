@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import sqlite3
 import tempfile
 import unittest
@@ -25,6 +26,17 @@ from fund_analysis.web.storage import LocalStorage
 from test_web_api import FakeCurveProvider, FakeMarketQuoteProvider
 from test_web_storage import market_data
 from test_fund_data import core_row, sina_payload, TODAY
+
+# 测试客户端使用假 Host（testserver），显式列入可信写来源。
+_WRITE_HOSTS = patch.dict(os.environ, {"FUND_ANALYSIS_WRITE_HOSTS": "testserver"})
+
+
+def setUpModule() -> None:
+    _WRITE_HOSTS.start()
+
+
+def tearDownModule() -> None:
+    _WRITE_HOSTS.stop()
 
 
 LEGACY_SQL = """CREATE TABLE fund_estimate_daily_accuracy (

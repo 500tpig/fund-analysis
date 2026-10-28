@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -13,6 +15,18 @@ from fund_analysis.simulation.service import SimulationService
 from fund_analysis.simulation.store import SimulationStore
 from fund_analysis.web.app import create_app
 from fund_analysis.web.storage import LocalStorage
+
+
+# 测试客户端使用假 Host（testserver），显式列入可信写来源。
+_WRITE_HOSTS = patch.dict(os.environ, {"FUND_ANALYSIS_WRITE_HOSTS": "testserver"})
+
+
+def setUpModule() -> None:
+    _WRITE_HOSTS.start()
+
+
+def tearDownModule() -> None:
+    _WRITE_HOSTS.stop()
 
 
 class SimulationApiTest(unittest.TestCase):
@@ -146,6 +160,47 @@ class SimulationApiTest(unittest.TestCase):
         )
         self.assertEqual(resumed.status_code, 200, resumed.text)
         self.assertEqual(resumed.json()["status"], "active")
+
+    def test_write_endpoints_reject_simple_cross_site_requests(self) -> None:
+        """统一来源检查先于模拟写接口的幂等键与业务校验。"""
+        account = self.fixture_account()
+        account_id = account["id"]
+        before = self.client.get(f"/api/simulation/accounts/{account_id}").json()
+        simple_types = (
+            "text/plain;charset=UTF-8",
+            "application/x-www-form-urlencoded",
+            "multipart/form-data; boundary=x",
+        )
+        targets = (
+            f"/api/simulation/accounts/{account_id}/pause",
+            f"/api/simulation/accounts/{account_id}/resume",
+            "/api/simulation/orders/ord_x/cancel",
+            "/api/simulation/accounts",
+        )
+        for path in targets:
+            for content_type in simple_types:
+                with self.subTest(path=path, content_type=content_type):
+                    response = self.client.post(
+                        path,
+                        content=f'{{"expected_version": {before["version"]}}}',
+                        headers={"Origin": "https://evil.example", "Content-Type": content_type},
+                    )
+                    self.assertEqual(response.status_code, 403, response.text)
+                    # 应用没有 CORS 中间件：跨站页面读不到响应，也无从通过预检
+                    self.assertNotIn("access-control-allow-origin", response.headers)
+        preflight = self.client.options(
+            f"/api/simulation/accounts/{account_id}/pause",
+            headers={
+                "Origin": "https://evil.example",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "idempotency-key,content-type",
+            },
+        )
+        self.assertEqual(preflight.status_code, 405)
+        self.assertNotIn("access-control-allow-origin", preflight.headers)
+        after = self.client.get(f"/api/simulation/accounts/{account_id}").json()
+        self.assertEqual((after["status"], after["version"]), (before["status"], before["version"]))
+        self.assertEqual(len(self.client.get("/api/simulation/accounts").json()["items"]), 1)
 
     def test_reads_do_not_initialize_or_settle(self) -> None:
         account = self.fixture_account()

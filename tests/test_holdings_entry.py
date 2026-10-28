@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import tempfile
 import unittest
 import urllib.error
@@ -19,6 +20,17 @@ from fund_analysis.web.holdings_entry import (
     StructuredOcrConfig,
 )
 from fund_analysis.web.storage import LocalStorage
+
+# 测试客户端使用假 Host（testserver），显式列入可信写来源。
+_WRITE_HOSTS = mock.patch.dict(os.environ, {"FUND_ANALYSIS_WRITE_HOSTS": "testserver"})
+
+
+def setUpModule() -> None:
+    _WRITE_HOSTS.start()
+
+
+def tearDownModule() -> None:
+    _WRITE_HOSTS.stop()
 
 
 def image_bytes() -> bytes:
