@@ -1,0 +1,72 @@
+{
+ "stage": "P0-A S2b：为写请求可信 Host 增加隧道子域",
+ "applied_at_utc": "2026-10-28T17:11:00+00:00",
+ "applied_at_beijing": "2026-10-29T01:11:00+08:00",
+ "hostname": "instance-20260419-1016",
+ "current_release": "/opt/fund-analysis/releases/20261028-write-origin-1",
+ "env_file": "/etc/fund-analysis.env",
+ "env_backup": "/etc/fund-analysis.env.bak-20261028-pre-p0a",
+ "added_line": "FUND_ANALYSIS_WRITE_HOSTS=fund.55770517.xyz",
+ "value_validation": {
+  "method": "发布版代码 _host_name / _normalize_write_hosts",
+  "normalized": "fund.55770517.xyz",
+  "effective_hosts": [
+   "127.0.0.1",
+   "localhost",
+   "::1",
+   "fund.55770517.xyz"
+  ],
+  "ok": true
+ },
+ "restart": {
+  "unit": "fund-analysis.service",
+  "api_funds_http": 200,
+  "process_env_verified": true
+ },
+ "probes_peer_127_0_0_1": {
+  "POST /api/holdings/entry/preview（子域同源 + X-Forwarded-Proto: https）": {
+   "http": 400,
+   "expect": "非 403（放行，400 为业务校验）"
+  },
+  "同上但缺 X-Forwarded-Proto": {
+   "http": 403,
+   "expect": "403（scheme 不匹配）"
+  },
+  "子域 + Origin https://evil.example": {
+   "http": 403,
+   "expect": "403"
+  },
+  "Host 与 Origin 同为 evil.example（rebinding）": {
+   "http": 403,
+   "expect": "403"
+  },
+  "未知 Host，无来源头": {
+   "http": 403,
+   "expect": "403"
+  },
+  "loopback 同源": {
+   "http": 400,
+   "expect": "非 403"
+  },
+  "无来源头（collect CLI 形态）": {
+   "http": 400,
+   "expect": "非 403"
+  },
+  "Sec-Fetch-Site: cross-site": {
+   "http": 403,
+   "expect": "403"
+  }
+ },
+ "units_after": {
+  "fund-analysis.service": "active/enabled",
+  "fund-analysis-collect.timer": "active/enabled",
+  "fund-analysis-simulation.timer": "active/enabled",
+  "cloudflared.service": "active/enabled"
+ },
+ "notes": [
+  "操作前确认采集与模拟任务均 inactive；01:10 北京时间处于 30 分钟采集槽空档，01:30 前无真实采集。",
+  "重启未影响既有 loopback 与 SSH 隧道访问；采集与模拟 timer 未停止。",
+  "真实隧道是否转发 X-Forwarded-Proto: https 尚未验证，S4 前必查；缺该头时子域写请求会 403。",
+  "未做任何 Cloudflare 或 DNS 变更；隧道配置仍为版本 54、6 条既有路由加默认 404。"
+ ]
+}

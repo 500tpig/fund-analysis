@@ -89,6 +89,28 @@
 | S6 | 用户确认 | 暂停／恢复验收（第 7 节 D），仅在约定的非受理窗口 | 改变生产策略状态 |
 | S7 | 本方 | 复查隧道配置、服务状态与账本，写入验收记录 | 无 |
 
+实施进度（2026-10-29 01:11 北京时间）：S2 只读基线已完成，归档
+[docs/evidence/p0a-s2-baseline-20261029.json](evidence/p0a-s2-baseline-20261029.json)；
+S2b 已完成：`/etc/fund-analysis.env` 追加 `FUND_ANALYSIS_WRITE_HOSTS=fund.55770517.xyz`
+（备份 `/etc/fund-analysis.env.bak-20261028-pre-p0a`），重启 `fund-analysis.service` 后
+`/api/funds` 返回 200、进程环境已生效；本机探测：子域同源写放行，跨站 Origin、rebinding、
+未知 Host、`Sec-Fetch-Site: cross-site` 全部 403，loopback 与无来源头 CLI 放行；缺
+`X-Forwarded-Proto: https` 时子域请求 403。证据见
+[docs/evidence/p0a-s2b-write-hosts-20261029.json](evidence/p0a-s2b-write-hosts-20261029.json)。
+S1 与 S3 待用户在 Cloudflare 控制台执行，按下方步骤。
+
+控制台操作步骤（用户执行，做完告知）：
+
+1. Zero Trust → Access → Applications → Add an application → Self-hosted。
+   Application name 填 `fund-analysis`；Session Duration 选 24 hours；
+   Public hostname 填 `fund` + `55770517.xyz`（路径留空）。
+   Add policy：Action 选 Allow，Include 选 Emails，填 `doffoyamin358@gmail.com`。
+   若控制台提供 cookie 属性选项，选 Lax 或 Strict 并记录实际值。
+2. 隧道（Networks → Tunnels）→ 打开现有隧道 → Public Hostnames → Add a public hostname：
+   Subdomain `fund`，Domain `55770517.xyz`，Path 留空；
+   Service Type 选 HTTP，URL 填 `127.0.0.1:8765`（不要写 localhost）。
+   保存后控制台会同时创建代理 DNS 记录；保存后立即告知，先做未登录外部探测，再做手机验收。
+
 ## 5. 部署影响与回滚
 
 ### 5.1 影响
