@@ -65,6 +65,7 @@
   --brand-accent-muted: #796A49;
   --accent: var(--brand-accent);
   --accent-dim: var(--brand-accent-muted);
+  --flash-accent: rgba(201, 174, 112, 0.18);
 
   --action-primary-bg: #F1EFE9;
   --action-primary-text: #101310;
@@ -2092,7 +2093,11 @@ tr:focus-within .row-action,
 
   .main-pad {
     max-width: none;
-    padding: 18px 16px calc(96px + env(safe-area-inset-bottom));
+    padding:
+      calc(18px + env(safe-area-inset-top))
+      calc(16px + env(safe-area-inset-right))
+      calc(96px + env(safe-area-inset-bottom))
+      calc(16px + env(safe-area-inset-left));
   }
 
   .mobile-nav {
@@ -2104,7 +2109,11 @@ tr:focus-within .row-action,
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
-    padding: 7px 12px calc(7px + env(safe-area-inset-bottom));
+    padding:
+      7px
+      calc(12px + env(safe-area-inset-right))
+      calc(7px + env(safe-area-inset-bottom))
+      calc(12px + env(safe-area-inset-left));
     border-top: 1px solid var(--border-subtle);
     background: rgba(8, 10, 9, 0.96);
     backdrop-filter: blur(12px);
@@ -2568,8 +2577,19 @@ tr:focus-within .row-action,
   }
 
   .drawer-panel {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
     width: 100% !important;
     max-width: 100%;
+    height: auto;
+    max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
+    border-top: 1px solid var(--border-default);
+    border-left: 0;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.5);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .drawer-panel__header {
@@ -2731,5 +2751,132 @@ tr:focus-within .row-action,
 
   .blotter {
     min-height: 12rem;
+  }
+}
+
+/* ---------- 手机端工艺层：触摸、视口、安全区、字体节奏、数值反馈 ----------
+   2026-10-29 手机样板交付新增；规则集中在文件末尾，便于整体回退。
+   触摸与抽屉动画两项对桌面同样生效，其余仅作用于 ≤768px。 */
+
+html {
+  /* 阻断 Android 下拉整页刷新把 SPA 重置；应用自身有刷新按钮与定时采集 */
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+}
+
+body,
+.stage {
+  /* 地址栏收放时不再因 100vh 跳变 */
+  min-height: 100dvh;
+}
+
+/* 触摸基础：去掉点击灰块与双击缩放延迟，保留滚动与捏合 */
+button,
+a,
+label,
+summary,
+[role='button'],
+[role='tab'],
+input[type='checkbox'],
+input[type='radio'] {
+  touch-action: manipulation;
+}
+
+a,
+button,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 抽屉与遮罩：时长与缓动统一取自 token，组件内不再写死数值 */
+.drawer-fade-enter-active {
+  transition: opacity var(--dur-panel) var(--ease-enter);
+}
+
+.drawer-fade-leave-active {
+  transition: opacity 180ms var(--ease-exit);
+}
+
+.drawer-panel-enter-active {
+  transition:
+    transform var(--dur-panel) var(--ease-enter),
+    opacity var(--dur-panel) var(--ease-enter);
+}
+
+.drawer-panel-leave-active {
+  transition:
+    transform 200ms var(--ease-exit),
+    opacity 200ms var(--ease-exit);
+}
+
+.drawer-panel-enter-from,
+.drawer-panel-leave-to {
+  transform: translateX(100%);
+}
+
+.drawer-panel-enter-to,
+.drawer-panel-leave-from {
+  transform: translateX(0);
+}
+
+/* 数值更新的单向微光：只在数值确实变化时播放一次 */
+@keyframes value-flash {
+  from {
+    background-color: var(--flash-accent);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+.value-flash {
+  border-radius: 6px;
+  animation: value-flash 900ms var(--ease-out) 1;
+}
+
+@media (max-width: 768px) {
+  .drawer-panel-enter-from,
+  .drawer-panel-leave-to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  .drawer-panel-enter-to,
+  .drawer-panel-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 手机列表字体节奏：名称与数值 15px，正文 13px，均不低于文档 12px 下限 */
+  .fund-mobile-row {
+    min-height: 60px;
+    max-height: none;
+    padding: 9px 0;
+  }
+
+  .fund-mobile-row__name {
+    font-size: 15px;
+    line-height: 21px;
+  }
+
+  .fund-mobile-row__subline {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .fund-mobile-row__amount,
+  .fund-mobile-row__profit-amount {
+    font-size: 15px;
+    line-height: 21px;
+  }
+
+  .fund-mobile-row__profit-pct {
+    font-size: 13px;
+    line-height: 17px;
+  }
+
+  .fund-mobile-list__head button {
+    font-size: 13px;
   }
 }

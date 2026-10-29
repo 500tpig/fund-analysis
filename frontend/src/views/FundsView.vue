@@ -487,6 +487,7 @@ onBeforeUnmount(() => {
   pageActive = false
   initialBackfillPending = false
   stopChecks()
+  if (flashTimer) clearTimeout(flashTimer)
   wideSplitMedia?.removeEventListener('change', onWideSplitMediaEvent)
   wideSplitMedia = null
   document.removeEventListener('visibilitychange', onVisibilityChange)
@@ -563,6 +564,35 @@ useHotkeys((event) => {
       document.getElementById('funds-search')?.focus()
     })
   }
+})
+
+// 数值更新微光：仅在金额或当日收益确实变化时播放一次，替代无提示的整体重绘。
+const flashedIds = ref<Set<string | number>>(new Set())
+let flashTimer: ReturnType<typeof setTimeout> | null = null
+
+const rowValueSignature = computed(() => {
+  const signature = new Map<string | number, string>()
+  for (const row of displayRows.value) {
+    const session = rowSessionProfitMap.value.get(row.id)
+    signature.set(row.id, `${row.amount ?? ''}|${session?.amount ?? ''}|${session?.returnPct ?? ''}`)
+  }
+  return signature
+})
+
+watch(rowValueSignature, (next, prev) => {
+  if (!prev || prev.size === 0) return
+  const changed: Array<string | number> = []
+  for (const [id, value] of next) {
+    const before = prev.get(id)
+    if (before !== undefined && before !== value) changed.push(id)
+  }
+  if (changed.length === 0) return
+  flashedIds.value = new Set(changed)
+  if (flashTimer) clearTimeout(flashTimer)
+  flashTimer = setTimeout(() => {
+    flashedIds.value = new Set()
+    flashTimer = null
+  }, 1000)
 })
 
 function openFundDrawer(row: HoldingRow): void {
@@ -944,11 +974,17 @@ function closeMobileSearch() {
               </span>
             </span>
 
-            <span class="fund-mobile-row__amount">
+            <span
+              class="fund-mobile-row__amount"
+              :class="{ 'value-flash': flashedIds.has(row.id) }"
+            >
               {{ row.amount != null ? formatMoney(row.amount) : '—' }}
             </span>
 
-            <span class="fund-mobile-row__profit">
+            <span
+              class="fund-mobile-row__profit"
+              :class="{ 'value-flash': flashedIds.has(row.id) }"
+            >
               <span
                 class="fund-mobile-row__profit-amount"
                 :class="valueStateClass(signedState(rowSessionProfitMap.get(row.id)?.amount))"
