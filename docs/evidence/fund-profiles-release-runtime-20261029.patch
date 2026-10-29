@@ -1,0 +1,140 @@
+--- 20261028-write-origin-1/src/fund_analysis/fund_metadata.py
++++ 20261029-fund-profiles-1/src/fund_analysis/fund_metadata.py
+@@ -40,7 +40,7 @@
+         return asdict(self)
+ 
+ 
+-# Pre-verified metadata for all 18 portfolio funds and cash asset
++# Pre-verified metadata for all current portfolio funds and cash asset
+ INITIAL_FUND_METADATA: Mapping[str, FundMetadata] = {
+     "009860": FundMetadata(
+         code="009860",
+@@ -302,6 +302,59 @@
+         source_url="https://fund.eastmoney.com/540010.html",
+         verified_at="2026-09-26",
+     ),
++    "018147": FundMetadata(
++        code="018147",
++        name="建信新兴市场混合(QDII)C",
++        fund_type="qdii_hybrid",
++        fund_type_label="QDII偏股混合型",
++        market="GLOBAL",
++        calendar="UNKNOWN",
++        nav_disclosure_rule=RULE_UNKNOWN,
++        benchmark_name="MSCI新兴市场指数(MSCI Emerging Markets Index)收益率*90%+中债-综合全价(总值)指数收益率*5%+人民币活期存款基准利率*5%",
++        benchmark_code=None,
++        source_url="https://fund.eastmoney.com/018147.html",
++        verified_at="2026-10-29",
++    ),
++    "008254": FundMetadata(
++        code="008254",
++        name="华宝致远混合(QDII)C",
++        fund_type="qdii_hybrid",
++        fund_type_label="QDII偏股混合型",
++        market="GLOBAL",
++        calendar="UNKNOWN",
++        nav_disclosure_rule=RULE_UNKNOWN,
++        benchmark_name="恒生指数收益率*10%+纳斯达克100指数(NASDAQ 100 Index)收益率*85%+人民币活期存款基准利率*5%",
++        benchmark_code=None,
++        source_url="https://www.fsfund.com/fund/008254/fundDetail.shtml",
++        verified_at="2026-10-29",
++    ),
++    "007195": FundMetadata(
++        code="007195",
++        name="长城短债C",
++        fund_type="domestic_bond",
++        fund_type_label="短期纯债型",
++        market="CN",
++        calendar=CALENDAR_CN_STOCK,
++        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
++        benchmark_name="中债综合财富(1年以下)指数收益率",
++        benchmark_code=None,
++        source_url="https://www.ccfund.com.cn/main/jjcp/cache/007195.shtml",
++        verified_at="2026-10-29",
++    ),
++    "008401": FundMetadata(
++        code="008401",
++        name="大成标普500等权重指数(QDII)C人民币",
++        fund_type="qdii_index",
++        fund_type_label="QDII指数型",
++        market="US",
++        calendar=CALENDAR_US_STOCK,
++        # T+2 仅为披露上限，尚无本基金 T+1 夜间披露依据。
++        nav_disclosure_rule=RULE_UNKNOWN,
++        benchmark_name="标普500等权重指数(全收益指数)收益率",
++        benchmark_code=None,
++        source_url="http://www.dcfund.com/main/fund/productdetail/index.shtml?product_code=008401",
++        verified_at="2026-10-29",
++    ),
+     "CASH": FundMetadata(
+         code="CASH",
+         name="现金资产",
+--- 20261028-write-origin-1/src/fund_analysis/web/storage.py
++++ 20261029-fund-profiles-1/src/fund_analysis/web/storage.py
+@@ -1284,7 +1284,7 @@
+         self,
+         conn: sqlite3.Connection | None = None,
+     ) -> None:
+-        """为当前持仓的 17 只基金及现金初始化最小元数据记录（若尚未存在）。"""
++        """为当前持仓基金及现金初始化最小元数据记录（若尚未存在）。"""
+         def _do_seed(c: sqlite3.Connection) -> None:
+             existing = {
+                 str(row["code"])
+--- 20261028-write-origin-1/tests/test_nav_status.py
++++ 20261029-fund-profiles-1/tests/test_nav_status.py
+@@ -74,6 +74,25 @@
+             auto_refresh_eligible=False,
+         )
+ 
++    def test_unverified_qdii_schedule_stays_unknown_across_t_plus_1_night(self) -> None:
++        for when in (
++            datetime(2026, 10, 29, 20, 30, tzinfo=BJT),
++            datetime(2026, 10, 30, 10, 0, tzinfo=BJT),
++        ):
++            with self.subTest(as_of=when):
++                result = resolve_nav_status(
++                    metadata=INITIAL_FUND_METADATA["008401"],
++                    nav_date="2026-10-27",
++                    as_of=when,
++                )
++                self.assertEqual(result.status, STATUS_UNKNOWN_RULE)
++                self.assertIsNone(result.next_disclosure_date)
++                self._assert_refresh_flags(
++                    result,
++                    in_disclosure_window=False,
++                    auto_refresh_eligible=False,
++                )
++
+     def test_cn_fund_updated_when_target_reached(self) -> None:
+         # Wednesday 2026-09-02 21:00, nav_date is 2026-09-02
+         dt = datetime(2026, 9, 2, 21, 0, tzinfo=BJT)
+--- 20261028-write-origin-1/tests/test_web_storage.py
++++ 20261029-fund-profiles-1/tests/test_web_storage.py
+@@ -503,8 +503,12 @@
+         with tempfile.TemporaryDirectory() as root:
+             storage = self._storage(root)
+             meta_all = storage.get_all_fund_metadata()
+-            # 应该包含 17 只基金 + CASH
++            # 应该包含当前持仓基金 + CASH
+             self.assertIn("024481", meta_all)
++            self.assertIn("018147", meta_all)
++            self.assertIn("008254", meta_all)
++            self.assertIn("007195", meta_all)
++            self.assertIn("008401", meta_all)
+             self.assertIn("016702", meta_all)
+             self.assertIn("CASH", meta_all)
+             self.assertEqual(meta_all["024481"]["market"], "CN")
+@@ -515,6 +519,13 @@
+             self.assertIsNone(meta_all["CASH"]["benchmark_code"])
+             self.assertEqual(meta_all["017731"]["market"], "GLOBAL")
+             self.assertEqual(meta_all["017731"]["nav_disclosure_rule"], "unknown_rule")
++            self.assertEqual(meta_all["008401"]["market"], "US")
++            self.assertEqual(meta_all["008401"]["calendar"], "US_STOCK")
++            self.assertEqual(meta_all["008401"]["nav_disclosure_rule"], "unknown_rule")
++            self.assertEqual(meta_all["007195"]["nav_disclosure_rule"], "cn_same_day_night")
++            self.assertEqual(meta_all["007195"]["benchmark_name"], "中债综合财富(1年以下)指数收益率")
++            self.assertEqual(meta_all["018147"]["market"], "GLOBAL")
++            self.assertEqual(meta_all["008254"]["nav_disclosure_rule"], "unknown_rule")
+ 
+     def test_metadata_profiles_do_not_replace_legacy_metadata_table(self) -> None:
+         with tempfile.TemporaryDirectory() as root:
