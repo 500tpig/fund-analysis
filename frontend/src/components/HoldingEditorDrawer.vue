@@ -282,7 +282,7 @@ onBeforeUnmount(resetNameLookup)
     @update:show="emit('update:show', $event)"
   >
     <form
-      class="space-y-5"
+      class="holding-editor"
       @submit.prevent="save"
     >
       <div class="space-y-1.5">
@@ -437,3 +437,41 @@ onBeforeUnmount(resetNameLookup)
     </template>
   </Drawer>
 </template>
+
+<style scoped>
+.holding-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-module);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.holding-editor label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.holding-editor p {
+  margin-top: 6px;
+}
+
+.holding-editor :deep(input),
+.ui-press {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 768px) {
+  .holding-editor > .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .holding-editor :deep(input) {
+    font-size: 15px;
+    line-height: 22px;
+  }
+}
+</style>

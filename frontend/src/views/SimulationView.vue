@@ -984,6 +984,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.ui-press,
+:deep(.segmented-item) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
 .sim-skeleton {
   display: flex;
   flex-direction: column;
@@ -1099,6 +1105,7 @@ onMounted(() => {
 }
 
 .sim-row--button:hover,
+.sim-row--button:active,
 .sim-row--button:focus-visible {
   background: var(--bg-surface-hover);
 }
@@ -1220,6 +1227,8 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 4px 8px;
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--text-primary);
 }
 
@@ -1304,12 +1313,17 @@ onMounted(() => {
 
 .sim-detail__link {
   align-self: flex-start;
-  padding: 0;
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 8px;
   border: 0;
+  border-radius: var(--radius-control);
   background: none;
   color: var(--brand-accent);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
   cursor: pointer;
 }
 
@@ -1318,7 +1332,36 @@ onMounted(() => {
   text-decoration: underline;
 }
 
+.sim-detail__link:active {
+  background: var(--bg-surface-hover);
+}
+
 @media (max-width: 768px) {
+  .sim-row__name,
+  .sim-row__value > .font-numeric,
+  .sim-balances--metrics .sim-balances__item dd,
+  .sim-detail__heading,
+  .sim-detail__item-name {
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .sim-note,
+  .sim-row__meta,
+  .sim-row__value > span:last-child,
+  .sim-section__title span {
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .sim-detail__grid {
+    row-gap: 12px;
+  }
+
+  .sim-detail__list li {
+    min-height: 32px;
+  }
+
   .sim-balances {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;

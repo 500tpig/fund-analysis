@@ -359,7 +359,7 @@ useHotkeys((event) => {
       <span class="flex-1">{{ error }}</span>
       <button
         type="button"
-        class="cursor-pointer text-[12px] opacity-75 hover:opacity-100"
+        class="min-h-[44px] min-w-[44px] cursor-pointer text-[12px] opacity-75 hover:opacity-100"
         @click="error = null"
       >
         关闭
@@ -398,7 +398,7 @@ useHotkeys((event) => {
           <button
             v-if="hasActiveFilterOrSort"
             type="button"
-            class="cursor-pointer text-[12px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            class="min-h-[44px] min-w-[44px] cursor-pointer text-[12px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             @click="resetFiltersAndSort"
           >
             重置
@@ -853,3 +853,34 @@ useHotkeys((event) => {
     </Teleport>
   </div>
 </template>
+
+<style scoped>
+.ui-press,
+:deep(input) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.data-dense-table th {
+  height: 44px;
+}
+
+@media (min-width: 769px) {
+  /* 扩大命中区，保留桌面表格的行高。 */
+  .row-action,
+  :deep(.row-menu__trigger) {
+    position: relative;
+  }
+
+  :deep(.row-menu__trigger::after),
+  .row-action::after {
+    position: absolute;
+    inset: -6px;
+    content: '';
+  }
+
+  .row-action::after {
+    inset: -20px -15px -10px;
+  }
+}
+</style>

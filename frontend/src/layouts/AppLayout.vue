@@ -110,7 +110,7 @@ function onHotkey(event: KeyboardEvent) {
           <div class="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)]">
             FundPilot
           </div>
-          <div class="mt-1 text-[11px] text-[var(--text-secondary)]">
+          <div class="mt-1 text-[12px] text-[var(--text-secondary)]">
             资产工作台
           </div>
         </div>

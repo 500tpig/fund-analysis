@@ -356,7 +356,7 @@ body {
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 40px;
+  height: 44px;
   padding: 0 12px;
   border-radius: 8px;
   color: var(--text-secondary);
@@ -1137,7 +1137,7 @@ tr:focus-within .row-action,
   color: var(--text-secondary);
   background: var(--bg-surface-hover);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .entry-review-badge {
@@ -1146,7 +1146,7 @@ tr:focus-within .row-action,
   border-radius: 5px;
   color: var(--status-warning);
   background: rgba(214, 166, 93, 0.1);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
 }
 
@@ -1162,7 +1162,7 @@ tr:focus-within .row-action,
   border-radius: 5px;
   color: var(--status-warning);
   background: rgba(214, 166, 93, 0.08);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
 }
 
@@ -1198,7 +1198,7 @@ tr:focus-within .row-action,
   margin-top: 2px;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .entry-field-grid {
@@ -2484,7 +2484,7 @@ tr:focus-within .row-action,
     min-width: 0;
     min-height: 44px;
     color: var(--text-secondary);
-    font-size: 11px;
+    font-size: 13px;
     text-align: left;
   }
 
@@ -2517,9 +2517,9 @@ tr:focus-within .row-action,
 
   .holding-mobile-row__name {
     overflow: hidden;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 540;
-    line-height: 20px;
+    line-height: 21px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -2527,8 +2527,8 @@ tr:focus-within .row-action,
   .holding-mobile-row__meta {
     overflow: hidden;
     color: var(--text-tertiary);
-    font-size: 11px;
-    line-height: 16px;
+    font-size: 13px;
+    line-height: 18px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -2540,16 +2540,24 @@ tr:focus-within .row-action,
   }
 
   .holding-mobile-row__value > .font-numeric {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 550;
-    line-height: 20px;
+    line-height: 21px;
   }
 
   .holding-mobile-row__value > span:last-child {
+    max-width: 100%;
+    overflow: hidden;
     color: var(--text-tertiary);
-    font-size: 10px;
-    line-height: 14px;
+    font-size: 13px;
+    line-height: 18px;
+    text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .holding-mobile-row:active,
+  .holding-mobile-row:focus-within {
+    background: var(--bg-surface-hover);
   }
 
   .holding-mobile-row__menu {

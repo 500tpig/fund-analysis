@@ -1,11 +1,11 @@
 # 手机体验第二批方案：曲线读点、视觉深化与其余页面铺样板
 
-状态：2026-10-29，**2.1、2.2 已实施并通过本地四视口浏览器验收，未发布、未做真机验收**。
-2.3–2.6 未开工。第一批（手机样板：触摸基础、`100dvh` 与安全区、
+状态：2026-10-29，**2.1–2.3 已实施并通过本地四视口浏览器验收，未发布、未做真机验收**。
+2.4–2.6 未开工。第一批（手机样板：触摸基础、`100dvh` 与安全区、
 底部抽屉、返回栈、数值微光）已于同日作为 `20261029-mobile-ui-1` 发布，见
 [发布记录](evidence/mobile-ui-release-20261029.md) 与 [移动端响应式计划](mobile-responsive-plan.md)。
 
-一个对话只做一个子项，启动前由用户确认。2.1 与 2.2 已分别作为独立交付完成。
+一个对话只做一个子项，启动前由用户确认。2.1、2.2 与 2.3 已分别作为独立交付完成。
 
 ## 实施前基线（2026-10-29）
 
@@ -116,12 +116,60 @@
 - `pnpm typecheck`、`pnpm lint`、`pnpm build` 与 `frontend/scripts/*.mjs` 全部 7 个脚本通过。
   既有曲线回归补入读数归属、单点／空数据与桌面不吸顶的断言；抽屉返回栈脚本继续通过。
 
-未覆盖：iPhone／Android 真机、Safari 与屏幕阅读器实测；未发布到生产环境。2.3–2.6 未启动。
+未覆盖：iPhone／Android 真机、Safari 与屏幕阅读器实测；未发布到生产环境。
 
 ## 2.3 其余三页铺样板
 
 把第一批的规范复用到 `/holdings`、`/import`、`/simulation`：触摸基础与安全区已随公共层生效，
 本项做页面内的字号节奏、行高、抽屉内表单间距、按钮尺寸与状态反馈的对齐，不改业务逻辑与接口。
+
+状态：2026-10-29 本地实施与浏览器验收完成，未发布、未做真机验收。
+
+实施结果：
+
+- 手机持仓列表采用 15 px 名称／金额、13 px 副行，行高为 21／18 px；模拟列表采用
+  15／13 px 字号、22／20 px 行高。录入页分区标题、候选名称和主要金额采用 15 px，
+  表单标签采用 13 px，辅助标记与基金代码不低于 12 px。
+- 持仓编辑表单按 20 px 分组，标签到输入框为 6 px；手机与 768 px 视口均使用单列，
+  录入候选字段间距同为 20 px。修正原有 `space-y-*` 被全局 margin 规则覆盖的问题，
+  分组实际使用 flex gap；桌面继续保留持仓双列与录入三列字段布局。
+- 按钮、输入框、折叠入口与订单筛选达到 44 px；模拟运行详情的「查看订单」入口达到
+  68×44 px。桌面复制与行菜单通过命中区扩展达到 44×44 px，且不跨到相邻行。
+  公共导航的高度补到 44 px，桌面导航说明由 11 px 补到 12 px。
+- 持仓行、候选匹配、写入方式、折叠入口与模拟订单使用既有表面色反馈按下状态，焦点环继续有效。
+  保留既有加载、失败、完成、删除确认、替换确认与返回栈，不增加提示组件、依赖或业务逻辑。
+
+### 2.3 本地验收（2026-10-29）
+
+沿用 2.1／2.2 的隔离样例与构建产物验收方式：agent-browser 管理的 Chromium 访问本轮
+`frontend/dist`，使用独立 SQLite 持仓库与 fixture 模拟库。识图与行情使用测试 provider，
+未访问真实库、识图服务或生产服务。测量方法见 [验收记录](evidence/mobile-pages-20261029/README.md)，
+完整结果见 [results.json](evidence/mobile-pages-20261029/results.json)。
+
+| 视口 | 结果 | 三页截图 |
+| --- | --- | --- |
+| 390×844 | 26 个状态通过；无横向溢出、文字低于 12 px 或命中区低于 44×44 px | [持仓](evidence/mobile-pages-20261029/holdings-390.png)、[录入](evidence/mobile-pages-20261029/import-candidates-390.png)、[模拟](evidence/mobile-pages-20261029/simulation-390.png) |
+| 430×932 | 25 个状态通过，同上 | [持仓](evidence/mobile-pages-20261029/holdings-430.png)、[录入](evidence/mobile-pages-20261029/import-candidates-430.png)、[模拟](evidence/mobile-pages-20261029/simulation-430.png) |
+| 768×1024 | 25 个状态通过，同上；持仓与录入表单仍为单列 | [持仓](evidence/mobile-pages-20261029/holdings-768.png)、[录入](evidence/mobile-pages-20261029/import-candidates-768.png)、[模拟](evidence/mobile-pages-20261029/simulation-768.png) |
+| 1440×900 | 25 个状态通过，同上；桌面表格与分栏保持 | [持仓](evidence/mobile-pages-20261029/holdings-1440.png)、[录入](evidence/mobile-pages-20261029/import-candidates-1440.png)、[模拟](evidence/mobile-pages-20261029/simulation-1440.png) |
+
+- 101 个状态覆盖持仓列表／筛选空结果、增改表单、菜单、删除确认和保存失败；
+  录入选择、识别中／失败、候选与展开字段、合并／替换预览、写入中／失败和完成；
+  模拟列表、订单筛选、两类详情、详情失败、暂停中／失败和暂停结果。写入仅作用于隔离样例库。
+- [持仓表单](evidence/mobile-pages-20261029/holding-create-390.png) 内滚动到底后，
+  [最后字段与焦点环](evidence/mobile-pages-20261029/holding-form-end-390.png) 保持在固定操作栏上方；
+  保存失败保留输入。替换确认勾选前禁用提交，删除操作继续先打开确认框。
+- 模拟 [运行详情](evidence/mobile-pages-20261029/simulation-run-390.png) 跳到
+  [订单详情](evidence/mobile-pages-20261029/simulation-order-390.png) 后只有一个对话框；
+  四视口均可返回一次关闭详情，URL 保持 `/simulation`。
+- 桌面持仓数据行仍为 61／59 px，字号与行高仍为 14／22 px；持仓编辑抽屉仍宽 520 px，
+  模拟详情仍宽 620 px、圆角为 0。复制与行菜单的扩展区域通过实际命中测试，尺寸 44×44 px，
+  均留在本行内。键盘 `/` 可聚焦搜索框，显示 2 px 焦点环。
+- `pnpm typecheck`、`pnpm lint`、`pnpm build` 与 `frontend/scripts/*.mjs` 全部 7 个脚本通过，
+  包含曲线与抽屉返回栈回归。没有修改 API、数据结构或提交逻辑。
+
+未覆盖：iPhone／Android 真机、安全区、软键盘、Safari 与屏幕阅读器实测；未发布到生产环境。
+2.4–2.6 未启动。
 
 ## 2.4 暗色主题深化（视觉层，不改信息架构）
 

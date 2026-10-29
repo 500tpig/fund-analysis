@@ -418,7 +418,7 @@ onUnmounted(() => {
 
     <section
       v-else-if="phase === 'candidates'"
-      class="space-y-5"
+      class="entry-step"
     >
       <div class="entry-section-heading">
         <div><h2>核对候选持仓</h2><p>{{ candidates.length }} 条候选 · 低可信字段需要人工核对</p></div>
@@ -586,7 +586,7 @@ onUnmounted(() => {
 
     <section
       v-else-if="phase === 'preview' || phase === 'previewing' || phase === 'writing'"
-      class="space-y-5"
+      class="entry-step"
     >
       <div class="entry-section-heading">
         <div><h2>确认持仓变更</h2><p>默认合并更新，不删除未出现在截图中的持仓。</p></div>
@@ -643,13 +643,13 @@ onUnmounted(() => {
               <strong>{{ row.name }}</strong><code>{{ row.code }}</code>
               <div
                 v-if="row.imported_holding_profit != null"
-                class="text-xs text-(--text-secondary)"
+                class="text-[12px] text-(--text-secondary)"
               >
                 {{ row.profit_source }} · {{ row.profit_snapshot_date }} · 持有收益 {{ row.imported_holding_profit }}
               </div>
               <div
                 v-if="row.daily_profit_date"
-                class="text-xs text-(--text-secondary)"
+                class="text-[12px] text-(--text-secondary)"
               >
                 {{ row.daily_profit_date }} 收益 {{ row.daily_profit }}
               </div>
@@ -735,6 +735,96 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
+}
+
+.ui-press,
+:deep(input:not([type='checkbox'])) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.entry-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-module);
+}
+
+.entry-candidate-card > .entry-field-grid,
+.entry-optional-fields .entry-field-grid {
+  margin-top: 12px;
+}
+
+.entry-optional-fields summary {
+  min-height: 44px;
+  line-height: 44px;
+}
+
+.entry-candidate-card > header > .ui-press {
+  flex-shrink: 0;
+}
+
+.entry-candidate-card > header > .ui-press::after {
+  content: none;
+}
+
+.entry-name-matches button {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.entry-name-matches button span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.entry-name-matches code {
+  flex-shrink: 0;
+}
+
+.entry-name-matches button:active,
+.entry-mode-switch button:active:not(:disabled),
+.entry-optional-fields summary:active {
+  background: var(--bg-surface-hover);
+}
+
+@media (max-width: 768px) {
+  .entry-section-heading h2,
+  .entry-done-panel h2,
+  .entry-candidate-card strong,
+  .entry-preview-list strong,
+  .entry-preview-list article > .font-numeric {
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .entry-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .entry-field--wide {
+    grid-column: auto;
+  }
+
+  .entry-field-grid label > span,
+  .entry-optional-fields summary {
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .entry-optional-fields summary {
+    padding: 12px 0;
+  }
+
+  :deep(input:not([type='checkbox'])) {
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .entry-candidate-list {
+    gap: 20px;
+  }
 }
 
 @media (min-width: 769px) {
