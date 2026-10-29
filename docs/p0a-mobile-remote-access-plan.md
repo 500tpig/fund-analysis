@@ -97,7 +97,9 @@ S2b 已完成：`/etc/fund-analysis.env` 追加 `FUND_ANALYSIS_WRITE_HOSTS=fund.
 未知 Host、`Sec-Fetch-Site: cross-site` 全部 403，loopback 与无来源头 CLI 放行；缺
 `X-Forwarded-Proto: https` 时子域请求 403。证据见
 [docs/evidence/p0a-s2b-write-hosts-20261029.json](evidence/p0a-s2b-write-hosts-20261029.json)。
-S1 与 S3 待用户在 Cloudflare 控制台执行，按下方步骤。
+S1 与 S3 已于 2026-10-29 由用户在 Cloudflare 控制台执行完毕：Access 自托管应用 `fund-analysis`
+（Allow 策略仅 `doffoyamin358@gmail.com`、24 小时会话）与隧道路由 `fund.55770517.xyz → http://127.0.0.1:8765`
+均已生效，隧道配置版本 55、路由 7 条加默认 404，既有 6 条未变。
 
 控制台操作步骤（用户执行，做完告知）：
 
@@ -156,15 +158,23 @@ S1 与 S3 待用户在 Cloudflare 控制台执行，按下方步骤。
 
 ### A. 保护有效性
 
-第 6 节全部通过；Zero Trust 的 Access 登录日志出现用户本人的登录事件。
+第 6 节探测全部通过（2026-10-29）：10 个未登录请求全部 302 跳转 Access 登录页，无应用内容返回
+（证据 [docs/evidence/p0a-s4-probe-20261029.json](evidence/p0a-s4-probe-20261029.json)）；
+白名单外邮箱申请验证码未收到邮件，白名单邮箱正常收到并完成登录。
 
-再加一项同源写验证：已登录浏览器对新子域发起一次写请求（持仓页保存，或模拟页暂停／恢复），
-必须返回 2xx。返回 403 说明隧道的 `X-Forwarded-Proto` 或原始 `Host` 没有按预期传到应用，
-先查 `/etc/fund-analysis.env` 的 `FUND_ANALYSIS_WRITE_HOSTS` 与转发头，不要继续后续验收。
+同源写验证已通过（2026-10-29）：携会话 Cookie 经真实隧道 POST `/api/funds/refresh` 返回 200
+（净值 22/22、估值 22/22、行情 3/3）；同一会话下无来源头或恶意 Origin 的写请求被应用 403，匿名请求 302。
+这同时确认隧道保留原始 Host 且 `X-Forwarded-Proto=https` 正常传入。证据见
+[docs/evidence/p0a-authenticated-write-20261029.json](evidence/p0a-authenticated-write-20261029.json)。
+若日后同源写返回 403，先查 `/etc/fund-analysis.env` 的 `FUND_ANALYSIS_WRITE_HOSTS` 与转发头，不继续后续验收。
 
 ### B. 手机查看（只读）
 
 使用真机，关闭 Wi-Fi，走移动网络。记录机型、系统版本、浏览器、网络类型和时间。
+
+进度（2026-10-29）：用户已在手机（安卓 Via 浏览器）打开站点，估值列表页与个基详情页正常，
+总资产 127,895.73、持有收益 -23,254.44 与库内一致；机型、系统版本、网络类型，以及持仓／录入／模拟
+三页与模拟账户核对待补。
 
 1. 访问新子域，完成邮箱验证码登录。
 2. 依次打开估值、持仓、录入、模拟四个页面，确认加载、无横向溢出、无控制台可见错误。
@@ -175,7 +185,7 @@ S1 与 S3 待用户在 Cloudflare 控制台执行，按下方步骤。
 
 ### C. 会话与访问控制
 
-1. 用未在策略中的邮箱请求验证码：应被拒绝，且不收到验证码。
+1. 用未在策略中的邮箱请求验证码：应被拒绝，且不收到验证码。已通过（2026-10-29）：白名单外邮箱未收到验证码。
 2. 访问 `/cdn-cgi/access/logout` 后再打开站点：必须重新登录。
 3. 页面保持打开时在控制台执行「Revoke existing tokens」，再在页面内触发一次接口请求：记录页面表现。
    预期为请求失败并提示通用错误，重新载入页面后进入登录流程；Access 对此类子请求默认不返回 401。
