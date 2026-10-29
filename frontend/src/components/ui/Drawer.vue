@@ -2,6 +2,8 @@
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { X as CloseIcon } from '@lucide/vue'
 
+import { useDrawerHistory, type DrawerHandle } from '@/shared/drawerHistory'
+
 interface Props {
   show: boolean
   title?: string
@@ -23,6 +25,10 @@ const panelRef = ref<HTMLElement | null>(null)
 const closeRef = ref<HTMLButtonElement | null>(null)
 const lastFocus = ref<HTMLElement | null>(null)
 let previousBodyOverflow: string | null = null
+
+// 返回栈协调见 shared/drawerHistory.ts：所有抽屉共用一条记录，返回手势关闭最上层抽屉。
+const drawerHistory = useDrawerHistory()
+let historyHandle: DrawerHandle | null = null
 
 function close() {
   emit('update:show', false)
@@ -70,24 +76,37 @@ watch(
       document.body.style.overflow = 'hidden'
       lastFocus.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
       void nextTick(() => closeRef.value?.focus())
+      if (!historyHandle) historyHandle = drawerHistory.register(close)
     } else {
       unlockBody()
       lastFocus.value?.focus()
+      releaseHistory()
     }
   },
   { immediate: true },
 )
 
-onBeforeUnmount(unlockBody)
+function releaseHistory(): void {
+  if (!historyHandle) return
+  const handle = historyHandle
+  historyHandle = null
+  drawerHistory.unregister(handle)
+}
+
+// 卸载可能是路由跳转引起的：unregister 只在记录仍可消费时回退，不会撤销跳转。
+onBeforeUnmount(() => {
+  unlockBody()
+  releaseHistory()
+})
 </script>
 
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition duration-[280ms] ease-[cubic-bezier(0.05,0.7,0.1,1)]"
+      enter-active-class="drawer-fade-enter-active"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition duration-[180ms] ease-[cubic-bezier(0.3,0,1,1)]"
+      leave-active-class="drawer-fade-leave-active"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
@@ -99,12 +118,12 @@ onBeforeUnmount(unlockBody)
     </Transition>
 
     <Transition
-      enter-active-class="transition-transform duration-[280ms] ease-[cubic-bezier(0.05,0.7,0.1,1)]"
-      enter-from-class="translate-x-full"
-      enter-to-class="translate-x-0"
-      leave-active-class="transition-transform duration-[180ms] ease-[cubic-bezier(0.3,0,1,1)]"
-      leave-from-class="translate-x-0"
-      leave-to-class="translate-x-full"
+      enter-active-class="drawer-panel-enter-active"
+      enter-from-class="drawer-panel-enter-from"
+      enter-to-class="drawer-panel-enter-to"
+      leave-active-class="drawer-panel-leave-active"
+      leave-from-class="drawer-panel-leave-from"
+      leave-to-class="drawer-panel-leave-to"
     >
       <aside
         v-if="show"
@@ -113,7 +132,7 @@ onBeforeUnmount(unlockBody)
         aria-modal="true"
         :aria-label="title"
         :style="{ width: typeof width === 'number' ? `${width}px` : width }"
-        class="drawer-panel fixed top-0 right-0 z-[80] flex h-full max-w-full flex-col overflow-hidden border-l border-[var(--border-subtle)]"
+        class="drawer-panel fixed top-0 right-0 z-[80] flex h-full max-h-full max-w-full flex-col overflow-hidden border-l border-[var(--border-subtle)]"
         @keydown="onPanelKeydown"
       >
         <div class="drawer-panel__header flex shrink-0 items-start justify-between gap-4 border-b border-[var(--border-subtle)] px-6 py-4">
