@@ -40,7 +40,7 @@ class FundMetadata:
         return asdict(self)
 
 
-# Pre-verified metadata for all 18 portfolio funds and cash asset
+# Pre-verified metadata for all current portfolio funds and cash asset
 INITIAL_FUND_METADATA: Mapping[str, FundMetadata] = {
     "009860": FundMetadata(
         code="009860",
@@ -301,6 +301,59 @@ INITIAL_FUND_METADATA: Mapping[str, FundMetadata] = {
         benchmark_code=None,
         source_url="https://fund.eastmoney.com/540010.html",
         verified_at="2026-09-26",
+    ),
+    "018147": FundMetadata(
+        code="018147",
+        name="建信新兴市场混合(QDII)C",
+        fund_type="qdii_hybrid",
+        fund_type_label="QDII偏股混合型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="MSCI新兴市场指数(MSCI Emerging Markets Index)收益率*90%+中债-综合全价(总值)指数收益率*5%+人民币活期存款基准利率*5%",
+        benchmark_code=None,
+        source_url="https://fund.eastmoney.com/018147.html",
+        verified_at="2026-10-29",
+    ),
+    "008254": FundMetadata(
+        code="008254",
+        name="华宝致远混合(QDII)C",
+        fund_type="qdii_hybrid",
+        fund_type_label="QDII偏股混合型",
+        market="GLOBAL",
+        calendar="UNKNOWN",
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="恒生指数收益率*10%+纳斯达克100指数(NASDAQ 100 Index)收益率*85%+人民币活期存款基准利率*5%",
+        benchmark_code=None,
+        source_url="https://www.fsfund.com/fund/008254/fundDetail.shtml",
+        verified_at="2026-10-29",
+    ),
+    "007195": FundMetadata(
+        code="007195",
+        name="长城短债C",
+        fund_type="domestic_bond",
+        fund_type_label="短期纯债型",
+        market="CN",
+        calendar=CALENDAR_CN_STOCK,
+        nav_disclosure_rule=RULE_CN_SAME_DAY_NIGHT,
+        benchmark_name="中债综合财富(1年以下)指数收益率",
+        benchmark_code=None,
+        source_url="https://www.ccfund.com.cn/main/jjcp/cache/007195.shtml",
+        verified_at="2026-10-29",
+    ),
+    "008401": FundMetadata(
+        code="008401",
+        name="大成标普500等权重指数(QDII)C人民币",
+        fund_type="qdii_index",
+        fund_type_label="QDII指数型",
+        market="US",
+        calendar=CALENDAR_US_STOCK,
+        # T+2 仅为披露上限，尚无本基金 T+1 夜间披露依据。
+        nav_disclosure_rule=RULE_UNKNOWN,
+        benchmark_name="标普500等权重指数(全收益指数)收益率",
+        benchmark_code=None,
+        source_url="http://www.dcfund.com/main/fund/productdetail/index.shtml?product_code=008401",
+        verified_at="2026-10-29",
     ),
     "CASH": FundMetadata(
         code="CASH",

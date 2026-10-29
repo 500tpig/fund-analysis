@@ -74,6 +74,25 @@ class TestNavStatus(unittest.TestCase):
             auto_refresh_eligible=False,
         )
 
+    def test_unverified_qdii_schedule_stays_unknown_across_t_plus_1_night(self) -> None:
+        for when in (
+            datetime(2026, 10, 29, 20, 30, tzinfo=BJT),
+            datetime(2026, 10, 30, 10, 0, tzinfo=BJT),
+        ):
+            with self.subTest(as_of=when):
+                result = resolve_nav_status(
+                    metadata=INITIAL_FUND_METADATA["008401"],
+                    nav_date="2026-10-27",
+                    as_of=when,
+                )
+                self.assertEqual(result.status, STATUS_UNKNOWN_RULE)
+                self.assertIsNone(result.next_disclosure_date)
+                self._assert_refresh_flags(
+                    result,
+                    in_disclosure_window=False,
+                    auto_refresh_eligible=False,
+                )
+
     def test_cn_fund_updated_when_target_reached(self) -> None:
         # Wednesday 2026-09-02 21:00, nav_date is 2026-09-02
         dt = datetime(2026, 9, 2, 21, 0, tzinfo=BJT)

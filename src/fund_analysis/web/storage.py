@@ -1284,7 +1284,7 @@ class LocalStorage:
         self,
         conn: sqlite3.Connection | None = None,
     ) -> None:
-        """为当前持仓的 17 只基金及现金初始化最小元数据记录（若尚未存在）。"""
+        """为当前持仓基金及现金初始化最小元数据记录（若尚未存在）。"""
         def _do_seed(c: sqlite3.Connection) -> None:
             existing = {
                 str(row["code"])

@@ -503,8 +503,12 @@ class EstimateAccuracyTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             storage = self._storage(root)
             meta_all = storage.get_all_fund_metadata()
-            # 应该包含 17 只基金 + CASH
+            # 应该包含当前持仓基金 + CASH
             self.assertIn("024481", meta_all)
+            self.assertIn("018147", meta_all)
+            self.assertIn("008254", meta_all)
+            self.assertIn("007195", meta_all)
+            self.assertIn("008401", meta_all)
             self.assertIn("016702", meta_all)
             self.assertIn("CASH", meta_all)
             self.assertEqual(meta_all["024481"]["market"], "CN")
@@ -515,6 +519,13 @@ class EstimateAccuracyTest(unittest.TestCase):
             self.assertIsNone(meta_all["CASH"]["benchmark_code"])
             self.assertEqual(meta_all["017731"]["market"], "GLOBAL")
             self.assertEqual(meta_all["017731"]["nav_disclosure_rule"], "unknown_rule")
+            self.assertEqual(meta_all["008401"]["market"], "US")
+            self.assertEqual(meta_all["008401"]["calendar"], "US_STOCK")
+            self.assertEqual(meta_all["008401"]["nav_disclosure_rule"], "unknown_rule")
+            self.assertEqual(meta_all["007195"]["nav_disclosure_rule"], "cn_same_day_night")
+            self.assertEqual(meta_all["007195"]["benchmark_name"], "中债综合财富(1年以下)指数收益率")
+            self.assertEqual(meta_all["018147"]["market"], "GLOBAL")
+            self.assertEqual(meta_all["008254"]["nav_disclosure_rule"], "unknown_rule")
 
     def test_metadata_profiles_do_not_replace_legacy_metadata_table(self) -> None:
         with tempfile.TemporaryDirectory() as root:
