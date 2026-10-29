@@ -1,0 +1,191 @@
+{
+  "task": "为持仓同步新增的 4 只基金补齐估值档案（fund_valuation_profiles 种子数据）",
+  "date": "2026-10-29",
+  "scope": "本地新增 INITIAL_FUND_METADATA 4 条、种子与披露状态回归测试及证据记录；未修改真实持仓、模拟白名单或策略；未部署，部署包含新档案的版本后，首次启动将向生产库补入缺失档案。",
+  "method": [
+    "基金清单取自 docs/evidence/holdings-sync-20261029.json 的 added 字段（018147、008254、007195、008401）。",
+    "以官方披露文件核实：基金产品资料概要（最新版）、季度报告、更新招募说明书、基金公司官网产品页；QDII 判定、投资市场、业绩比较基准逐项对照。",
+    "007195 沿用境内普通开放式基金的 cn_same_day_night 策略；018147、008254 保持 unknown_rule + GLOBAL；008401 保留 US / US_STOCK，但 T+2 最晚披露时限不能证明 T+1 夜间披露，暂用 unknown_rule，不套用其他基金的披露观察。",
+    "验证：全量 unittest 383 项通过；临时库种子、重复初始化与 resolve_nav_status 探针通过；ruff 对改动的 src 文件及 tests/test_nav_status.py 通过。"
+  ],
+  "funds": [
+    {
+      "code": "018147",
+      "name": "建信新兴市场混合(QDII)C",
+      "full_name": "建信新兴市场优选混合型证券投资基金",
+      "manager": "建信基金管理有限责任公司",
+      "fund_type": "qdii_hybrid",
+      "market": "GLOBAL",
+      "calendar": "UNKNOWN",
+      "nav_disclosure_rule": "unknown_rule",
+      "benchmark_name": "MSCI新兴市场指数(MSCI Emerging Markets Index)收益率*90%+中债-综合全价(总值)指数收益率*5%+人民币活期存款基准利率*5%",
+      "benchmark_note": "自 2026-09-21 起由单一『摩根士丹利资本国际新兴市场指数(Net Total Return)』变更；采用 2026-09-17 编制、2026-09-21 送出的最新产品资料概要更新。",
+      "rule_basis": "QDII 混合型（股票≥60%），投资于多国新兴市场，无单一海外日历可校准；沿用既有跨市场 QDII 的 GLOBAL/UNKNOWN/unknown_rule。",
+      "sources": [
+        {
+          "doc": "建信新兴市场优选混合型证券投资基金(C类份额)基金产品资料概要更新（编制 2026-09-17，送出 2026-09-21）",
+          "url": "http://pdf.dfcfw.com/pdf/H2_AN202609211829693880_1.pdf",
+          "note": "官方披露文件镜像；确认管理人、主代码 539002、C 类代码 018147、混合型、投资范围、基准及变更注"
+        },
+        {
+          "doc": "同基金 2025 年第 3 季度报告（送出 2025-10-25）",
+          "url": "https://www.amcfortune.com/article/20251025/建信新兴市场优选混合型证券投资基金2025年度第3季度报告.pdf",
+          "note": "华夏财富镜像；投资目标：主要投资于注册地或主要经济活动在新兴市场国家或地区的上市公司股票"
+        }
+      ]
+    },
+    {
+      "code": "008254",
+      "name": "华宝致远混合(QDII)C",
+      "full_name": "华宝致远混合型证券投资基金（QDII）",
+      "manager": "华宝基金管理有限公司",
+      "fund_type": "qdii_hybrid",
+      "market": "GLOBAL",
+      "calendar": "UNKNOWN",
+      "nav_disclosure_rule": "unknown_rule",
+      "benchmark_name": "恒生指数收益率*10%+纳斯达克100指数(NASDAQ 100 Index)收益率*85%+人民币活期存款基准利率*5%",
+      "benchmark_note": "2025 年第 4 季度报告（送出 2026-01-22）时仍为旧基准（经汇率调整恒生×65%+经汇率调整标普500×15%+活期20%）；2026-09-18 编制的最新 C 类概要为现行基准，与官网一致。变更生效公告未定位。",
+      "rule_basis": "QDII 偏股混合型（股票 60%–95%），主要投资市场为美国和中国香港，跨市场无单一日历；沿用既有跨市场 QDII 的 GLOBAL/UNKNOWN/unknown_rule。",
+      "sources": [
+        {
+          "doc": "华宝致远混合型证券投资基金（QDII）（C类份额）基金产品资料概要（更新）（编制 2026-09-18，送出 2026-09-21）",
+          "url": "https://notice.10jqka.com.cn/api/pdf/af4c46f3a6cddd6c.pdf",
+          "note": "官方披露文件镜像；确认 C 类 008254、偏股混合型、现行基准"
+        },
+        {
+          "doc": "华宝基金官网 008254 产品页（实时）",
+          "url": "https://www.fsfund.com/fund/008254/fundDetail.shtml",
+          "note": "管理人官网；比较基准与 C 类概要一致；风险等级 R3；页面声明产品文件经证监会基金电子披露网站（eid.csrc.gov.cn/fund）与公司网站公开披露"
+        },
+        {
+          "doc": "同基金 2025 年第 4 季度报告（送出 2026-01-22）",
+          "url": "https://pdf.dfcfw.com/pdf/H2_AN202601221818242512_1.pdf",
+          "note": "官方披露文件镜像；旧基准对照来源"
+        }
+      ]
+    },
+    {
+      "code": "007195",
+      "name": "长城短债C",
+      "full_name": "长城短债债券型证券投资基金",
+      "manager": "长城基金管理有限公司",
+      "fund_type": "domestic_bond",
+      "market": "CN",
+      "calendar": "CN_STOCK",
+      "nav_disclosure_rule": "cn_same_day_night",
+      "benchmark_name": "中债综合财富(1年以下)指数收益率",
+      "benchmark_note": "2025-06 版概要与 2026 年二季报两处官方文本一致。",
+      "rule_basis": "境内债券型普通开放式基金（每个开放日），与其余 15 只境内基金同一策略 cn_same_day_night；QDII 判定为否。",
+      "sources": [
+        {
+          "doc": "长城短债债券型证券投资基金基金产品资料概要更新（编制 2025-06-20）",
+          "url": "http://pdf.dfcfw.com/pdf/H2_AN202507171710419252_1.pdf",
+          "note": "官方披露文件镜像；确认主代码 007194、C 类 007195、债券型、普通开放式"
+        },
+        {
+          "doc": "同基金 2026 年第 2 季度报告（送出 2026-07-21）",
+          "url": "http://pdf.dfcfw.com/pdf/H2_AN202607211827193553_1.pdf",
+          "note": "官方披露文件镜像；业绩比较基准、债券资产≥80% 且短债≥非现金 80%"
+        },
+        {
+          "doc": "长城基金官网 007195 产品页",
+          "url": "https://www.ccfund.com.cn/main/jjcp/cache/007195.shtml",
+          "note": "管理人官网；债券型、R2 中低风险；source_url 采用"
+        }
+      ]
+    },
+    {
+      "code": "008401",
+      "name": "大成标普500等权重指数(QDII)C人民币",
+      "full_name": "大成标普500等权重指数证券投资基金",
+      "manager": "大成基金管理有限公司",
+      "fund_type": "qdii_index",
+      "market": "US",
+      "calendar": "US_STOCK",
+      "nav_disclosure_rule": "unknown_rule",
+      "benchmark_name": "标普500等权重指数(全收益指数)收益率",
+      "benchmark_note": "C 类与 A 类同批概要文本一致。",
+      "rule_basis": "美股 QDII 指数基金（「美国股票指数型证券投资基金」「投资于美国证券市场」）；招募说明书的「不晚于每个开放日后的两个工作日」仅给出最晚披露时限，尚无本基金 T+1 夜间披露依据。暂用 unknown_rule，保留 US / US_STOCK，不推导披露窗口、逾期或下次披露日期。",
+      "sources": [
+        {
+          "doc": "大成标普500等权重指数证券投资基金(人民币C类份额)基金产品资料概要更新（编制 2026-06-02，送出 2026-06-30）",
+          "url": "http://pdf.dfcfw.com/pdf/H2_AN202606301826564586_1.pdf",
+          "note": "官方披露文件镜像；确认主代码 096001、C 人民币 008401、股票型、跟踪标普500等权重指数、80%–95% 仓位"
+        },
+        {
+          "doc": "同基金(人民币A类份额)基金产品资料概要更新（同批）",
+          "url": "https://pdf.dfcfw.com/pdf/H2_AN202606301826565799_1.pdf",
+          "note": "官方披露文件镜像；基准交叉核对一致"
+        },
+        {
+          "doc": "同基金 更新招募说明书（2025年2月版）",
+          "url": "https://notice.10jqka.com.cn/api/pdf/c621cf3fdc1ecc28.pdf",
+          "note": "官方披露文件镜像；美国市场表述与『十四 基金的信息披露』净值披露条款"
+        },
+        {
+          "doc": "同基金 更新招募说明书（2024年4月版）",
+          "url": "http://pdf.dfcfw.com/pdf/H2_AN202404231631033837_1.pdf",
+          "note": "官方披露文件镜像；披露条款与 2025 版逐字一致"
+        },
+        {
+          "doc": "大成基金官网 008401 产品页",
+          "url": "http://www.dcfund.com/main/fund/productdetail/index.shtml?product_code=008401",
+          "note": "管理人官网；source_url 采用（页面动态渲染，抓取文本有限）"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "unittest": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m unittest discover -s tests",
+      "result": "Ran 383 tests, OK",
+      "note": "使用 README 中的 discover 命令，避免 tests.* 包名与测试顶层互引的导入方式差异。输出包含数据库连接未关闭的 ResourceWarning，本轮未排查。"
+    },
+    "probe": {
+      "script": "本轮内联探针：TemporaryDirectory + LocalStorage + resolve_nav_status（临时库，不接触真实数据）",
+      "result": {
+        "seeded": "4 个代码全部写入 fund_valuation_profiles，字段与预期一致（见 funds）",
+        "repeat_initialization": "再次构造 LocalStorage 后，4 条档案的业务字段保持不变",
+        "nav_status_at_2026-10-29_20:30": {
+          "018147": "unknown_rule",
+          "008254": "unknown_rule",
+          "007195": "pending（19:00-24:00 披露窗口，目标 2026-10-29）",
+          "008401": "unknown_rule（不推导 T+1 披露窗口或下次披露日期）"
+        },
+        "008401_at_2026-10-30_10:00": {
+          "status": "unknown_rule",
+          "auto_refresh_eligible": false,
+          "next_disclosure_date": null
+        },
+        "008401_overseas_classification": "US / US_STOCK 保持不变，is_overseas_estimate 返回 true"
+      }
+    },
+    "regression": {
+      "test": "tests/test_nav_status.py::TestNavStatus.test_unverified_qdii_schedule_stays_unknown_across_t_plus_1_night",
+      "case": "最新净值日为 2026-10-27，分别在 2026-10-29 20:30 与 2026-10-30 10:00 北京时间推导状态。",
+      "before": "两个子用例分别得到 pending 与 overdue，均未通过断言。",
+      "after": "两个子用例均为 unknown_rule；无披露窗口、无逾期自动补刷、无下次披露日期。"
+    },
+    "ruff": {
+      "command": ".venv/bin/ruff check src/fund_analysis/fund_metadata.py src/fund_analysis/web/storage.py tests/test_nav_status.py tests/test_web_storage.py",
+      "result": "src 两个文件与 tests/test_nav_status.py 通过；tests/test_web_storage.py 仅报告既有 F841",
+      "note": "F841 为 storage 未使用，当前位于第 536 行；使用 git show HEAD:tests/test_web_storage.py 检查，HEAD 第 525 行存在同一问题，本轮未修改。"
+    },
+    "frontend": "无前端代码改动；FundDetailPanel 消费 fund_type_label 与 nav_disclosure_rule，008401 的披露规则显示为「规则待核验」。新增类型取值沿用字符串契约，后端按 qdii 前缀保留海外归属。",
+    "changed_files": [
+      "src/fund_analysis/fund_metadata.py（新增 4 条档案；注释去陈）",
+      "src/fund_analysis/web/storage.py（种子 docstring 去数字）",
+      "tests/test_web_storage.py（种子测试补 4 只断言）",
+      "tests/test_nav_status.py（008401 跨 T+1 夜间边界的状态回归）",
+      "docs/project-roadmap.md（状态句更新）",
+      "docs/evidence/new-fund-profiles-20261029.json（本文件）"
+    ]
+  },
+  "unconfirmed": [
+    "018147 的 source_url 使用天天基金页面：建信基金官网为动态站点，未能定位可引用的产品详情 URL；官方依据以产品资料概要为准。",
+    "018147、008254、007195 未逐字核其招募说明书的披露时点条款；007195 沿用境内既有工程策略，两只跨市场 QDII 保持 unknown_rule。",
+    "008401 仅核实 T+2 最晚披露时限，暂用 unknown_rule；待核实本基金的披露时点与独立非开放日，再决定是否启用具体规则。",
+    "008254 基准变更的生效公告未定位；以 2026-09-18 编制的最新 C 类概要文本与官网现行值一致为准。",
+    "4 条档案行待部署包含新档案的版本后，首次启动补入生产库；本轮未部署、未操作生产库，是否生效以发布后的回读证据为准。"
+  ]
+}
