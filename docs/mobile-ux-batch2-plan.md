@@ -1,19 +1,20 @@
 # 手机体验第二批方案：曲线读点、视觉深化与其余页面铺样板
 
-状态：2026-10-29 规划完成，**未开工**。第一批（手机样板：触摸基础、`100dvh` 与安全区、
+状态：2026-10-29，**2.1、2.2 已实施并通过本地四视口浏览器验收，未发布、未做真机验收**。
+2.3–2.6 未开工。第一批（手机样板：触摸基础、`100dvh` 与安全区、
 底部抽屉、返回栈、数值微光）已于同日作为 `20261029-mobile-ui-1` 发布，见
 [发布记录](evidence/mobile-ui-release-20261029.md) 与 [移动端响应式计划](mobile-responsive-plan.md)。
 
-一个对话只做一个子项，启动前由用户确认。2.1 优先。
+一个对话只做一个子项，启动前由用户确认。2.1 与 2.2 已分别作为独立交付完成。
 
-## 现状与证据（2026-10-29 实测）
+## 实施前基线（2026-10-29）
 
 - 手机无法读点：`frontend/src/components/FundCurveChart.vue:318` 为
   `if (e.pointerType !== 'mouse') return`，十字线与 tooltip 只响应鼠标。
   提交 9af818b 的说明也写明「触摸允许纵向滚动，十字线仅响应鼠标」，读点当时有意留空。
 - 尺寸写死：`FundCurveChart.vue:52` `height = 290`，`:53` `plot.left = 68`；
   组件内没有任何 `@media`（实测 0 处）。390 px 宽手机上图表 358×290，Y 轴留白占 19%。
-- 字号越界：`FundCurveChart.vue:732` 轴标签 `font-size: 10px`，低于本项目的手机 12 px 下限。
+- 字号越界：轴标签为 11 px、午休文字为 10 px，低于本项目的手机 12 px 下限。
 - tooltip 跟随指针 x 位置（`FundCurveChart.vue:595` 起），手机上会遮挡曲线本身。
 - 详情面板内容很长：390×844 实测抽屉内滚动高度 2912 px、可视 740 px，读点需要固定读数区。
 
@@ -27,17 +28,95 @@
 - 轻触即读：`pointerdown` 落在绘图区内立即高亮最近点，不必先滑动。
 - 读数区固定在图表上方（不跟随手指），显示时间、各序列数值与相对基准的涨跌色；
   松手后保留读数直到再次轻触或离开详情，便于前后对比。
-- 首次进入详情给一次「按住曲线可查看任意时间点」的提示，可关闭，不重复弹。
+- 读数区复用图例，分时同时显示日期、时间与净值；手机不显示跟随指针的浮动 tooltip。
+  本项只固定读数区在图表上方的位置，详情滚动时的吸顶属于 2.2。
+- 首次进入手机详情给一次「按住曲线可查看任意时间点」的提示，可关闭；
+  使用 `fund-analysis:curve-touch-hint-seen` 保存已展示状态，关闭、重开或刷新页面不重复出现。
 - 尺寸分档（用 `@media (max-width: 768px)`，组件内首次出现媒体查询）：
-  图高 290 → 240；`plot.left` 68 → 48；轴标签 10 → 12 px；Y 轴最多 3 个刻度、
-  X 轴保留 09:30 / 11:30·13:00 / 15:00 三处；刻度线在窄屏降为 1 条。
-- 只有单点或断档时不显示读数，避免给出误导性的单点结论。
+  图高 290 → 240；`plot.left` 68 → 48；轴标签统一为 12 px；Y 轴最多 3 个刻度、
+  A 股模式 X 轴保留 09:30 / 11:30·13:00 / 15:00 三处；水平网格线在窄屏降为 1 条。
+- 详情当前使用 `session-type="raw"`，继续展示实际起止时间，历史业绩展示实际起止日期；
+  不把海外跨日走势套成 A 股时段。A 股模式的三处刻度另用组件样例覆盖四视口。
+- 单点不显示交互读数；分时按实际最小采样间隔的半步吸附，超出范围的缺口和 A 股午休不读点。
+  对比序列缺少所选时间点时显示「—」，不再沿用前值或首点。
+- 手机金额轴使用紧凑数值（如 `+1.23K`），上方读数仍保留完整金额与两位小数。
+- 曲线可通过左右方向键、Home / End 读点；触摸或键盘读数不会被鼠标离开事件清除。
+  基准选择器与菜单选项的手机触控高度补齐到 44 px。
+
+### 2.1 本地验收（2026-10-29）
+
+使用隔离 SQLite 样例库与组件边界样例，未读取真实持仓库或模拟库。浏览器为 agent-browser
+管理的 Chromium，分时与历史主流程使用本轮 `frontend/dist` 构建。触摸通过浏览器原生输入验证，
+包含 `pointercancel` 和详情实际滚动，
+不以手动触发 PointerEvent 代替手势验收。测量结果见 [results.json](evidence/mobile-curve-20261029/results.json)。
+
+| 视口 | 详情图表尺寸 | 左边距 / 轴字号 / 网格线 | 结果与截图 |
+| --- | --- | --- | --- |
+| 390×844 | 358×240 px | 48 px / 12 px / 1 条 | 通过：[分时](evidence/mobile-curve-20261029/intraday-390.png)、[历史双序列](evidence/mobile-curve-20261029/history-390.png) |
+| 430×932 | 398×240 px | 48 px / 12 px / 1 条 | 通过：[分时](evidence/mobile-curve-20261029/intraday-430.png)、[历史双序列](evidence/mobile-curve-20261029/history-430.png) |
+| 768×1024 | 736×240 px | 48 px / 12 px / 1 条 | 通过：[分时](evidence/mobile-curve-20261029/intraday-768.png)、[历史双序列](evidence/mobile-curve-20261029/history-768.png) |
+| 1440×900 | 362×290 px | 68 px / 12 px / 5 条 | 通过：[分时](evidence/mobile-curve-20261029/intraday-1440.png)、[历史双序列](evidence/mobile-curve-20261029/history-1440.png) |
+
+- 四视口无页面、详情或图表横向溢出，曲线及详情内可见文字不小于 12 px。三档手机的区间按钮、
+  基准选择按钮均达到 44×44 px；提示关闭按钮为 44×44 px，菜单选项高 44 px。
+- 三档手机的分时与历史曲线均通过轻触、横向拖动、松手保留、纵向滚动验收；
+  读数区高度与相对图表位置不变，纵向手势触发取消后恢复先前读数，指针事件未调用 `preventDefault`。
+- A 股组件的三处手机刻度、桌面四处刻度通过四视口测量，
+  示例截图：[390](evidence/mobile-curve-20261029/cna-390.png)、[430](evidence/mobile-curve-20261029/cna-430.png)、
+  [768](evidence/mobile-curve-20261029/cna-768.png)、[1440](evidence/mobile-curve-20261029/cna-1440.png)。
+- 边界样例通过：[单点](evidence/mobile-curve-20261029/single-390.png)、
+  [断档](evidence/mobile-curve-20261029/gap-390.png)、[跨日](evidence/mobile-curve-20261029/overnight-390.png)、
+  [基准缺值](evidence/mobile-curve-20261029/comparison-gap-390.png)、
+  [金额轴与完整读数](evidence/mobile-curve-20261029/money-390.png)、[首次提示](evidence/mobile-curve-20261029/hint-390.png)。
+  提示关闭后刷新重开不再出现；桌面鼠标离开后清除十字线，图高与详情分栏保持原尺寸。
+- 空数据转为有数据时重新绑定尺寸观察，浏览器实测 SVG 坐标与容器均为 358×240 px、左边距 48 px，
+  不再沿用空容器挂载时的 720×290 默认坐标。
+- 自动检查通过：`pnpm typecheck`、`pnpm lint`、`pnpm build` 及 `frontend/scripts/*.mjs`
+  全部 7 个脚本，含 `check-routes.mjs`、新增 `test-curve-chart.mjs` 与既有 `test-drawer-history.mjs`。
+  曲线回归执行组件真实 setup，覆盖触摸／鼠标／键盘、滚动取消、单点、缺口、基准缺值、跨日与金额轴。
+
+未覆盖：真实 iPhone／Android 的触摸、侧滑返回、返回键、安全区与软键盘；未发布到生产环境。
+后续子项按各节状态单独启动。
 
 ## 2.2 详情面板手机细化
+
+状态：2026-10-29 本地实施与浏览器验收完成，未发布、未做真机验收。
 
 - 顶部读数条与抽屉头部的层级、间距统一，滚动详情时读数条留在可视区。
 - 详情各分区（行情、收益、持仓、准确度、关联）在手机上的间距与分隔统一到样板的节奏。
 - 曲线与下方区块之间补固定的分隔，避免长滚动中「曲线贴着下一块」。
+
+实施结果：
+
+- 手机使用一个吸顶区，复用当前曲线的现有图例；读数条到达抽屉头部下沿后保持可见。
+  分时、历史业绩与已记录官方测算曲线通过触摸或键盘读点切换，不复制读数或绘制第二份图例。
+- 只在实际读点时切换吸顶内容。区间按钮仍随曲线滚动；基准选择器留在所属图例中，
+  打开菜单不会搬动正在点击的控件。Esc 关闭菜单后，抽屉继续保持打开。
+- 分区间距与顶部内边距统一为 20 px，使用 1 px 分隔线；数据行文字为 13 px 字号、20 px 行高，
+  比较表与收益记录的行高不低于 32 px。标题保留 15 px，辅助文字不低于 12 px。
+- 空数据与单点不显示吸顶区；关闭或返回后随详情一起清理。桌面图例保留原位，
+  曲线图高、数据行字号和曲线切换区间距保持原样。不改后端 API、收益口径和模拟行为。
+
+### 2.2 本地验收（2026-10-29）
+
+使用本轮 `frontend/dist` 构建、隔离样例库及浏览器原生触摸输入；未访问真实库或生产服务。
+完整测量与断言结果见 [results.json](evidence/mobile-detail-20261029/results.json)。
+
+| 视口 | 结果 | 截图 |
+| --- | --- | --- |
+| 390×844 | 三类曲线可接管吸顶区；纵向滚动保留读数，关闭按钮可点 | [分区间距](evidence/mobile-detail-20261029/curve-spacing-390.png)、[分时吸顶](evidence/mobile-detail-20261029/intraday-sticky-390.png)、[历史吸顶](evidence/mobile-detail-20261029/history-sticky-390.png)、[收益吸顶](evidence/mobile-detail-20261029/official-sticky-390.png) |
+| 430×932 | 同上，无横向溢出或小于 12 px 的详情文字 | [分区间距](evidence/mobile-detail-20261029/curve-spacing-430.png)、[分时吸顶](evidence/mobile-detail-20261029/intraday-sticky-430.png)、[历史吸顶](evidence/mobile-detail-20261029/history-sticky-430.png)、[收益吸顶](evidence/mobile-detail-20261029/official-sticky-430.png) |
+| 768×1024 | 同上，头部与吸顶条之间无内容穿透 | [分区间距](evidence/mobile-detail-20261029/curve-spacing-768.png)、[分时吸顶](evidence/mobile-detail-20261029/intraday-sticky-768.png)、[历史吸顶](evidence/mobile-detail-20261029/history-sticky-768.png)、[收益吸顶](evidence/mobile-detail-20261029/official-sticky-768.png) |
+| 1440×900 | 吸顶区隐藏，两份图例均在原位；图表 362×290 px，切换区间距仍为 14 px | [桌面](evidence/mobile-detail-20261029/desktop-1440.png) |
+
+- 三档手机的分时与历史主曲线完全滚出后仍保留选中读数；收益曲线验证了吸顶内容接管与滚动保留。
+  指针事件未调用 `preventDefault`，纵向手势继续通过 `pointercancel` 交给浏览器。
+- 吸顶菜单的 7 个选项均实测为 118×44 px，命中正确；未激活曲线中的菜单也能一次打开，
+  不抢占当前读数。键盘读点后焦点仍在曲线上，返回一次即可关闭详情，URL 保持 `/valuation`，没有残留吸顶区。
+- `pnpm typecheck`、`pnpm lint`、`pnpm build` 与 `frontend/scripts/*.mjs` 全部 7 个脚本通过。
+  既有曲线回归补入读数归属、单点／空数据与桌面不吸顶的断言；抽屉返回栈脚本继续通过。
+
+未覆盖：iPhone／Android 真机、Safari 与屏幕阅读器实测；未发布到生产环境。2.3–2.6 未启动。
 
 ## 2.3 其余三页铺样板
 
