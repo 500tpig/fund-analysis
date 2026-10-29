@@ -1,0 +1,36 @@
+{
+ "stage": "P0-A 已登录同源写验证（经真实隧道）",
+ "checked_at_beijing": "2026-10-29T11:02:00+08:00",
+ "method": "从本机经 https://fund.55770517.xyz 发起请求，携带用户 Access 会话 Cookie（CF_Authorization）",
+ "results": {
+  "同源 POST /api/funds/refresh（Origin=子域）": {
+   "http": 200,
+   "body": "success=22, failure=0, estimate_success=22, quote_success=3"
+  },
+  "POST /api/funds/refresh 带 Cookie 但无来源头": {
+   "http": 403,
+   "detail": "Cross-origin write request forbidden"
+  },
+  "POST /api/funds/refresh 带 Cookie + Origin https://evil.example": {
+   "http": 403,
+   "detail": "Cross-origin write request forbidden"
+  },
+  "GET /api/holdings 无 Cookie": {
+   "http": 302,
+   "location": "cloudflareaccess.com 登录页"
+  }
+ },
+ "conclusion": [
+  "真实链路（Cloudflare 边缘 → 隧道 → 应用）上：无会话被 Access 拦截，同源写返回 2xx，跨站写被应用 403。",
+  "同源写成功说明隧道保留了原始 Host 且 X-Forwarded-Proto=https 已正确传入，写来源校验的隧道依赖成立。",
+  "本次同源刷新实测覆盖 22/22 净值与估值、3/3 行情。"
+ ],
+ "open_items": [
+  "CF_Authorization 的 SameSite 实际值仍待从浏览器读取并记录。",
+  "手机真机查看与暂停／恢复验收未做。"
+ ],
+ "notes": [
+  "验证使用的会话令牌由用户提供；令牌为 24 小时有效，建议在 Zero Trust 中撤销会话或等待过期。",
+  "本次未做任何 Cloudflare／DNS／服务器配置变更。"
+ ]
+}
