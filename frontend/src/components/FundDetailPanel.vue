@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { AlertTriangle } from '@lucide/vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { AlertTriangle, X } from '@lucide/vue'
 
 import {
   fetchFundIntradayCurve,
@@ -50,6 +50,18 @@ const performanceCache = new Map<string, FundPerformanceResponse>()
 const officialProfit = ref<OfficialDailyProfitResponse | null>(null)
 const officialProfitLoading = ref(false)
 const officialProfitError = ref<string | null>(null)
+const curveHintVisible = ref(false)
+const readoutHost = ref<HTMLElement | null>(null)
+const activeReadout = ref<'main' | 'official'>('main')
+const compact = ref(false)
+
+onMounted(() => {
+  const media = window.matchMedia('(max-width: 768px)')
+  const sync = () => { compact.value = media.matches }
+  sync()
+  media.addEventListener('change', sync)
+  onBeforeUnmount(() => media.removeEventListener('change', sync))
+})
 
 const performanceRanges: Array<{ value: FundPerformanceResponse['range']; label: string }> = [
   { value: '1m', label: '近1月' },
@@ -131,6 +143,17 @@ const officialProfitSeries = computed(() => {
     },
   ]
 })
+
+const mainReadoutTarget = computed(() => {
+  const series = activeCurveTab.value === 'intraday' ? intradaySeries.value : performanceSeries.value
+  return compact.value && activeReadout.value === 'main' && (series[0]?.points.length ?? 0) > 1
+    ? readoutHost.value : null
+})
+
+const officialReadoutTarget = computed(() => (
+  compact.value && activeReadout.value === 'official' && (officialProfitSeries.value[0]?.points.length ?? 0) > 1
+    ? readoutHost.value : null
+))
 
 const officialProfitDaysDesc = computed(() => (
   [...(officialProfit.value?.items ?? [])].reverse()
@@ -262,9 +285,20 @@ function resetDetail(): void {
 }
 
 function openDetail(row: HoldingRow): void {
+  activeReadout.value = 'main'
   selectedBenchmark.value = defaultBenchmarkForRow(row)
   activeCurveTab.value = 'intraday'
   resetDetail()
+  curveHintVisible.value = false
+  if (row.is_fund_asset && window.matchMedia('(max-width: 768px)').matches) {
+    try {
+      const key = 'fund-analysis:curve-touch-hint-seen'
+      curveHintVisible.value = localStorage.getItem(key) !== '1'
+      if (curveHintVisible.value) localStorage.setItem(key, '1')
+    } catch (error) {
+      console.warn('无法保存曲线操作提示状态', error)
+    }
+  }
   if (row.is_fund_asset) {
     void loadIntradayCurve()
     void loadOfficialProfit()
@@ -306,6 +340,7 @@ function selectBenchmark(code: string): void {
 }
 
 function selectCurveTab(value: string): void {
+  activeReadout.value = 'main'
   activeCurveTab.value = value === 'performance' ? 'performance' : 'intraday'
   if (activeCurveTab.value === 'performance' && performance.value === null) {
     void loadPerformance()
@@ -402,7 +437,7 @@ function selectCurveTab(value: string): void {
 
     <section
       v-if="fund.is_fund_asset"
-      class="flex flex-col gap-4"
+      class="fund-detail-panel__curve-scope flex flex-col gap-4"
     >
       <div class="flex items-center justify-between gap-3">
         <div class="segmented-control">
@@ -424,94 +459,122 @@ function selectCurveTab(value: string): void {
       </div>
 
       <div
-        v-if="activeCurveTab === 'intraday'"
-        class="space-y-3"
+        v-if="curveHintVisible"
+        class="curve-touch-hint"
       >
-        <div
-          v-if="intradayLoading"
-          class="flex h-56 items-center justify-center gap-2 text-[13px] text-(--text-tertiary)"
+        <span>按住曲线可查看任意时间点</span>
+        <button
+          type="button"
+          aria-label="关闭曲线操作提示"
+          @click="curveHintVisible = false"
         >
-          <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-accent) border-t-transparent" />
-          拉取盘中分时
-        </div>
-        <div
-          v-else-if="intradayError"
-          class="alert-banner alert-banner--error"
-        >
-          {{ intradayError }}
-        </div>
-        <FundCurveChart
-          v-else-if="intradaySeries.length"
-          :series="intradaySeries"
-          x-mode="time"
-          session-type="raw"
-        />
-        <EmptyState
-          v-else
-          title="今日暂无分钟走势数据"
-        />
-        <p
-          v-if="intradayCurve"
-          class="flex justify-between gap-4 text-[12px] text-(--text-secondary)"
-        >
-          <span>{{ intradayDateLabel }} 分时走势<template v-if="intradayIsLatestSession">（最近交易日）</template></span>
-          <span>分时曲线来源：{{ sourceDisplayName(intradayCurve.source, true) }}</span>
-        </p>
+          <X
+            class="h-4 w-4"
+            :stroke-width="1.75"
+          />
+        </button>
       </div>
 
       <div
-        v-else
-        class="space-y-3"
-      >
+        ref="readoutHost"
+        class="fund-detail-panel__readout"
+      />
+
+      <section class="fund-detail-panel__curve-section flex flex-col gap-4">
         <div
-          v-if="performanceLoading"
-          class="flex h-56 items-center justify-center gap-2 text-[13px] text-(--text-tertiary)"
+          v-if="activeCurveTab === 'intraday'"
+          class="space-y-3"
         >
-          <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-accent) border-t-transparent" />
-          加载历史业绩
+          <div
+            v-if="intradayLoading"
+            class="flex h-56 items-center justify-center gap-2 text-[13px] text-(--text-tertiary)"
+          >
+            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-accent) border-t-transparent" />
+            拉取盘中分时
+          </div>
+          <div
+            v-else-if="intradayError"
+            class="alert-banner alert-banner--error"
+          >
+            {{ intradayError }}
+          </div>
+          <FundCurveChart
+            v-else-if="intradaySeries.length"
+            :series="intradaySeries"
+            x-mode="time"
+            session-type="raw"
+            :readout-target="mainReadoutTarget"
+            @inspect="activeReadout = 'main'"
+          />
+          <EmptyState
+            v-else
+            title="今日暂无分钟走势数据"
+          />
+          <p
+            v-if="intradayCurve"
+            class="flex justify-between gap-4 text-[12px] text-(--text-secondary)"
+          >
+            <span>{{ intradayDateLabel }} 分时走势<template v-if="intradayIsLatestSession">（最近交易日）</template></span>
+            <span>分时曲线来源：{{ sourceDisplayName(intradayCurve.source, true) }}</span>
+          </p>
         </div>
+
         <div
-          v-else-if="performanceError && !performanceSeries.length"
-          class="alert-banner alert-banner--error"
-        >
-          {{ performanceError }}
-        </div>
-        <FundCurveChart
-          v-else-if="performanceSeries.length"
-          :series="performanceSeries"
-          x-mode="date"
-          :benchmark-options="PERFORMANCE_BENCHMARK_OPTIONS"
-          :benchmark-code="selectedBenchmark"
-          :refreshing="performanceRefreshing"
-          @update:benchmark-code="selectBenchmark"
-        >
-          <template #toolbar-prefix>
-            <div class="text-filters">
-              <button
-                v-for="item in performanceRanges"
-                :key="item.value"
-                type="button"
-                class="text-filter"
-                :class="performanceRange === item.value ? 'is-active' : ''"
-                @click="selectPerformanceRange(item.value)"
-              >
-                {{ item.label }}
-              </button>
-            </div>
-          </template>
-        </FundCurveChart>
-        <EmptyState
           v-else
-          title="暂无历史业绩数据"
-        />
-        <p
-          v-if="performance"
-          class="flex justify-between gap-4 text-[12px] text-(--text-secondary)"
+          class="space-y-3"
         >
-          <span>{{ formatMonthDay(performance.start_date) }} 至 {{ formatMonthDay(performance.end_date) }}</span>
-          <span>{{ sourceDisplayName(performance.source) }}</span>
-        </p>
-      </div>
+          <div
+            v-if="performanceLoading"
+            class="flex h-56 items-center justify-center gap-2 text-[13px] text-(--text-tertiary)"
+          >
+            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-accent) border-t-transparent" />
+            加载历史业绩
+          </div>
+          <div
+            v-else-if="performanceError && !performanceSeries.length"
+            class="alert-banner alert-banner--error"
+          >
+            {{ performanceError }}
+          </div>
+          <FundCurveChart
+            v-else-if="performanceSeries.length"
+            :series="performanceSeries"
+            x-mode="date"
+            :benchmark-options="PERFORMANCE_BENCHMARK_OPTIONS"
+            :benchmark-code="selectedBenchmark"
+            :refreshing="performanceRefreshing"
+            :readout-target="mainReadoutTarget"
+            @inspect="activeReadout = 'main'"
+            @update:benchmark-code="selectBenchmark"
+          >
+            <template #toolbar-prefix>
+              <div class="text-filters">
+                <button
+                  v-for="item in performanceRanges"
+                  :key="item.value"
+                  type="button"
+                  class="text-filter"
+                  :class="performanceRange === item.value ? 'is-active' : ''"
+                  @click="selectPerformanceRange(item.value)"
+                >
+                  {{ item.label }}
+                </button>
+              </div>
+            </template>
+          </FundCurveChart>
+          <EmptyState
+            v-else
+            title="暂无历史业绩数据"
+          />
+          <p
+            v-if="performance"
+            class="flex justify-between gap-4 text-[12px] text-(--text-secondary)"
+          >
+            <span>{{ formatMonthDay(performance.start_date) }} 至 {{ formatMonthDay(performance.end_date) }}</span>
+            <span>{{ sourceDisplayName(performance.source) }}</span>
+          </p>
+        </div>
+      </section>
     </section>
 
     <section class="compare-sheet">
@@ -654,6 +717,8 @@ function selectCurveTab(value: string): void {
           :series="officialProfitSeries"
           x-mode="date"
           value-kind="money"
+          :readout-target="officialReadoutTarget"
+          @inspect="activeReadout = 'official'"
         />
         <p
           v-if="officialProfit.observed_dates.length"
@@ -812,3 +877,87 @@ function selectCurveTab(value: string): void {
     </section>
   </div>
 </template>
+
+<style scoped>
+.curve-touch-hint {
+  display: none;
+}
+
+.fund-detail-panel__readout {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .fund-detail-panel {
+    gap: 20px;
+    min-width: 0;
+  }
+
+  .fund-detail-panel__curve-scope {
+    display: contents;
+  }
+
+  .fund-detail-panel__readout:not(:empty) {
+    position: sticky;
+    /* 抵消正文顶部的内边距，让读数条紧接固定头部。 */
+    top: -16px;
+    z-index: 3;
+    display: block;
+    flex-shrink: 0;
+    margin-block: -12px;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+  }
+
+  .compare-sheet,
+  .profit-section,
+  .accuracy-section,
+  .fund-profile-section {
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .compare-sheet__col h3 {
+    margin-bottom: 12px;
+  }
+
+  .compare-sheet__col:last-child {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .compare-sheet__row,
+  .profit-section__row {
+    min-height: 32px;
+  }
+
+  .compare-sheet__label,
+  .compare-sheet__value,
+  .profit-section__date,
+  .profit-section__amount,
+  .fund-profile-section__value {
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .curve-touch-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+
+  .curve-touch-hint button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--radius-control);
+  }
+}
+</style>

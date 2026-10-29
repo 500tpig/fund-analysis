@@ -243,6 +243,17 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
+@media (max-width: 768px) {
+  .benchmark-select__trigger {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .benchmark-select__option {
+    min-height: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .benchmark-select__chevron {
     transition: none;

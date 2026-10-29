@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
 import type { PerformanceBenchmarkOption } from '@/api/types'
 import { chartColors } from '@/theme'
@@ -35,6 +35,7 @@ interface Props {
   benchmarkOptions?: PerformanceBenchmarkOption[]
   benchmarkCode?: string
   refreshing?: boolean
+  readoutTarget?: HTMLElement | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -43,15 +44,17 @@ const props = withDefaults(defineProps<Props>(), {
   benchmarkOptions: () => [],
   benchmarkCode: '',
   refreshing: false,
+  readoutTarget: null,
 })
 
 const emit = defineEmits<{
   'update:benchmarkCode': [code: string]
+  inspect: []
 }>()
 
-const height = 290
-const plot = { left: 68, right: 16, top: 16, bottom: 30 }
-const plotHeight = height - plot.top - plot.bottom
+const height = ref(290)
+const plot = reactive({ left: 68, right: 16, top: 16, bottom: 30 })
+const plotHeight = computed(() => height.value - plot.top - plot.bottom)
 
 // SVG 坐标与容器像素 1:1，坐标轴标签用 HTML 渲染，字号不随图表宽度缩放。
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -59,16 +62,18 @@ const measuredWidth = ref(720)
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  const el = containerRef.value
-  if (!el) return
-  measuredWidth.value = Math.max(Math.round(el.clientWidth), 280)
-  resizeObserver = new ResizeObserver((entries) => {
-    const entry = entries[0]
-    if (!entry) return
-    const next = Math.max(Math.round(entry.contentRect.width), 280)
-    if (next !== measuredWidth.value) measuredWidth.value = next
-  })
-  resizeObserver.observe(el)
+  watch(containerRef, (el) => {
+    resizeObserver?.disconnect()
+    if (!el) return
+    const measure = () => {
+      measuredWidth.value = el.clientWidth
+      height.value = el.clientHeight
+      plot.left = Number(getComputedStyle(el).getPropertyValue('--curve-plot-left'))
+    }
+    measure()
+    resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(el)
+  }, { immediate: true, flush: 'post' })
 })
 
 onBeforeUnmount(() => {
@@ -79,7 +84,9 @@ onBeforeUnmount(() => {
 const width = computed(() => measuredWidth.value)
 const plotWidth = computed(() => width.value - plot.left - plot.right)
 
-const activeXKey = ref<string | null>(null)
+// undefined 展示最新值，null 表示当前读点处没有可用数据。
+const activeXKey = ref<string | null>()
+let selectionInput = 'mouse'
 
 const isCnATradingSession = computed(() => (
   props.xMode === 'time' && props.sessionType === 'cn-a'
@@ -111,7 +118,7 @@ const chart = computed(() => {
   const maxY = rawMaxY + padding
 
   const scaleY = (value: number) => (
-    plot.top + ((maxY - value) / Math.max(maxY - minY, 1)) * plotHeight
+    plot.top + ((maxY - value) / Math.max(maxY - minY, 1)) * plotHeight.value
   )
 
   if (isCnATradingSession.value) {
@@ -193,22 +200,20 @@ const chart = computed(() => {
 })
 
 const uniqueXList = computed(() => {
-  if (!props.series.length) return []
   const primary = props.series.find((s) => s.points.length > 0)
-  if (primary && primary.points.length > 0) {
-    return primary.points.map((p) => p.x)
-  }
-  const map = new Map<string, number>()
-  for (const s of props.series) {
-    for (const p of s.points) {
-      if (!map.has(p.x)) {
-        map.set(p.x, xValue(p.x))
-      }
-    }
-  }
-  return Array.from(map.entries())
-    .sort((a, b) => a[1] - b[1])
-    .map((item) => item[0])
+  const points = primary?.points ?? []
+  const valid = isCnATradingSession.value
+    ? points.filter((p) => ['morning', 'afternoon'].includes(toTradingMinute(p.x).session))
+    : points
+  return [...new Set(valid.map((p) => p.x))].sort((a, b) => xValue(a) - xValue(b))
+})
+
+// 分时缺口不延用邻点；以实际最小采样间隔的一半作为最近点的吸附范围。
+const selectionRadius = computed(() => {
+  if (props.xMode !== 'time' || !chart.value) return Infinity
+  const positions = uniqueXList.value.map(chart.value.scaleX)
+  const steps = positions.slice(1).map((x, i) => x - positions[i]).filter((step) => step > 0)
+  return Math.min(...steps) / 2
 })
 
 interface HoverItem {
@@ -224,13 +229,13 @@ const activeHover = computed<{
   xPos: number
   items: HoverItem[]
 } | null>(() => {
-  if (!activeXKey.value || !chart.value) return null
+  if (!activeXKey.value || !chart.value || uniqueXList.value.length < 2) return null
   const xKey = activeXKey.value
+  if (!uniqueXList.value.includes(xKey)) return null
   const xPos = chart.value.scaleX(xKey)
-  const targetXVal = xValue(xKey)
 
   const rawItems: Array<HoverItem | null> = chart.value.lines.map((line) => {
-    const exactPoint = line.points.find((p) => p.x === xKey)
+    const exactPoint = line.points.length > 1 ? line.points.find((p) => p.x === xKey) : null
     if (exactPoint) {
       return {
         name: line.name,
@@ -241,33 +246,11 @@ const activeHover = computed<{
       }
     }
 
-    const prevPoints = line.points.filter((p) => xValue(p.x) <= targetXVal)
-    if (prevPoints.length > 0) {
-      const nearest = prevPoints[prevPoints.length - 1]
-      return {
-        name: line.name,
-        color: line.color,
-        value: nearest.y,
-        nav: nearest.nav,
-        yPos: chart.value!.scaleY(nearest.y),
-      }
-    }
-
-    if (line.points.length > 0) {
-      const first = line.points[0]
-      return {
-        name: line.name,
-        color: line.color,
-        value: first.y,
-        nav: first.nav,
-        yPos: chart.value!.scaleY(first.y),
-      }
-    }
-
     return null
   })
 
   const items = rawItems.filter((item): item is HoverItem => item !== null)
+  if (!items.length) return null
 
   return {
     xKey,
@@ -276,9 +259,25 @@ const activeHover = computed<{
   }
 })
 
+const legendItems = computed(() => chart.value?.lines.map((line) => ({
+  ...line,
+  point: activeXKey.value === undefined
+    ? { value: line.last.y, nav: line.last.nav }
+    : activeHover.value?.items.find((item) => item.name === line.name),
+})) ?? [])
+
 function formatValue(value: number): string {
   if (props.valueKind === 'money') return signedMoney(value)
   return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`
+}
+
+function formatAxisValue(value: number): string {
+  if (props.valueKind !== 'money' || plot.left !== 48 || Math.abs(value) < 100) return formatValue(value)
+  // 手机金额轴缩写，顶部读数仍保留完整金额。
+  return value.toLocaleString('en', {
+    notation: 'compact', signDisplay: 'exceptZero',
+    maximumSignificantDigits: Math.abs(value) < 1000 ? 4 : 3,
+  })
 }
 
 function formatX(value: string): string {
@@ -313,29 +312,90 @@ function seriesDisplayLabel(item: { name: string; sourceLabel?: string }, timeSt
   return item.name
 }
 
-// 触摸滚动交给浏览器（touch-action: pan-y），十字线只在鼠标指针下出现。
-function handlePointerMove(e: PointerEvent) {
-  if (e.pointerType !== 'mouse') return
-  if (!chart.value || !uniqueXList.value.length || !containerRef.value) return
+function readPointer(e: PointerEvent): boolean {
+  selectionInput = e.pointerType
+  if (!chart.value || !containerRef.value) return false
+  if (uniqueXList.value.length < 2) {
+    activeXKey.value = null
+    return false
+  }
   const rect = containerRef.value.getBoundingClientRect()
-  const relSvgX = ((e.clientX - rect.left) / rect.width) * width.value
-  const clampedX = Math.max(plot.left, Math.min(width.value - plot.right, relSvgX))
+  const relSvgX = (e.clientX - rect.left) * (width.value / rect.width)
+  const relY = e.clientY - rect.top
+  if (relSvgX < plot.left || relSvgX > width.value - plot.right
+    || relY < plot.top || relY > height.value - plot.bottom) {
+    activeXKey.value = null
+    return false
+  }
+  emit('inspect')
+  if (isCnATradingSession.value
+    && relSvgX > cnALayout.value.morningEndX && relSvgX < cnALayout.value.afternoonStartX) {
+    activeXKey.value = null
+    return true
+  }
 
   let bestKey = uniqueXList.value[0]
   let bestDist = Infinity
   for (const k of uniqueXList.value) {
     const px = chart.value.scaleX(k)
-    const dist = Math.abs(px - clampedX)
+    const dist = Math.abs(px - relSvgX)
     if (dist < bestDist) {
       bestDist = dist
       bestKey = k
     }
   }
-  activeXKey.value = bestKey
+  activeXKey.value = bestDist <= selectionRadius.value ? bestKey : null
+  return true
 }
 
-function handlePointerLeave() {
-  activeXKey.value = null
+let touchPointerId: number | null = null
+let previousXKey: string | null | undefined
+let previousInput = 'mouse'
+
+function handlePointerDown(e: PointerEvent) {
+  if (!e.isPrimary || e.button !== 0) return
+  if (e.pointerType === 'mouse') {
+    readPointer(e)
+    return
+  }
+  if (touchPointerId !== null) return
+  previousXKey = activeXKey.value
+  previousInput = selectionInput
+  if (!readPointer(e)) return
+  touchPointerId = e.pointerId
+  containerRef.value?.setPointerCapture(e.pointerId)
+}
+
+function handlePointerMove(e: PointerEvent) {
+  if (e.pointerType === 'mouse' || e.pointerId === touchPointerId) readPointer(e)
+}
+
+function handlePointerUp(e: PointerEvent) {
+  if (e.pointerId === touchPointerId) touchPointerId = null
+}
+
+function handlePointerCancel(e: PointerEvent) {
+  if (e.pointerId !== touchPointerId) return
+  // 浏览器接管纵向滚动时撤销本次轻触，保留上一次读数。
+  activeXKey.value = previousXKey
+  selectionInput = previousInput
+  touchPointerId = null
+}
+
+function handlePointerLeave(e: PointerEvent) {
+  if (e.pointerType === 'mouse' && selectionInput === 'mouse') activeXKey.value = undefined
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  const keys = uniqueXList.value
+  if (keys.length < 2 || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return
+  e.preventDefault()
+  emit('inspect')
+  selectionInput = 'keyboard'
+  const index = activeXKey.value ? keys.indexOf(activeXKey.value) : keys.length - 1
+  const next = e.key === 'Home' ? 0 : e.key === 'End' ? keys.length - 1
+    : index + (e.key === 'ArrowLeft' ? -1 : 1)
+  activeXKey.value = keys[Math.max(0, Math.min(keys.length - 1, next))]
 }
 
 const showBenchmarkSelect = computed(() => props.benchmarkOptions.length > 0)
@@ -350,64 +410,88 @@ const benchmarkLine = computed(() => {
   <div
     v-if="chart"
     class="curve-chart"
-    :class="refreshing ? 'is-refreshing' : ''"
+    :class="{ 'is-refreshing': refreshing, 'is-unreadable': uniqueXList.length < 2 }"
   >
     <div class="curve-chart__toolbar">
       <slot name="toolbar-prefix" />
-      <div class="curve-chart__legend">
-        <div
-          v-for="(item, index) in chart.lines"
-          :key="item.name"
-          class="curve-chart__legend-item"
-        >
-          <span
-            class="curve-chart__swatch"
-            :style="{ background: item.color }"
-          />
-          <BenchmarkSelect
-            v-if="showBenchmarkSelect && index > 0"
-            :options="benchmarkOptions"
-            :model-value="benchmarkCode"
-            @update:model-value="emit('update:benchmarkCode', $event)"
-          />
-          <span v-else>{{ seriesDisplayLabel(item, activeHover ? activeHover.xKey : item.last.x) }}</span>
-          <strong
-            v-if="activeHover"
-            :class="((activeHover.items.find(i => i.name === item.name)?.value ?? 0) >= 0) ? 'value-rise' : 'value-fall'"
+      <Teleport
+        :to="readoutTarget || 'body'"
+        :disabled="!readoutTarget"
+      >
+        <div class="curve-chart__legend">
+          <time
+            class="curve-chart__readout-date"
+          >{{ activeXKey !== undefined && !activeHover ? '—' : formatTooltipTime(activeHover?.xKey ?? chart.lines[0].last.x) }}</time>
+          <div
+            v-for="(item, index) in legendItems"
+            :key="item.name"
+            class="curve-chart__legend-item"
           >
-            {{ formatValue(activeHover.items.find(i => i.name === item.name)?.value ?? item.last.y) }}
-          </strong>
-          <strong
-            v-else
-            :class="item.last.y >= 0 ? 'value-rise' : 'value-fall'"
+            <span
+              class="curve-chart__swatch"
+              :style="{ background: item.color }"
+            />
+            <BenchmarkSelect
+              v-if="showBenchmarkSelect && index > 0"
+              :options="benchmarkOptions"
+              :model-value="benchmarkCode"
+              @update:model-value="emit('update:benchmarkCode', $event)"
+            />
+            <template v-else>
+              <span class="curve-chart__series-label">{{ seriesDisplayLabel(item, activeHover ? activeHover.xKey : item.last.x) }}</span>
+              <span class="curve-chart__readout-label">{{ item.sourceLabel || item.name }}</span>
+            </template>
+            <strong
+              v-if="item.point"
+              :class="item.point.value >= 0 ? 'value-rise' : 'value-fall'"
+            >
+              {{ formatValue(item.point.value) }}
+            </strong>
+            <strong v-else>—</strong>
+            <span
+              v-if="item.last.nav != null"
+              class="curve-chart__readout-nav font-numeric"
+            >
+              净值 {{ item.point?.nav != null ? item.point.nav.toFixed(4) : '—' }}
+            </span>
+          </div>
+          <div
+            v-if="showBenchmarkSelect && !benchmarkLine"
+            class="curve-chart__legend-item"
           >
-            {{ formatValue(item.last.y) }}
-          </strong>
+            <span
+              class="curve-chart__swatch"
+              :style="{ background: chartColors.benchmark }"
+            />
+            <BenchmarkSelect
+              :options="benchmarkOptions"
+              :model-value="benchmarkCode"
+              @update:model-value="emit('update:benchmarkCode', $event)"
+            />
+            <strong class="text-[var(--text-muted)]">—</strong>
+          </div>
         </div>
-        <div
-          v-if="showBenchmarkSelect && !benchmarkLine"
-          class="curve-chart__legend-item"
-        >
-          <span
-            class="curve-chart__swatch"
-            :style="{ background: chartColors.benchmark }"
-          />
-          <BenchmarkSelect
-            :options="benchmarkOptions"
-            :model-value="benchmarkCode"
-            @update:model-value="emit('update:benchmarkCode', $event)"
-          />
-          <strong class="text-[var(--text-muted)]">—</strong>
-        </div>
-      </div>
+      </Teleport>
     </div>
 
     <div
       ref="containerRef"
       class="curve-chart__plot-wrapper"
-      :style="{ height: `${height}px` }"
+      role="slider"
+      aria-label="曲线时间点"
+      aria-orientation="horizontal"
+      :tabindex="uniqueXList.length > 1 ? 0 : -1"
+      :aria-disabled="uniqueXList.length < 2"
+      :aria-valuemin="0"
+      :aria-valuemax="Math.max(0, uniqueXList.length - 1)"
+      :aria-valuenow="activeXKey === undefined ? uniqueXList.length - 1 : Math.max(0, uniqueXList.indexOf(activeHover?.xKey ?? ''))"
+      :aria-valuetext="activeHover ? `${formatTooltipTime(activeHover.xKey)} ${activeHover.items.map(item => `${item.name} ${formatValue(item.value)}`).join('，')}` : '未选择时间点'"
+      @pointerdown="handlePointerDown"
       @pointermove="handlePointerMove"
+      @pointerup="handlePointerUp"
+      @pointercancel="handlePointerCancel"
       @pointerleave="handlePointerLeave"
+      @keydown="handleKeydown"
     >
       <svg
         class="curve-chart__plot"
@@ -544,16 +628,16 @@ const benchmarkLine = computed(() => {
         <span
           class="curve-chart__axis-label curve-chart__axis-label--y"
           :style="{ top: `${plot.top}px`, width: `${plot.left - 8}px` }"
-        >{{ formatValue(chart.maxY) }}</span>
+        >{{ formatAxisValue(chart.maxY) }}</span>
         <span
           v-if="chart.zeroY !== null && Math.abs(chart.zeroY - plot.top) > 16 && Math.abs(chart.zeroY - (height - plot.bottom)) > 16"
           class="curve-chart__axis-label curve-chart__axis-label--y is-zero"
           :style="{ top: `${chart.zeroY}px`, width: `${plot.left - 8}px` }"
-        >{{ formatValue(0) }}</span>
+        >{{ formatAxisValue(0) }}</span>
         <span
           class="curve-chart__axis-label curve-chart__axis-label--y"
           :style="{ top: `${height - plot.bottom}px`, width: `${plot.left - 8}px` }"
-        >{{ formatValue(chart.minY) }}</span>
+        >{{ formatAxisValue(chart.minY) }}</span>
       </div>
 
       <!-- X axis labels (HTML, fixed font size) -->
@@ -567,13 +651,17 @@ const benchmarkLine = computed(() => {
             :style="{ left: `${chart.layout.morningStartX}px` }"
           >09:30</span>
           <span
-            class="curve-chart__axis-label curve-chart__axis-label--end"
+            class="curve-chart__axis-label curve-chart__axis-label--end curve-chart__axis-label--session-edge"
             :style="{ left: `${chart.layout.morningEndX}px` }"
           >11:30</span>
           <span
-            class="curve-chart__axis-label"
+            class="curve-chart__axis-label curve-chart__axis-label--session-edge"
             :style="{ left: `${chart.layout.afternoonStartX}px` }"
           >13:00</span>
+          <span
+            class="curve-chart__axis-label curve-chart__axis-label--session-mid"
+            :style="{ left: `${chart.layout.breakCenterX}px` }"
+          >11:30·13:00</span>
           <span
             class="curve-chart__axis-label curve-chart__axis-label--end"
             :style="{ left: `${chart.layout.afternoonEndX}px` }"
@@ -621,7 +709,7 @@ const benchmarkLine = computed(() => {
             <div class="flex items-baseline gap-2">
               <span
                 v-if="item.nav != null"
-                class="font-numeric text-[11px] text-[var(--text-tertiary)]"
+                class="font-numeric text-[12px] text-[var(--text-tertiary)]"
               >
                 净值 {{ item.nav.toFixed(4) }}
               </span>
@@ -661,6 +749,10 @@ const benchmarkLine = computed(() => {
   min-height: 28px;
 }
 
+.curve-chart__toolbar:empty {
+  display: none;
+}
+
 .curve-chart__legend {
   display: flex;
   flex-wrap: wrap;
@@ -688,10 +780,19 @@ const benchmarkLine = computed(() => {
   border-radius: 999px;
 }
 
-/* touch-action: pan-y 让纵向滚动透传给页面；十字线只在鼠标指针下响应。 */
+.curve-chart__readout-date,
+.curve-chart__readout-nav,
+.curve-chart__readout-label,
+.curve-chart__axis-label--session-mid {
+  display: none;
+}
+
+/* 纵向滚动由浏览器接管，并通过 pointercancel 撤销当次读点。 */
 .curve-chart__plot-wrapper {
+  --curve-plot-left: 68;
   position: relative;
   width: 100%;
+  height: 290px;
   cursor: crosshair;
   touch-action: pan-y;
 }
@@ -729,7 +830,7 @@ const benchmarkLine = computed(() => {
 
 .curve-chart__break-text {
   fill: var(--text-disabled);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   font-family: var(--font-ui);
   user-select: none;
@@ -774,8 +875,8 @@ const benchmarkLine = computed(() => {
   position: absolute;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 11px;
-  line-height: 14px;
+  font-size: 12px;
+  line-height: 16px;
   font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
 }
@@ -817,7 +918,7 @@ const benchmarkLine = computed(() => {
 }
 
 .tooltip-header {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 4px;
@@ -860,5 +961,55 @@ const benchmarkLine = computed(() => {
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .curve-chart__plot-wrapper {
+    --curve-plot-left: 48;
+    height: 240px;
+  }
+
+  .curve-chart__grid:not(:nth-child(3)),
+  .curve-chart__axis-label--session-edge,
+  .curve-chart__series-label,
+  .curve-chart.is-unreadable .curve-chart__readout-date,
+  .curve-chart.is-unreadable .curve-chart__readout-nav,
+  .curve-chart.is-unreadable .curve-chart__legend-item strong,
+  .curve-chart__tooltip {
+    display: none;
+  }
+
+  .curve-chart__axis-label--session-mid {
+    display: block;
+    transform: translateX(-50%);
+  }
+
+  .curve-chart__legend {
+    width: 100%;
+    margin-left: 0;
+    gap: 8px 16px;
+  }
+
+  .curve-chart__readout-date {
+    display: block;
+    width: 100%;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .curve-chart__readout-nav {
+    display: inline;
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+
+  .curve-chart__readout-label {
+    display: inline;
+  }
+
+  .curve-chart__legend-item {
+    flex-wrap: wrap;
+  }
 }
 </style>

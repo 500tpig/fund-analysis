@@ -1,0 +1,599 @@
+{
+  "date": "2026-10-29",
+  "environment": "agent-browser Chromium；本轮 frontend/dist 构建与 /tmp/fund-mobile-detail-20261029 隔离样例库；未访问真实库或生产服务",
+  "mobile": [
+    {
+      "width": 390,
+      "cases": {
+        "intraday": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "mode": "main",
+          "tapped": "10-29 09:31",
+          "selected": {
+            "time": "10-29 10:30",
+            "text": "10-29 10:30\n新浪财经\n+0.30%\n净值 1.2036",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 76,
+            "scroll": 258
+          },
+          "verticalScrollDelta": 188,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "10-29 10:30",
+            "text": "10-29 10:30\n新浪财经\n+0.30%\n净值 1.2036",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -1239,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        },
+        "history": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "mode": "main",
+          "tapped": "07-31",
+          "selected": {
+            "time": "08-21",
+            "text": "08-21\n本基金\n+0.59%\n沪深300\n+0.05%",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 98,
+            "scroll": 342
+          },
+          "verticalScrollDelta": 124,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "08-21",
+            "text": "08-21\n本基金\n+0.59%\n沪深300\n+0.05%",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -1239,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        },
+        "official": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "mode": "official",
+          "tapped": "10-12",
+          "selected": {
+            "time": "10-15",
+            "text": "10-15\n已记录日期合计\n-181.76",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 76,
+            "scroll": 1530
+          },
+          "verticalScrollDelta": 173,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "10-15",
+            "text": "10-15\n已记录日期合计\n-181.76",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -48,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "width": 430,
+      "cases": {
+        "intraday": {
+          "viewport": {
+            "width": 430,
+            "height": 932
+          },
+          "mode": "main",
+          "tapped": "10-29 09:31",
+          "selected": {
+            "time": "10-29 10:30",
+            "text": "10-29 10:30\n新浪财经\n+0.30%\n净值 1.2036",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 76,
+            "scroll": 214
+          },
+          "verticalScrollDelta": 129,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "10-29 10:30",
+            "text": "10-29 10:30\n新浪财经\n+0.30%\n净值 1.2036",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -1151,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        },
+        "history": {
+          "viewport": {
+            "width": 430,
+            "height": 932
+          },
+          "mode": "main",
+          "tapped": "07-31",
+          "selected": {
+            "time": "08-21",
+            "text": "08-21\n本基金\n+0.59%\n沪深300\n+0.05%",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 98,
+            "scroll": 302
+          },
+          "verticalScrollDelta": 172,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "08-21",
+            "text": "08-21\n本基金\n+0.59%\n沪深300\n+0.05%",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -1151,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        },
+        "official": {
+          "viewport": {
+            "width": 430,
+            "height": 932
+          },
+          "mode": "official",
+          "tapped": "10-12",
+          "selected": {
+            "time": "10-15",
+            "text": "10-15\n已记录日期合计\n-181.76",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 76,
+            "scroll": 1469
+          },
+          "verticalScrollDelta": 162,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "10-15",
+            "text": "10-15\n已记录日期合计\n-181.76",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": 40,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "width": 768,
+      "cases": {
+        "intraday": {
+          "viewport": {
+            "width": 768,
+            "height": 1024
+          },
+          "mode": "main",
+          "tapped": "10-29 09:31",
+          "selected": {
+            "time": "10-29 10:30",
+            "text": "10-29 10:30\n新浪财经\n+0.30%\n净值 1.2036",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 76,
+            "scroll": 9
+          },
+          "verticalScrollDelta": 181,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "10-29 10:30",
+            "text": "10-29 10:30\n新浪财经\n+0.30%\n净值 1.2036",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -999,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        },
+        "history": {
+          "viewport": {
+            "width": 768,
+            "height": 1024
+          },
+          "mode": "main",
+          "tapped": "07-31",
+          "selected": {
+            "time": "08-21",
+            "text": "08-21\n本基金\n+0.59%\n沪深300\n+0.05%",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 98,
+            "scroll": 82
+          },
+          "verticalScrollDelta": 166,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "08-21",
+            "text": "08-21\n本基金\n+0.59%\n沪深300\n+0.05%",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": -999,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        },
+        "official": {
+          "viewport": {
+            "width": 768,
+            "height": 1024
+          },
+          "mode": "official",
+          "tapped": "10-12",
+          "selected": {
+            "time": "10-15",
+            "text": "10-15\n已记录日期合计\n-181.76",
+            "legends": 1,
+            "crosshairs": 1,
+            "height": 76,
+            "scroll": 1243
+          },
+          "verticalScrollDelta": 175,
+          "pointercancel": true,
+          "pointerPreventDefault": false,
+          "bottom": {
+            "time": "10-15",
+            "text": "10-15\n已记录日期合计\n-181.76",
+            "legends": 1,
+            "top": 104,
+            "headerBottom": 104,
+            "closeReachable": true,
+            "plotBottom": 172,
+            "overflow": false,
+            "gap": "20px",
+            "fonts": [],
+            "sectionStyles": [
+              {
+                "name": "compare-sheet",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "profit-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "accuracy-section",
+                "padding": "20px",
+                "border": "1px"
+              },
+              {
+                "name": "fund-profile-section",
+                "padding": "20px",
+                "border": "1px"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "desktop": {
+    "compareFont": "14px",
+    "curveControlsGap": 14,
+    "hostChildren": 0,
+    "hostDisplay": "none",
+    "inlineLegends": 2,
+    "left": [
+      "68",
+      "68"
+    ],
+    "overflow": false,
+    "plotSizes": [
+      [
+        362,
+        290
+      ],
+      [
+        362,
+        290
+      ]
+    ],
+    "rootGap": "21px",
+    "viewport": [
+      1440,
+      900
+    ]
+  },
+  "edges": {
+    "sticky-menu": {
+      "inPinnedReadout": true,
+      "items": [
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        },
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        },
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        },
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        },
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        },
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        },
+        {
+          "height": 44,
+          "hit": true,
+          "width": 118
+        }
+      ]
+    },
+    "menu-escape": {
+      "dialogs": 1,
+      "menus": 0
+    },
+    "inactive-menu": {
+      "menus": 1,
+      "readout": "10-15\n已记录日期合计\n-181.76"
+    },
+    "keyboard-readout": {
+      "focusRole": "slider",
+      "readout": "08-24\n本基金\n+0.59%\n沪深300\n+0.05%"
+    },
+    "back-close": {
+      "dialogs": 0,
+      "path": "/valuation",
+      "readouts": 0
+    },
+    "single": {
+      "children": 0,
+      "display": "none"
+    }
+  },
+  "checks": [
+    "pnpm typecheck",
+    "pnpm lint",
+    "pnpm build",
+    "frontend/scripts/*.mjs 全部 7 个通过，包含路由、抽屉历史及读数归属回归"
+  ],
+  "notCovered": [
+    "iPhone/Android 真机、Safari 与屏幕阅读器实测",
+    "生产发布与线上验收",
+    "第二批 2.3–2.6"
+  ]
+}

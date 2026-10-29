@@ -1,0 +1,658 @@
+{
+  "date": "2026-10-29",
+  "environment": "agent-browser Chromium；主流程使用本轮 frontend/dist 构建与隔离 SQLite 后端，A 股及空数据恢复使用 Vite 组件边界样例；未读取真实持仓库或模拟库",
+  "screenshots": "同目录 PNG",
+  "viewports": [
+    {
+      "intraday": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          358,
+          240
+        ],
+        "plotTop": 372,
+        "readout": "10-29 10:36\n新浪财经\n+0.29%\n净值 1.2034",
+        "readoutBottom": 360,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "none",
+        "touchAction": "pan-y",
+        "viewport": [
+          390,
+          844
+        ],
+        "xLabels": [
+          "09:30",
+          "15:00"
+        ],
+        "yLabels": 3,
+        "touch": {
+          "tapTime": "10-29 09:56",
+          "retainedTime": "10-29 10:36",
+          "crosshairsAfterRelease": 1,
+          "verticalScrollDelta": 201,
+          "cancelled": true,
+          "pointerPreventDefault": false
+        }
+      },
+      "history": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [
+          {
+            "height": 44,
+            "name": "近1月",
+            "width": 49.578125
+          },
+          {
+            "height": 44,
+            "name": "近3月",
+            "width": 51.53125
+          },
+          {
+            "height": 44,
+            "name": "近6月",
+            "width": 51.640625
+          },
+          {
+            "height": 44,
+            "name": "近1年",
+            "width": 49.578125
+          },
+          {
+            "height": 44,
+            "name": "近3年",
+            "width": 51.53125
+          },
+          {
+            "height": 44,
+            "name": "选择对比指标，当前沪深300",
+            "width": 67.640625
+          }
+        ],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          358,
+          240
+        ],
+        "plotTop": 418,
+        "readout": "08-17\n本基金\n+0.51%\n沪深300\n+0.01%",
+        "readoutBottom": 406,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "none",
+        "touchAction": "pan-y",
+        "viewport": [
+          390,
+          844
+        ],
+        "xLabels": [
+          "07-30",
+          "10-29"
+        ],
+        "yLabels": 3,
+        "touch": {
+          "tapTime": "08-06",
+          "retainedTime": "08-17",
+          "crosshairsAfterRelease": 1,
+          "verticalScrollDelta": 193,
+          "cancelled": true,
+          "pointerPreventDefault": false
+        }
+      },
+      "cn_a": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          358,
+          240
+        ],
+        "plotTop": 80,
+        "readout": "15:00\n境内交易时段样例\n+0.70%",
+        "readoutBottom": 68,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "block",
+        "touchAction": "pan-y",
+        "viewport": [
+          390,
+          844
+        ],
+        "xLabels": [
+          "09:30",
+          "11:30·13:00",
+          "15:00"
+        ],
+        "yLabels": 3
+      }
+    },
+    {
+      "intraday": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          398,
+          240
+        ],
+        "plotTop": 418,
+        "readout": "10-29 10:36\n新浪财经\n+0.29%\n净值 1.2034",
+        "readoutBottom": 406,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "none",
+        "touchAction": "pan-y",
+        "viewport": [
+          430,
+          932
+        ],
+        "xLabels": [
+          "09:30",
+          "15:00"
+        ],
+        "yLabels": 3,
+        "touch": {
+          "tapTime": "10-29 09:56",
+          "retainedTime": "10-29 10:36",
+          "crosshairsAfterRelease": 1,
+          "verticalScrollDelta": 202,
+          "cancelled": true,
+          "pointerPreventDefault": false
+        }
+      },
+      "history": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [
+          {
+            "height": 44,
+            "name": "近1月",
+            "width": 49.578125
+          },
+          {
+            "height": 44,
+            "name": "近3月",
+            "width": 51.53125
+          },
+          {
+            "height": 44,
+            "name": "近6月",
+            "width": 51.640625
+          },
+          {
+            "height": 44,
+            "name": "近1年",
+            "width": 49.578125
+          },
+          {
+            "height": 44,
+            "name": "近3年",
+            "width": 51.53125
+          },
+          {
+            "height": 44,
+            "name": "选择对比指标，当前沪深300",
+            "width": 67.640625
+          }
+        ],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          398,
+          240
+        ],
+        "plotTop": 467,
+        "readout": "08-17\n本基金\n+0.51%\n沪深300\n+0.01%",
+        "readoutBottom": 455,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "none",
+        "touchAction": "pan-y",
+        "viewport": [
+          430,
+          932
+        ],
+        "xLabels": [
+          "07-30",
+          "10-29"
+        ],
+        "yLabels": 3,
+        "touch": {
+          "tapTime": "08-06",
+          "retainedTime": "08-17",
+          "crosshairsAfterRelease": 1,
+          "verticalScrollDelta": 136,
+          "cancelled": true,
+          "pointerPreventDefault": false
+        }
+      },
+      "cn_a": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          398,
+          240
+        ],
+        "plotTop": 80,
+        "readout": "15:00\n境内交易时段样例\n+0.70%",
+        "readoutBottom": 68,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "block",
+        "touchAction": "pan-y",
+        "viewport": [
+          430,
+          932
+        ],
+        "xLabels": [
+          "09:30",
+          "11:30·13:00",
+          "15:00"
+        ],
+        "yLabels": 3
+      }
+    },
+    {
+      "intraday": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          736,
+          240
+        ],
+        "plotTop": 415,
+        "readout": "10-29 10:36\n新浪财经\n+0.29%\n净值 1.2034",
+        "readoutBottom": 403,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "none",
+        "touchAction": "pan-y",
+        "viewport": [
+          768,
+          1024
+        ],
+        "xLabels": [
+          "09:30",
+          "15:00"
+        ],
+        "yLabels": 3,
+        "touch": {
+          "tapTime": "10-29 09:56",
+          "retainedTime": "10-29 10:36",
+          "crosshairsAfterRelease": 1,
+          "verticalScrollDelta": 187,
+          "cancelled": true,
+          "pointerPreventDefault": false
+        }
+      },
+      "history": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [
+          {
+            "height": 44,
+            "name": "近1月",
+            "width": 49.578125
+          },
+          {
+            "height": 44,
+            "name": "近3月",
+            "width": 51.53125
+          },
+          {
+            "height": 44,
+            "name": "近6月",
+            "width": 51.640625
+          },
+          {
+            "height": 44,
+            "name": "近1年",
+            "width": 49.578125
+          },
+          {
+            "height": 44,
+            "name": "近3年",
+            "width": 51.53125
+          },
+          {
+            "height": 44,
+            "name": "选择对比指标，当前沪深300",
+            "width": 67.640625
+          }
+        ],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          736,
+          240
+        ],
+        "plotTop": 502,
+        "readout": "08-17\n本基金\n+0.51%\n沪深300\n+0.01%",
+        "readoutBottom": 490,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "none",
+        "touchAction": "pan-y",
+        "viewport": [
+          768,
+          1024
+        ],
+        "xLabels": [
+          "07-30",
+          "10-29"
+        ],
+        "yLabels": 3,
+        "touch": {
+          "tapTime": "08-06",
+          "retainedTime": "08-17",
+          "crosshairsAfterRelease": 1,
+          "verticalScrollDelta": 138,
+          "cancelled": true,
+          "pointerPreventDefault": false
+        }
+      },
+      "cn_a": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 1,
+        "left": "48",
+        "pageOverflow": false,
+        "plot": [
+          736,
+          240
+        ],
+        "plotTop": 80,
+        "readout": "15:00\n境内交易时段样例\n+0.70%",
+        "readoutBottom": 68,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "block",
+        "touchAction": "pan-y",
+        "viewport": [
+          768,
+          1024
+        ],
+        "xLabels": [
+          "09:30",
+          "11:30·13:00",
+          "15:00"
+        ],
+        "yLabels": 3
+      }
+    },
+    {
+      "intraday": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 5,
+        "left": "68",
+        "pageOverflow": false,
+        "plot": [
+          362,
+          290
+        ],
+        "plotTop": 447,
+        "readout": "新浪财经分时 · 10:05\n+0.22%",
+        "readoutBottom": 435,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "flex",
+        "touchAction": "pan-y",
+        "viewport": [
+          1440,
+          900
+        ],
+        "xLabels": [
+          "09:30",
+          "15:00"
+        ],
+        "yLabels": 3
+      },
+      "history": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [
+          {
+            "height": 32,
+            "name": "近1月",
+            "width": 51.96875
+          },
+          {
+            "height": 32,
+            "name": "近3月",
+            "width": 54.078125
+          },
+          {
+            "height": 32,
+            "name": "近6月",
+            "width": 54.203125
+          },
+          {
+            "height": 32,
+            "name": "近1年",
+            "width": 51.96875
+          },
+          {
+            "height": 32,
+            "name": "近3年",
+            "width": 54.078125
+          },
+          {
+            "height": 18.390625,
+            "name": "选择对比指标，当前沪深300",
+            "width": 67.640625
+          }
+        ],
+        "gridLines": 5,
+        "left": "68",
+        "pageOverflow": false,
+        "plot": [
+          362,
+          290
+        ],
+        "plotTop": 466,
+        "readout": "本基金\n+0.25%\n沪深300\n-0.15%",
+        "readoutBottom": 454,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "flex",
+        "touchAction": "pan-y",
+        "viewport": [
+          1440,
+          900
+        ],
+        "xLabels": [
+          "07-30",
+          "10-29"
+        ],
+        "yLabels": 3
+      },
+      "cn_a": {
+        "axisFontSizes": [
+          "12px"
+        ],
+        "chartOverflow": false,
+        "controls": [],
+        "gridLines": 5,
+        "left": "68",
+        "pageOverflow": false,
+        "plot": [
+          1408,
+          290
+        ],
+        "plotTop": 56,
+        "readout": "境内交易时段样例分时 · 15:00\n+0.70%",
+        "readoutBottom": 44,
+        "smallText": [],
+        "surfaceOverflow": false,
+        "tooltipDisplay": "block",
+        "touchAction": "pan-y",
+        "viewport": [
+          1440,
+          900
+        ],
+        "xLabels": [
+          "09:30",
+          "11:30",
+          "13:00",
+          "15:00"
+        ],
+        "yLabels": 3
+      }
+    }
+  ],
+  "edges": {
+    "single": {
+      "mode": "single",
+      "time": "—",
+      "timeDisplay": "none",
+      "readout": "新浪财经",
+      "crosshairs": 0,
+      "disabled": "true",
+      "hint": 0
+    },
+    "gap": {
+      "mode": "gap",
+      "time": "—",
+      "timeDisplay": "block",
+      "readout": "—\n新浪财经\n—\n净值 —",
+      "crosshairs": 0,
+      "disabled": "false",
+      "hint": 0
+    },
+    "overnight": {
+      "mode": "overnight",
+      "time": "10-29 00:01",
+      "timeDisplay": "block",
+      "readout": "10-29 00:01\n新浪财经\n-0.31%\n净值 1.1962",
+      "crosshairs": 1,
+      "disabled": "false",
+      "hint": 0
+    },
+    "hintFirst": {
+      "fontSize": "12px",
+      "height": 44,
+      "seen": "1",
+      "width": 44
+    },
+    "hintReopen": {
+      "hintCount": 0,
+      "seen": "1"
+    },
+    "benchmarkMenu": [
+      {
+        "height": 44,
+        "name": "暂无跟踪基准",
+        "width": 118
+      },
+      {
+        "height": 44,
+        "name": "沪深300",
+        "width": 118
+      },
+      {
+        "height": 44,
+        "name": "创业板指",
+        "width": 118
+      },
+      {
+        "height": 44,
+        "name": "上证指数",
+        "width": 118
+      },
+      {
+        "height": 44,
+        "name": "深证成指",
+        "width": 118
+      },
+      {
+        "height": 44,
+        "name": "国债指数",
+        "width": 118
+      },
+      {
+        "height": 44,
+        "name": "中证环保",
+        "width": 118
+      }
+    ],
+    "comparisonGap": {
+      "date": "09-14",
+      "values": [
+        "-0.32%",
+        "—"
+      ]
+    },
+    "emptyToData": {
+      "actual": [
+        358,
+        240
+      ],
+      "left": "48",
+      "viewBox": "0 0 358 240"
+    },
+    "mouseLeave": {
+      "crosshairs": 0
+    }
+  },
+  "checks": [
+    "pnpm typecheck",
+    "pnpm lint",
+    "pnpm build",
+    "node scripts/check-routes.mjs",
+    "frontend/scripts/*.mjs（全部 7 个，含新增 test-curve-chart.mjs 和 test-drawer-history.mjs）"
+  ],
+  "notCovered": [
+    "真实 iPhone/Android 触摸、侧滑返回、Android 返回键、安全区与软键盘",
+    "生产环境发布及验收",
+    "第二批 2.2–2.6"
+  ]
+}
