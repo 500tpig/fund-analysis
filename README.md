@@ -424,6 +424,6 @@ SSH 隧道中的三个 SPA 页面均能加载，估值页渲染 18 行且无浏�
 完成时间以实际受理、对应官方净值取得和结算结果为准；净值延迟则继续待确认，跳过不算成交验收通过。
 剩余风险：2027 年日历需在 12 月前补；手机远程为 P0-A，以 Cloudflare 隧道接入时须同时启用
 Zero Trust 认证——当前 web 无认证，不得直接公开。P0-A 方案见
-[`docs/p0a-mobile-remote-access-plan.md`](docs/p0a-mobile-remote-access-plan.md)，尚未执行。
+[`docs/p0a-mobile-remote-access-plan.md`](docs/p0a-mobile-remote-access-plan.md)，已于 2026-10-29 实施，验收进行中。
 
 2026-10-23 线上复验补充：东财列表接口亦出现持续 502。三项行情在主源失败时分别使用腾讯（中证全指、纳指 100）和新浪（上金所 Au99.99），校验标的、价格、涨跌幅与报价时间；运行记录保留主源错误和实际来源。备用源也失败时继续保留旧快照并标失败。
