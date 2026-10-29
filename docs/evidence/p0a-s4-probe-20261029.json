@@ -1,0 +1,39 @@
+{
+ "stage": "P0-A S3/S4：路由发布与未登录外部探测",
+ "checked_at_utc": "2026-10-28T18:00:00+00:00",
+ "checked_at_beijing": "2026-10-29T02:00:00+08:00",
+ "dns": {
+  "fund.55770517.xyz": [
+   "172.67.136.90",
+   "104.21.86.197"
+  ],
+  "method": "DoH 1.1.1.1（本机 DNS 被 fake-IP 劫持，见记忆）"
+ },
+ "tunnel": {
+  "config_version": 55,
+  "ingress_rules": 8,
+  "ingress": [
+   "outlook-mail.55770517.xyz",
+   "mypanel.55770517.xyz",
+   "grok2api.55770517.xyz",
+   "kkqqservice.55770517.xyz",
+   "o-cpa-manager.55770517.xyz",
+   "origin.55770517.xyz",
+   "fund.55770517.xyz",
+   "http_status:404"
+  ],
+  "note": "仅新增 fund 一条；既有 6 条路由与默认 404 与 S2 基线一致"
+ },
+ "probe": {
+  "script": "reports/p0a-20261029/s4_probe.sh",
+  "cases": 10,
+  "result": "PASS",
+  "detail": "GET /、/simulation、/api/funds、/api/holdings、/api/simulation/accounts、/docs、/openapi.json、/assets/index-probe.js、伪造 Cf-Access-Jwt-Assertion、POST 模拟账户暂停（不存在账户）全部 302 跳转到 500tpig.cloudflareaccess.com 登录页，无任何应用内容返回",
+  "exit_code": 0
+ },
+ "notes": [
+  "应用侧可信 Host 已在 S2b 配置 fund.55770517.xyz；隧道与 Access 均已生效。",
+  "尚未验证已登录用户的同源写请求（需浏览器完成一次 Access 登录）。",
+  "Access cookie 实际 SameSite 值待登录后检查并记录。"
+ ]
+}
