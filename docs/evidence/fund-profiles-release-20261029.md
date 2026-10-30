@@ -1,8 +1,27 @@
-# 新基金档案批次后端发布预备（20261029-fund-profiles-1）
+# 新基金档案批次后端发布（20261029-fund-profiles-1）
 
-2026-10-29 制作本地候选，2026-10-30 以线上新版本重切，**尚未上传、未部署**。基线为线上实际运行的
+2026-10-29 制作本地候选，2026-10-30 以线上新版本重切，**已于 2026-10-30 19:05 发布上线**。基线为线上实际运行的
 `20261030-mobile-ui-3`，候选为 `20261029-fund-profiles-1`。保留生产 UI：候选不含前端改动，
 `frontend/dist` 与线上逐字节一致；README、AGENTS 保持线上版本，仓库内较新的文档提交未混入。
+
+## 发布与核对（2026-10-30）
+
+在 P0-A 暂停／恢复验收 D7 通过后执行（[验收记录](p0a-pause-resume-20261030.md)），避开 18:30 与 21:30 结算槽。
+
+- 发布前只读核对（19:02:59）：`current`／`previous` 为 `20261030-mobile-ui-3`／`20261030-mobile-ui-2`；
+  四个 unit active/enabled；`/api/funds` 200；线上运行树 88 个文件与记录的基线哈希一致；
+  主库持仓 22、transactions 11、估值档案 21、data_source_runs 5773，模拟库 1/2/2。
+- 上传后服务器侧 `sha256sum -c` 一致；19:05 采集 tick 结束（两个 service inactive）后于 19:05:26 运行
+  `bash ~/install-release.sh ~/fund-analysis-20261029-fund-profiles-1.tar.gz 20261029-fund-profiles-1`：
+  生成并校验 `backups/pre-20261029-fund-profiles-1.db`，日志末行 `Active release: /opt/fund-analysis/releases/20261029-fund-profiles-1`。
+- 发布后（19:06:03 起）：`current`／`previous` 为 `20261029-fund-profiles-1`／`20261030-mobile-ui-3`；
+  四个 unit active/enabled；`/api/funds` 200；部署树 88 个文件与候选逐一一致；回滚目标 `20261030-mobile-ui-3`
+  88 个文件哈希完好、venv 可执行。
+- 档案：`fund_valuation_profiles` 21 → 25，4 只新代码字段与预期一致（007195 CN/CN_STOCK/cn_same_day_night、
+  008254 GLOBAL/UNKNOWN/unknown_rule、008401 US/US_STOCK/unknown_rule、018147 GLOBAL/UNKNOWN/unknown_rule）。
+- 业务数据：持仓 22、transactions 11，持仓与交易逐行聚合与发布前（19:02:34 检查点）相同；
+  模拟账户 active/版本 3、两笔订单 settled、`verify` ok。data_source_runs 增长来自采集 tick。
+- timer：19:10 模拟与采集 service 在新版本下各运行一次，结果 `success`、`failed_count` 0。
 
 ## 重切记录（2026-10-30）
 
@@ -49,7 +68,7 @@
 - 基线回归与 ruff：后端运行树与旧基线相同，沿用 2026-10-29 结果（候选测试跑基线源码时
   `test_nav_status.py` 2 错误、`test_web_storage.py` 1 失败；ruff 仅一处既有 F841），见旧产物目录。
 
-## 发布安排与拟定步骤
+## 发布安排与执行步骤（已于 2026-10-30 按此执行）
 
 用户已确认一并发布，时段放在 2026-10-30 P0-A 暂停／恢复验收（17:30–18:50）与 D7 账本复核完成之后，
 并避开 21:30 结算槽，避免服务重启干扰暂停观察与当日结算。
@@ -71,5 +90,5 @@
 
 ## 未覆盖
 
-未上传、未部署；未改动 Cloudflare、DNS、生产库；未构建前端。本批无路由与前端行为变化，
-浏览器验收不适用。
+未改动 Cloudflare、DNS；未构建前端。本批无路由与前端行为变化，浏览器验收不适用。
+008401 仍为 `unknown_rule`（仅核实 T+2 最晚披露时限）。

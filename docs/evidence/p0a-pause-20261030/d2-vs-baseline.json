@@ -1,0 +1,168 @@
+{
+ "baseline": "../../docs/evidence/p0a-settlement-baseline-20261029.json",
+ "checkpoint": "d2-after-pause.json",
+ "checkpoint_label": "d2-after-pause",
+ "checkpoint_at": "2026-10-30T17:35:18.852423+08:00",
+ "main_db.holdings": {
+  "old_count": 22,
+  "new_count": 22,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "main_db.transactions": {
+  "old_count": 11,
+  "new_count": 11,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "main_db.data_source_runs": {
+  "old": {
+   "count": 5503,
+   "max_rowid": 5503
+  },
+  "new": {
+   "count": 5767,
+   "max_rowid": 5767
+  }
+ },
+ "sim_db.accounts": {
+  "old_count": 1,
+  "new_count": 1,
+  "aggregate_equal": false,
+  "added": [],
+  "removed": [],
+  "changed": {
+   "acct_57e3deb6871f420c9e98": {
+    "status": [
+     "active",
+     "paused"
+    ],
+    "pause_reason": [
+     null,
+     "manual"
+    ],
+    "version": [
+     1,
+     2
+    ]
+   }
+  }
+ },
+ "sim_db.strategy_versions": {
+  "old_count": 1,
+  "new_count": 1,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.rule_versions": {
+  "old_count": 1,
+  "new_count": 1,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.orders": {
+  "old_count": 2,
+  "new_count": 2,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.order_events": {
+  "old_count": 7,
+  "new_count": 7,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.runs": {
+  "old_count": 2,
+  "new_count": 2,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.run_items": {
+  "old_count": 2,
+  "new_count": 2,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.lots": {
+  "old_count": 1,
+  "new_count": 1,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.ledger_events": {
+  "old_count": 4,
+  "new_count": 4,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.snapshots": {
+  "old_count": 11,
+  "new_count": 11,
+  "aggregate_equal": true,
+  "added": [],
+  "removed": [],
+  "changed": {}
+ },
+ "sim_db.valuations": {
+  "old": {
+   "count": 244,
+   "max_rowid": 244
+  },
+  "new": {
+   "count": 257,
+   "max_rowid": 257
+  }
+ },
+ "sim_db.idempotency_keys": {
+  "old_count": 1,
+  "new_count": 2,
+  "rows": [
+   {
+    "scope": "",
+    "operation": "create_account",
+    "key": "initial",
+    "request_hash": "6400d8204fe5562415c8b232aa2b5297e89f60b2e04006a0c8c8bdfefbbcd320",
+    "result_id": "acct_57e3deb6871f420c9e98",
+    "created_at": "2026-10-17T18:57:55.285421+00:00"
+   },
+   {
+    "scope": "acct_57e3deb6871f420c9e98",
+    "operation": "pause",
+    "key": "web-582120c0-55ec-4daa-b5c8-534c16793f01",
+    "request_hash": "3694d93de33abf345c47d3ec921c6c0daf8ea8f3caf48dcceeb832646b8758dc",
+    "result_id": "acct_57e3deb6871f420c9e98",
+    "created_at": "2026-10-30T09:34:55.000492+00:00"
+   }
+  ]
+ },
+ "sim_db.account_operations": {
+  "old_count": 0,
+  "new_count": 0,
+  "rows": []
+ },
+ "cli_verify": {
+  "ok": true,
+  "problems": []
+ }
+}
