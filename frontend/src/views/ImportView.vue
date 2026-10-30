@@ -488,6 +488,7 @@ onUnmounted(() => {
               v-for="match in candidate.name_matches"
               :key="match.code"
               type="button"
+              class="ui-press"
               @click="chooseNameMatch(candidate, match.code, match.name)"
             >
               <span>{{ match.name }}</span><code>{{ match.code }}</code>

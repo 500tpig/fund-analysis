@@ -63,9 +63,8 @@ function sessionClass(item: MarketQuoteItem): string {
   max-width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-soft);
+  border-radius: var(--radius-container);
+  background: var(--bg-surface);
   padding: 8px 14px;
 }
 
@@ -135,7 +134,6 @@ function sessionClass(item: MarketQuoteItem): string {
 @media (max-width: 768px) {
   .market-quote-compact-strip {
     padding: 7px 12px;
-    border-radius: 6px;
   }
 
   .market-quote-compact-list {

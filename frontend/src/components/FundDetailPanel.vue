@@ -487,9 +487,9 @@ function selectCurveTab(value: string): void {
         >
           <div
             v-if="intradayLoading"
-            class="flex h-56 items-center justify-center gap-2 text-[13px] text-(--text-tertiary)"
+            class="skeleton skeleton--block loading-state [--skeleton-min-height:14rem]"
+            role="status"
           >
-            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-accent) border-t-transparent" />
             拉取盘中分时
           </div>
           <div
@@ -525,9 +525,9 @@ function selectCurveTab(value: string): void {
         >
           <div
             v-if="performanceLoading"
-            class="flex h-56 items-center justify-center gap-2 text-[13px] text-(--text-tertiary)"
+            class="skeleton skeleton--block loading-state [--skeleton-min-height:14rem]"
+            role="status"
           >
-            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-accent) border-t-transparent" />
             加载历史业绩
           </div>
           <div
@@ -553,7 +553,7 @@ function selectCurveTab(value: string): void {
                   v-for="item in performanceRanges"
                   :key="item.value"
                   type="button"
-                  class="text-filter"
+                  class="text-filter ui-press"
                   :class="performanceRange === item.value ? 'is-active' : ''"
                   @click="selectPerformanceRange(item.value)"
                 >

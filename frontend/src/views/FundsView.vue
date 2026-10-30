@@ -721,12 +721,12 @@ function closeMobileSearch() {
         </div>
 
         <div class="valuation-mobile-only mobile-header-tools items-center gap-2 shrink-0">
-          <span class="text-[12px] text-(--text-secondary)">
+          <span class="font-numeric text-[12px] text-(--text-secondary)">
             {{ mobileHeaderStatus }}
           </span>
           <button
             type="button"
-            class="mobile-refresh-icon-btn min-w-[44px] min-h-[44px] flex items-center justify-center rounded-[8px] text-(--text-secondary) hover:text-(--text-primary) active:bg-(--bg-surface-hover)"
+            class="mobile-refresh-icon-btn ui-press min-w-[44px] min-h-[44px] flex items-center justify-center rounded-(--radius-control) text-(--text-secondary) hover:text-(--text-primary) active:bg-(--bg-surface-hover)"
             :disabled="refreshing"
             aria-label="刷新行情"
             @click="doRefresh"
@@ -809,7 +809,7 @@ function closeMobileSearch() {
                 :key="item.key"
                 type="button"
                 role="tab"
-                class="text-filter"
+                class="text-filter ui-press"
                 :class="statusFilter === item.key ? 'is-active' : ''"
                 :aria-selected="statusFilter === item.key"
                 @click="statusFilter = item.key"
@@ -832,7 +832,7 @@ function closeMobileSearch() {
                   :key="`m-${item.key}`"
                   type="button"
                   role="tab"
-                  class="mobile-filter-tab px-2.5 py-1 rounded-[6px] text-[12px] font-medium transition-colors"
+                  class="mobile-filter-tab ui-press px-2.5 py-1 rounded-(--radius-control) text-[12px] font-medium font-numeric"
                   :class="statusFilter === item.key ? 'bg-(--bg-surface-hover) text-(--text-primary)' : 'text-(--text-secondary) hover:text-(--text-primary)'"
                   :aria-selected="statusFilter === item.key"
                   @click="statusFilter = item.key"
@@ -842,7 +842,7 @@ function closeMobileSearch() {
               </div>
               <button
                 type="button"
-                class="mobile-search-trigger min-w-[44px] min-h-[44px] flex items-center justify-center rounded-[6px] text-(--text-secondary) hover:text-(--text-primary)"
+                class="mobile-search-trigger ui-press min-w-[44px] min-h-[44px] flex items-center justify-center rounded-(--radius-control) text-(--text-secondary) hover:text-(--text-primary)"
                 aria-label="展开搜索"
                 @click="openMobileSearch"
               >
@@ -858,14 +858,14 @@ function closeMobileSearch() {
             <span class="valuation-desktop-only">{{ inventoryLabel(funds?.rows ?? [], displayRows) }}</span>
             <div
               v-if="sortField"
-              class="valuation-mobile-only inline-flex items-center gap-1 rounded-[6px] bg-(--bg-surface) px-2 py-0.5 text-[12px] text-(--text-secondary)"
+              class="valuation-mobile-only inline-flex items-center gap-1 rounded-(--radius-control) bg-(--bg-surface) px-2 py-0.5 text-[12px] text-(--text-secondary)"
             >
               <span>{{ sortLabel }}</span>
             </div>
             <button
               v-if="hasActiveFilterOrSort"
               type="button"
-              class="cursor-pointer text-[12px] text-(--text-secondary) transition-colors hover:text-(--text-primary) min-h-[36px] flex items-center"
+              class="cursor-pointer text-[12px] text-(--text-secondary) transition-colors duration-(--dur-micro) ease-(--ease-out) hover:text-(--text-primary) min-h-[36px] flex items-center"
               @click="resetFiltersAndSort"
             >
               重置
@@ -951,7 +951,7 @@ function closeMobileSearch() {
             v-else
             :key="`mobile-${row.id}`"
             type="button"
-            class="fund-mobile-row"
+            class="fund-mobile-row ui-press ui-press--row"
             :class="selectedFund?.id === row.id ? 'is-active' : ''"
             @click="openFundDrawer(row)"
           >
@@ -1131,7 +1131,7 @@ function closeMobileSearch() {
                     <button
                       v-if="!row.is_cash_asset"
                       type="button"
-                      class="row-action rounded-[6px] p-0.5 text-(--text-tertiary) hover:text-(--text-primary)"
+                      class="row-action rounded-(--radius-control) p-0.5 text-(--text-tertiary) hover:text-(--text-primary)"
                       aria-label="复制基金代码"
                       @click="copyCode(row.code, $event)"
                     >
@@ -1209,7 +1209,7 @@ function closeMobileSearch() {
             />
             <button
               type="button"
-              class="funds-detail-pane__close"
+              class="funds-detail-pane__close ui-press"
               aria-label="关闭详情"
               @click="closeFundDetail"
             >
@@ -1438,7 +1438,7 @@ function closeMobileSearch() {
   border-radius: var(--radius-control);
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out);
+  transition: color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out), transform var(--dur-micro) var(--ease-on);
 }
 
 .funds-detail-pane__close:hover {

@@ -31,28 +31,28 @@ const variantClasses = computed(() => {
     case 'ghost':
       return 'bg-transparent text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]'
     case 'outline':
-      return 'bg-transparent text-[var(--text-secondary)] shadow-[inset_0_0_0_1px_var(--border-subtle)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]'
+      return 'bg-transparent text-[var(--text-secondary)] shadow-[inset_0_0_0_1px_var(--border-default)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]'
     case 'danger':
       return 'bg-[rgba(216,121,121,0.12)] text-[var(--status-error)] hover:bg-[rgba(216,121,121,0.2)]'
     case 'secondary':
     default:
-      return 'bg-[var(--action-secondary-bg)] text-[var(--text-primary)] shadow-[inset_0_0_0_1px_var(--border-subtle)] hover:bg-[var(--bg-surface-hover)]'
+      return 'bg-[var(--action-secondary-bg)] text-[var(--text-primary)] shadow-[inset_0_0_0_1px_var(--border-default)] hover:bg-[var(--bg-elevated-hover)]'
   }
 })
 
 const sizeClasses = computed(() => {
   switch (props.size) {
     case 'sm':
-      return 'h-9 px-3 text-[13px] rounded-[8px] gap-1.5'
+      return 'h-9 px-3 text-[13px] rounded-(--radius-control) gap-1.5'
     case 'lg':
-      return 'h-10 px-4 text-[14px] rounded-[8px] gap-2'
+      return 'h-10 px-4 text-[14px] rounded-(--radius-control) gap-2'
     case 'icon':
-      return 'relative h-9 w-9 p-0 rounded-[8px] justify-center after:absolute after:inset-[-6px] after:content-[\'\']'
+      return 'relative h-9 w-9 p-0 rounded-(--radius-control) justify-center after:absolute after:inset-[-6px] after:content-[\'\']'
     case 'icon-sm':
-      return 'relative h-8 w-8 p-0 rounded-[8px] justify-center text-[12px] after:absolute after:inset-[-8px] after:content-[\'\']'
+      return 'relative h-8 w-8 p-0 rounded-(--radius-control) justify-center text-[12px] after:absolute after:inset-[-8px] after:content-[\'\']'
     case 'md':
     default:
-      return 'h-10 px-3.5 text-[13px] rounded-[8px] gap-1.5'
+      return 'h-10 px-3.5 text-[13px] rounded-(--radius-control) gap-1.5'
   }
 })
 

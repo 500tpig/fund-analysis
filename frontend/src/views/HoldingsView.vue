@@ -391,14 +391,14 @@ useHotkeys((event) => {
           <span>{{ inventoryLabel(holdings?.rows ?? [], filteredRows) }}</span>
           <div
             v-if="sortField && sortField !== 'amount'"
-            class="hidden max-md:inline-flex items-center gap-1 rounded-[6px] bg-[var(--bg-surface)] px-2 py-0.5 text-[12px] text-[var(--text-secondary)]"
+            class="hidden max-md:inline-flex items-center gap-1 rounded-(--radius-control) bg-[var(--bg-surface)] px-2 py-0.5 text-[12px] text-[var(--text-secondary)]"
           >
             <span>{{ sortLabel }}</span>
           </div>
           <button
             v-if="hasActiveFilterOrSort"
             type="button"
-            class="min-h-[44px] min-w-[44px] cursor-pointer text-[12px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            class="min-h-[44px] min-w-[44px] cursor-pointer text-[12px] text-[var(--text-secondary)] transition-colors duration-(--dur-micro) ease-(--ease-out) hover:text-[var(--text-primary)]"
             @click="resetFiltersAndSort"
           >
             重置
@@ -482,7 +482,7 @@ useHotkeys((event) => {
           v-for="row in filteredRows"
           v-else
           :key="`holding-mobile-${row.id}`"
-          class="holding-mobile-row"
+          class="holding-mobile-row ui-press ui-press--row"
           @click="openEdit(row)"
         >
           <span class="holding-mobile-row__identity">
@@ -669,7 +669,7 @@ useHotkeys((event) => {
                   <button
                     v-if="!row.is_cash_asset"
                     type="button"
-                    class="row-action rounded-[6px] p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                    class="row-action rounded-(--radius-control) p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
                     aria-label="复制基金代码"
                     @click="copyCode(row.code, $event)"
                   >
@@ -815,7 +815,7 @@ useHotkeys((event) => {
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="delete-holding-title"
-          class="w-full max-w-sm space-y-4 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-5 shadow-[var(--shadow-overlay)]"
+          class="w-full max-w-sm space-y-4 rounded-(--radius-panel) bg-[var(--bg-elevated)] p-5 shadow-[var(--shadow-overlay)]"
         >
           <div class="flex items-center gap-3 text-[var(--status-error)]">
             <AlertTriangle class="h-5 w-5" />
@@ -855,7 +855,7 @@ useHotkeys((event) => {
 </template>
 
 <style scoped>
-.ui-press,
+.ui-press:not(.ui-press--row),
 :deep(input) {
   min-width: 44px;
   min-height: 44px;

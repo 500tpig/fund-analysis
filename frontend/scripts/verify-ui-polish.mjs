@@ -80,11 +80,13 @@ const requiredTokens = [
   '--bg-sidebar: #080A09;',
   '--bg-surface: #101310;',
   '--bg-surface-hover: #161A17;',
-  '--border-subtle: #272C28;',
+  '--bg-elevated: #1C201D;',
+  '--bg-elevated-hover: #222723;',
+  '--border-subtle: #1D221E;',
   '--border-strong: #353A36;',
   '--text-primary: #F1EFE9;',
   '--text-secondary: #AAA79F;',
-  '--text-tertiary: #85827A;',
+  '--text-tertiary: #98958D;',
   '--text-disabled: #62655F;',
   '--brand-accent: #C9AE70;',
   '--status-warning: #D6924D;',
@@ -94,8 +96,9 @@ const requiredTokens = [
   '--market-down-strong: #54C397;',
   '--market-down-muted: #429E7C;',
   '--chart-line-primary: #CDB16F;',
-  '--chart-grid: rgba(126, 133, 126, 0.18);',
-  '--chart-zero-line: rgba(188, 192, 184, 0.58);',
+  '--chart-grid: rgba(126, 133, 126, 0.14);',
+  '--chart-zero-line: rgba(188, 192, 184, 0.4);',
+  '--chart-benchmark: rgba(170, 167, 159, 0.78);',
 ]
 
 for (const token of requiredTokens) {
@@ -105,7 +108,8 @@ for (const token of requiredTokens) {
 assert.ok(mainCss.includes('.currency-symbol'), 'Missing .currency-symbol class')
 assert.ok(mainCss.includes('.value-rise-muted'), 'Missing .value-rise-muted class')
 assert.ok(mainCss.includes('.value-fall-muted'), 'Missing .value-fall-muted class')
-assert.ok(mainCss.includes('outline: 2px solid var(--brand-accent);'), 'Missing 2px focus outline')
+assert.ok(mainCss.includes('--focus-ring: 2px solid var(--brand-accent);'), 'Missing 2px focus ring token')
+assert.ok(mainCss.includes('outline: var(--focus-ring);'), 'Global focus-visible must use the focus ring token')
 assert.ok(mainCss.includes('background: var(--bg-sidebar);'), 'Missing rail background var(--bg-sidebar)')
 
 console.log('✓ main.css tokens and classes verified.')

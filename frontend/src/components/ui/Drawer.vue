@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
         aria-modal="true"
         :aria-label="title"
         :style="{ width: typeof width === 'number' ? `${width}px` : width }"
-        class="drawer-panel fixed top-0 right-0 z-[80] flex h-full max-h-full max-w-full flex-col overflow-hidden border-l border-[var(--border-subtle)]"
+        class="drawer-panel fixed top-0 right-0 z-[80] flex h-full max-h-full max-w-full flex-col overflow-hidden"
         @keydown="onPanelKeydown"
       >
         <div class="drawer-panel__header flex shrink-0 items-start justify-between gap-4 border-b border-[var(--border-subtle)] px-6 py-4">
@@ -147,7 +147,7 @@ onBeforeUnmount(() => {
             ref="closeRef"
             type="button"
             aria-label="关闭"
-            class="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-primary)] after:absolute after:inset-[-8px] after:content-['']"
+            class="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-(--radius-control) text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-primary)] after:absolute after:inset-[-8px] after:content-['']"
             @click="close"
           >
             <CloseIcon

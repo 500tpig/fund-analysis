@@ -183,7 +183,7 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 2px 4px 2px 2px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -216,10 +216,9 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 6px;
   list-style: none;
-  border-radius: 10px;
+  border-radius: var(--radius-panel);
   background: var(--bg-elevated);
   box-shadow: var(--shadow-overlay);
-  border: 1px solid var(--border-subtle);
 }
 
 .benchmark-select__option {
@@ -227,14 +226,14 @@ onBeforeUnmount(() => {
   align-items: center;
   min-height: 36px;
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
 }
 
 .benchmark-select__option.is-active {
-  background: rgba(243, 239, 230, 0.06);
+  background: var(--bg-elevated-hover);
   color: var(--text-primary);
 }
 

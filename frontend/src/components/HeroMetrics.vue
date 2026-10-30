@@ -104,7 +104,7 @@ function columns(): string {
           <button
             :id="`hero-info-btn-${item.key}`"
             type="button"
-            class="metric-strip__info-btn"
+            class="metric-strip__info-btn ui-press"
             :aria-expanded="activeInfoKey === item.key"
             :aria-controls="`hero-info-popover-${item.key}`"
             aria-label="收益说明"
@@ -195,10 +195,10 @@ function columns(): string {
   width: 24px;
   height: 24px;
   margin: -4px -4px -4px 0;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-on);
 }
 
 .metric-strip__info-btn:hover,
@@ -214,8 +214,7 @@ function columns(): string {
   min-width: 260px;
   max-width: min(360px, 92vw);
   padding: 12px 14px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-panel);
   background: var(--bg-elevated);
   box-shadow: var(--shadow-overlay);
   display: flex;
@@ -242,8 +241,8 @@ function columns(): string {
   padding: 4px;
   min-width: 28px;
   min-height: 28px;
-  border-radius: 4px;
-  transition: color 0.15s ease;
+  border-radius: var(--radius-control);
+  transition: color var(--dur-micro) var(--ease-out);
 }
 
 .metric-info-popover__close:hover,

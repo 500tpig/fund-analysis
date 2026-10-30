@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process */
 /**
  * 深色主题对比度检查。
  *
@@ -80,7 +81,28 @@ const PAIRS = [
   ['chart-line-primary', 'bg-surface', 3, '曲线主色 / 面板'],
   ['action-primary-text', 'action-primary-bg', 4.5, '主按钮文字 / 底色'],
   ['text-primary', 'bg-surface-hover', 4.5, '主文字 / 悬停面'],
+  ['text-secondary', 'bg-surface-hover', 4.5, '次要文字 / 悬停面'],
+  ['text-tertiary', 'bg-elevated', 4.5, '三级文字 / 浮层'],
+  ['text-tertiary', 'bg-surface-hover', 4.5, '三级文字 / 悬停面'],
+  ['text-primary', 'bg-elevated-hover', 4.5, '主文字 / 浮层悬停'],
+  ['text-secondary', 'bg-elevated-hover', 4.5, '次要文字 / 浮层悬停'],
+  ['text-tertiary', 'bg-elevated-hover', 4.5, '三级文字 / 浮层悬停'],
+  ['market-up-strong', 'bg-surface-hover', 4.5, '涨 / 悬停面'],
+  ['market-down-strong', 'bg-surface-hover', 4.5, '跌 / 悬停面'],
 ]
+
+/**
+ * 表面色阶必须两两可分辨（下沉 < 画布 < 面板 < 面板悬停 < 浮层 < 浮层悬停）。
+ * 这里不是 WCAG 文字对比，只防止相邻两档取成同色；1.04 约等于暗色下肉眼可辨的最小亮度差。
+ */
+const LAYERS = [
+  ['bg-sunken', 'bg-canvas'],
+  ['bg-canvas', 'bg-surface'],
+  ['bg-surface', 'bg-surface-hover'],
+  ['bg-surface-hover', 'bg-elevated'],
+  ['bg-elevated', 'bg-elevated-hover'],
+]
+const LAYER_MIN = 1.04
 
 const tokens = readTokens(css)
 const rows = []
@@ -98,6 +120,22 @@ for (const [fgName, bgName, min, label] of PAIRS) {
   const status = ratio < min ? 'FAIL' : ratio < min + 0.5 ? 'THIN' : 'OK'
   if (status === 'FAIL') failed += 1
   rows.push({ label, fg: `${fgName} ${fg}`, bg: `${bgName} ${bg}`, value: Number(ratio.toFixed(2)), min, status })
+}
+
+for (const [lowName, highName] of LAYERS) {
+  const label = `层级 ${lowName} < ${highName}`
+  const low = tokens[lowName]
+  const high = tokens[highName]
+  if (!low || !high) {
+    rows.push({ label, fg: highName, bg: lowName, value: null, min: LAYER_MIN, status: 'MISSING' })
+    failed += 1
+    continue
+  }
+  const brighter = relativeLuminance(parseColor(high)) > relativeLuminance(parseColor(low))
+  const ratio = contrast(high, low)
+  const status = !brighter || ratio < LAYER_MIN ? 'FAIL' : 'OK'
+  if (status === 'FAIL') failed += 1
+  rows.push({ label, fg: `${highName} ${high}`, bg: `${lowName} ${low}`, value: Number(ratio.toFixed(2)), min: LAYER_MIN, status })
 }
 
 if (process.argv.includes('--json')) {

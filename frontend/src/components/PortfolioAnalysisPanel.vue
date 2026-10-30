@@ -269,7 +269,8 @@ function formatCorr(value: number | null): string {
           </header>
           <div
             v-if="riskLoading"
-            class="portfolio-analysis__empty"
+            class="skeleton skeleton--block loading-state"
+            role="status"
           >
             正在读取官方净值历史
           </div>

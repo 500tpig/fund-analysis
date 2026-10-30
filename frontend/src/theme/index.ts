@@ -7,7 +7,7 @@
 
 export const chartColors: Record<'fund' | 'benchmark' | 'rise' | 'fall', string> = {
   fund: 'var(--chart-line-primary)',
-  benchmark: 'var(--text-tertiary)',
+  benchmark: 'var(--chart-benchmark)',
   rise: 'var(--market-up-strong)',
   fall: 'var(--market-down-strong)',
 }

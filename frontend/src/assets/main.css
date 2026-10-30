@@ -6,10 +6,11 @@
   --color-sidebar: #080A09;
   --color-surface: #101310;
   --color-surface-hover: #161A17;
-  --color-surface-elevated: #161A17;
-  --color-surface-sunken: #070908;
+  --color-surface-elevated: #1C201D;
+  --color-surface-elevated-hover: #222723;
+  --color-surface-sunken: #030404;
 
-  --color-border-subtle: #272C28;
+  --color-border-subtle: #1D221E;
   --color-border-default: #2D332E;
   --color-border-strong: #353A36;
   --color-border-glow: #C9AE70;
@@ -43,19 +44,23 @@
   --bg-canvas: #0A0C0B;
   --bg-sidebar: #080A09;
   --bg-base: var(--bg-canvas);
+  /* 表面色阶（由暗到亮）：下沉 → 画布 → 面板 → 面板悬停 → 浮层 → 浮层悬停。
+     浮层高于面板与列表悬停行，浮层内菜单项悬停再亮一档；卡片与面板靠色阶分层，不靠描边。 */
   --bg-surface: #101310;
   --bg-surface-hover: #161A17;
-  --bg-elevated: #161A17;
+  --bg-elevated: #1C201D;
+  --bg-elevated-hover: #222723;
   --bg-soft: #0C0E0D;
-  --bg-sunken: #070908;
+  --bg-sunken: #030404;
 
-  --border-subtle: #272C28;
+  /* subtle 只用于同面色相邻处的发丝分隔线；控件边缘用 default。 */
+  --border-subtle: #1D221E;
   --border-default: #2D332E;
   --border-strong: #353A36;
 
   --text-primary: #F1EFE9;
   --text-secondary: #AAA79F;
-  --text-tertiary: #85827A;
+  --text-tertiary: #98958D;
   --text-disabled: #62655F;
   --text-muted: var(--text-tertiary);
   --text-faint: var(--text-disabled);
@@ -87,9 +92,17 @@
   --status-error: #D87979;
   --live: var(--status-live);
 
+  /* 图表层次：午休底色 < 网格 < 零线 < 基准线 < 主曲线。 */
   --chart-line-primary: #CDB16F;
-  --chart-grid: rgba(126, 133, 126, 0.18);
-  --chart-zero-line: rgba(188, 192, 184, 0.58);
+  --chart-benchmark: rgba(170, 167, 159, 0.78);
+  --chart-grid: rgba(126, 133, 126, 0.14);
+  --chart-zero-line: rgba(188, 192, 184, 0.4);
+  --chart-crosshair: rgba(241, 239, 233, 0.4);
+  --chart-break-fill: rgba(241, 239, 233, 0.02);
+  --chart-stroke-grid: 1px;
+  --chart-stroke-zero: 1px;
+  --chart-stroke-benchmark: 1.5px;
+  --chart-stroke-primary: 2px;
 
   --font-ui: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Segoe UI", sans-serif;
   --font-mono: "SF Mono", "Menlo", "Consolas", ui-monospace, monospace;
@@ -116,7 +129,13 @@
   --button-height: 40px;
   --table-head: 42px;
   --table-row: 56px;
-  --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.45);
+  /* 唯一投影档位，只给浮层（菜单、提示、对话框、抽屉）；纵向偏移小于模糊半径，底部抽屉向上也有投影。 */
+  --shadow-overlay: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  --focus-ring: 2px solid var(--brand-accent);
+  --focus-offset: 2px;
+  /* 满宽行或滚动容器内的控件，外扩描边会被裁掉，改为内收。 */
+  --focus-offset-inset: -2px;
 }
 
 *,
@@ -153,8 +172,8 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand-accent);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .skip-link {
@@ -208,7 +227,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(242, 239, 231, 0.08);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -271,9 +290,10 @@ body {
   font-size: 11px;
   line-height: 14px;
   padding: 0 4px;
-  border-radius: 3px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  border-radius: var(--radius-control);
+  /* 透明描边保留原有盒高，徽标靠底色而不是描边区分 */
+  border: 1px solid transparent;
+  background: var(--bg-elevated);
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -287,12 +307,12 @@ body {
 }
 
 .inline-badge.is-warning {
-  border-color: rgba(214, 146, 77, 0.35);
+  background: rgba(214, 146, 77, 0.12);
   color: var(--status-warning);
 }
 
 .inline-badge.is-accent {
-  border-color: rgba(201, 174, 112, 0.35);
+  background: rgba(201, 174, 112, 0.12);
   color: var(--brand-accent);
 }
 
@@ -316,7 +336,6 @@ body {
   flex-direction: column;
   border-right: 1px solid var(--border-subtle);
   background: var(--bg-sidebar);
-  transition: width 200ms var(--ease-out);
   user-select: none;
 }
 
@@ -335,7 +354,7 @@ body {
   width: 28px;
   height: 28px;
   padding: 7px 6px 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: var(--action-primary-bg);
   color: var(--action-primary-text);
 }
@@ -358,7 +377,7 @@ body {
   width: 100%;
   height: 44px;
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
@@ -560,7 +579,7 @@ body {
   gap: 6px;
   height: 22px;
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-size: 12px;
   line-height: 18px;
   white-space: nowrap;
@@ -612,11 +631,12 @@ body {
   height: 32px;
   padding: 0 10px;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
   line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
   cursor: pointer;
   transition: background-color var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out);
 }
@@ -632,8 +652,8 @@ body {
 }
 
 .text-filter:focus-visible {
-  outline: 2px solid var(--brand-accent);
-  outline-offset: 1px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset-inset);
 }
 
 .blotter {
@@ -702,7 +722,7 @@ body {
 }
 
 .data-dense-table tbody tr {
-  transition: background-color 120ms var(--ease-out);
+  transition: background-color var(--dur-micro) var(--ease-out);
 }
 
 .data-dense-table tbody tr:hover td,
@@ -720,7 +740,7 @@ body {
 
 .sort-icon {
   opacity: 0;
-  transition: opacity 150ms var(--ease-out), color 150ms var(--ease-out);
+  transition: opacity var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
 }
 
 th:hover .sort-icon,
@@ -732,7 +752,7 @@ th:focus-visible .sort-icon,
 
 .row-action {
   opacity: 0;
-  transition: opacity 120ms var(--ease-out);
+  transition: opacity var(--dur-micro) var(--ease-out);
 }
 
 tr:hover .row-action,
@@ -755,7 +775,7 @@ tr:focus-within .row-action,
   height: 32px;
   padding: 0;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
@@ -775,8 +795,7 @@ tr:focus-within .row-action,
   flex-direction: column;
   min-width: 148px;
   padding: 6px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: var(--radius-panel);
   background: var(--bg-elevated);
   box-shadow: var(--shadow-overlay);
 }
@@ -788,7 +807,7 @@ tr:focus-within .row-action,
   min-height: 44px;
   padding: 0 12px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
@@ -798,7 +817,7 @@ tr:focus-within .row-action,
 
 .row-menu__item:hover,
 .row-menu__item:focus-visible {
-  background: var(--bg-surface-hover);
+  background: var(--bg-elevated-hover);
   color: var(--text-primary);
 }
 
@@ -844,7 +863,7 @@ tr:focus-within .row-action,
   height: 3px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--border-subtle);
+  background: var(--bg-elevated);
 }
 
 .weight-bar__fill {
@@ -853,11 +872,39 @@ tr:focus-within .row-action,
   background: var(--brand-accent);
 }
 
+/* ---------- 状态：骨架、加载与空状态（唯一定义，页面与组件只复用） ---------- */
+
 .skeleton {
   display: inline-block;
   height: 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: var(--bg-surface-hover);
+}
+
+/* 区块级占位：图表、风险表等尚未知道行数的内容，占位块内保留原有加载文案 */
+.skeleton--block {
+  display: flex;
+  width: 100%;
+  height: auto;
+  /* 调用处用 [--skeleton-min-height:…] 给出与真实内容相同的高度，避免加载完成时跳动 */
+  min-height: var(--skeleton-min-height, 96px);
+  border-radius: var(--radius-container);
+}
+
+.loading-state {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.profit-section__empty,
+.accuracy-section__empty {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-tertiary);
 }
 
 /* ---------- Controls ---------- */
@@ -899,7 +946,7 @@ tr:focus-within .row-action,
 .quiet-chip {
   height: 28px;
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   background: var(--bg-surface);
   font-size: 12px;
@@ -955,7 +1002,7 @@ tr:focus-within .row-action,
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-surface);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
@@ -1005,7 +1052,7 @@ tr:focus-within .row-action,
 
 .drop-stage.is-ready {
   border-style: solid;
-  border-color: var(--border-subtle);
+  border-color: transparent;
   cursor: default;
 }
 
@@ -1026,7 +1073,6 @@ tr:focus-within .row-action,
   margin: 12px 0 0;
   padding: 12px 14px;
   overflow-x: auto;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   background: var(--bg-surface);
   font-family: var(--font-mono);
@@ -1076,7 +1122,6 @@ tr:focus-within .row-action,
   gap: 16px;
   margin-top: 14px;
   padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   color: var(--text-secondary);
   background: var(--bg-surface);
@@ -1113,7 +1158,6 @@ tr:focus-within .row-action,
 
 .entry-candidate-card {
   padding: 18px;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   background: var(--bg-surface);
 }
@@ -1133,7 +1177,7 @@ tr:focus-within .row-action,
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   background: var(--bg-surface-hover);
   font-family: var(--font-mono);
@@ -1143,7 +1187,7 @@ tr:focus-within .row-action,
 .entry-review-badge {
   flex: 0 0 auto;
   padding: 3px 7px;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   color: var(--status-warning);
   background: rgba(214, 166, 93, 0.1);
   font-size: 12px;
@@ -1159,7 +1203,7 @@ tr:focus-within .row-action,
 
 .entry-issue-list span {
   padding: 3px 7px;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   color: var(--status-warning);
   background: rgba(214, 166, 93, 0.08);
   font-size: 12px;
@@ -1179,16 +1223,15 @@ tr:focus-within .row-action,
   justify-content: space-between;
   gap: 12px;
   padding: 8px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
+  background: var(--bg-elevated);
   text-align: left;
-  transition: border-color var(--dur-ui) var(--ease-out), background var(--dur-ui) var(--ease-out);
+  transition: background-color var(--dur-ui) var(--ease-out);
 }
 
 .entry-name-matches button:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-surface-hover);
+  background: var(--bg-elevated-hover);
 }
 
 .entry-name-matches code,
@@ -1352,7 +1395,6 @@ tr:focus-within .row-action,
   width: min(100%, 720px);
   gap: 18px;
   padding: 24px;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   background: var(--bg-surface);
 }
@@ -1523,12 +1565,6 @@ tr:focus-within .row-action,
   color: var(--text-primary);
 }
 
-.accuracy-section__empty {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  line-height: 20px;
-}
-
 .profit-section {
   min-width: 0;
   padding-top: 20px;
@@ -1608,12 +1644,6 @@ tr:focus-within .row-action,
   text-align: right;
   font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
-}
-
-.profit-section__empty {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  line-height: 20px;
 }
 
 .fund-profile-section {
@@ -1717,11 +1747,6 @@ tr:focus-within .row-action,
   color: var(--text-primary);
 }
 
-.portfolio-analysis__summary:focus-visible {
-  outline: 2px solid var(--brand-accent);
-  outline-offset: 2px;
-}
-
 .portfolio-analysis__title {
   flex: 0 0 auto;
   font-size: 15px;
@@ -1740,6 +1765,7 @@ tr:focus-within .row-action,
 
 .portfolio-analysis__meta {
   margin-left: auto;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .portfolio-analysis__body {
@@ -1936,7 +1962,7 @@ tr:focus-within .row-action,
 }
 
 .page-leave-active {
-  transition: opacity 160ms var(--ease-exit);
+  transition: opacity var(--dur-ui) var(--ease-exit);
 }
 
 .page-enter-from,
@@ -1945,11 +1971,31 @@ tr:focus-within .row-action,
 }
 
 .ui-press {
-  transition: transform var(--dur-micro) var(--ease-on);
+  /* 同时带上底色与文字色过渡：按压类元素多数还有悬停／按下底色，避免 transition 简写互相覆盖 */
+  transition:
+    transform var(--dur-micro) var(--ease-on),
+    background-color var(--dur-micro) var(--ease-out),
+    color var(--dur-micro) var(--ease-out);
 }
 
 .ui-press:active:not(:disabled):not([aria-disabled="true"]) {
-  transform: scale(0.98);
+  transform: scale(var(--press-scale, 0.98));
+}
+
+/* 满宽列表行与卡片：手机端缩放减半，桌面不缩放（宽行缩放会让两侧边缘明显内收）；按下底色由各行自身规则提供。 */
+.ui-press--row {
+  --press-scale: 1;
+}
+
+@media (max-width: 768px) {
+  .ui-press--row {
+    --press-scale: 0.99;
+  }
+}
+
+/* 行内另有独立按钮（如持仓行菜单）时，按子按钮不缩放整行，避免菜单定位读到缩放中的坐标。 */
+.ui-press--row:has(.row-menu:active) {
+  transform: none !important;
 }
 
 @keyframes dead-end {
@@ -1960,6 +2006,7 @@ tr:focus-within .row-action,
   80% { transform: translateX(2px); }
 }
 
+/* 禁用操作的抖动反馈，320ms 为有意例外：只动 transform，略长于 300ms 才能看出往返。 */
 .is-shaking {
   animation: dead-end 320ms var(--ease-on);
 }
@@ -2128,7 +2175,7 @@ tr:focus-within .row-action,
     align-items: center;
     justify-content: center;
     gap: 3px;
-    border-radius: 8px;
+    border-radius: var(--radius-control);
     color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
@@ -2570,7 +2617,8 @@ tr:focus-within .row-action,
     height: 44px;
   }
 
-  .ui-press,
+  /* :where 让行、导航项自身的 min-height（56／76／50px）与 min-width:0 优先，44px 只作下限兜底 */
+  :where(.ui-press),
   .segmented-item {
     min-width: 44px;
     min-height: 44px;
@@ -2593,10 +2641,10 @@ tr:focus-within .row-action,
     max-width: 100%;
     height: auto;
     max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
-    border-top: 1px solid var(--border-default);
     border-left: 0;
+    /* 手机底部抽屉顶部 18px 为设计标准指定的第三档，保持不变 */
     border-radius: 18px 18px 0 0;
-    box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-overlay);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
@@ -2802,7 +2850,7 @@ button,
 }
 
 .drawer-fade-leave-active {
-  transition: opacity 180ms var(--ease-exit);
+  transition: opacity var(--dur-ui) var(--ease-exit);
 }
 
 .drawer-panel-enter-active {
@@ -2813,8 +2861,8 @@ button,
 
 .drawer-panel-leave-active {
   transition:
-    transform 200ms var(--ease-exit),
-    opacity 200ms var(--ease-exit);
+    transform var(--dur-ui) var(--ease-exit),
+    opacity var(--dur-ui) var(--ease-exit);
 }
 
 .drawer-panel-enter-from,
@@ -2827,7 +2875,8 @@ button,
   transform: translateX(0);
 }
 
-/* 数值更新的单向微光：只在数值确实变化时播放一次 */
+/* 数值更新的单向微光：只在数值确实变化时播放一次。
+   900ms 与背景色渐隐是设计标准允许的有意例外：数值本身不位移，长尾渐隐用于提示「刚刚变过」。 */
 @keyframes value-flash {
   from {
     background-color: var(--flash-accent);
@@ -2839,7 +2888,7 @@ button,
 }
 
 .value-flash {
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   animation: value-flash 900ms var(--ease-out) 1;
 }
 

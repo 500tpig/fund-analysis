@@ -675,7 +675,7 @@ onMounted(() => {
           >
             <button
               type="button"
-              class="sim-row sim-row--button"
+              class="sim-row sim-row--button ui-press ui-press--row"
               :aria-label="`${order.side === 'buy' ? '申购' : '赎回'} ${order.name ?? order.code}，${ORDER_STATUS[order.status].label}，查看详情`"
               @click="openOrder(order)"
             >
@@ -745,7 +745,7 @@ onMounted(() => {
           >
             <button
               type="button"
-              class="sim-row sim-row--button"
+              class="sim-row sim-row--button ui-press ui-press--row"
               :aria-label="`周期 ${run.cycle_date}，${RUN_STATUS[run.status].label}，查看逐基金结果`"
               @click="openRun(run)"
             >
@@ -796,7 +796,8 @@ onMounted(() => {
       </div>
       <p
         v-else-if="detailError"
-        class="sim-note sim-note--warn"
+        class="alert-banner alert-banner--error"
+        role="alert"
       >
         {{ detailError }}
       </p>
@@ -835,7 +836,7 @@ onMounted(() => {
         <h3 class="sim-detail__heading">
           金额与份额
         </h3>
-        <dl class="sim-detail__grid">
+        <dl class="sim-detail__grid sim-detail__grid--numeric">
           <template
             v-for="row in detailRows"
             :key="row.label"
@@ -905,7 +906,8 @@ onMounted(() => {
       </div>
       <p
         v-else-if="runDetailError"
-        class="sim-note sim-note--warn"
+        class="alert-banner alert-banner--error"
+        role="alert"
       >
         {{ runDetailError }}
       </p>
@@ -971,7 +973,7 @@ onMounted(() => {
             <button
               v-if="item.order_id"
               type="button"
-              class="sim-detail__link"
+              class="sim-detail__link ui-press"
               @click="openOrder({ id: item.order_id })"
             >
               查看订单
@@ -984,7 +986,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.ui-press,
+.ui-press:not(.ui-press--row),
 :deep(.segmented-item) {
   min-width: 44px;
   min-height: 44px;
@@ -1018,8 +1020,10 @@ onMounted(() => {
 .sim-balances__item {
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  /* 资金卡片靠面板底色分层；透明描边保留原盒高 */
+  border: 1px solid transparent;
+  border-radius: var(--radius-container);
+  background: var(--bg-surface);
 }
 
 .sim-balances__item dt {
@@ -1039,9 +1043,9 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-/* 费用后指标是派生数据，去掉卡片描边并收小字号，避免与上方资金卡片同权重 */
+/* 费用后指标是派生数据，去掉卡片底色并收小字号，避免与上方资金卡片同权重 */
 .sim-balances--metrics .sim-balances__item {
-  border-color: transparent;
+  background: transparent;
 }
 
 .sim-balances--metrics .sim-balances__item dd {
@@ -1111,8 +1115,8 @@ onMounted(() => {
 }
 
 .sim-row--button:focus-visible {
-  outline: 2px solid var(--brand-accent);
-  outline-offset: -2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset-inset);
 }
 
 .sim-row__identity,
@@ -1164,7 +1168,7 @@ onMounted(() => {
   display: inline-flex;
   margin-right: 4px;
   padding: 0 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-size: 12px;
   line-height: 18px;
 }
@@ -1230,6 +1234,12 @@ onMounted(() => {
   min-width: 0;
   overflow-wrap: anywhere;
   color: var(--text-primary);
+}
+
+/* 金额与份额：数值右对齐，同列小数点对齐 */
+.sim-detail__grid--numeric dd {
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .sim-detail__note {

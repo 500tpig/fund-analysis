@@ -150,7 +150,7 @@ function onHotkey(event: KeyboardEvent) {
           @click="collapsed = !collapsed"
         >
           <ChevronLeft
-            class="h-4 w-4 transition-transform duration-200"
+            class="h-4 w-4 transition-transform duration-(--dur-ui) ease-(--ease-out)"
             :class="collapsed ? 'rotate-180' : ''"
             :stroke-width="1.75"
           />
@@ -187,7 +187,7 @@ function onHotkey(event: KeyboardEvent) {
         v-for="item in navItems"
         :key="item.key"
         type="button"
-        class="mobile-nav__item"
+        class="mobile-nav__item ui-press"
         :class="activeKey === item.key ? 'is-active' : ''"
         :aria-current="activeKey === item.key ? 'page' : undefined"
         @click="navigate(item.key)"

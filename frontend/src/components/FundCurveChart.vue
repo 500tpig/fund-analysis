@@ -558,30 +558,30 @@ const benchmarkLine = computed(() => {
         <!-- Polylines: if CnA session, morning and afternoon are drawn as distinct paths -->
         <template v-if="chart.isCnA">
           <g
-            v-for="item in chart.lines"
+            v-for="(item, index) in chart.lines"
             :key="item.name"
           >
             <polyline
               v-if="item.morningPolyline"
               :points="item.morningPolyline"
               :stroke="item.color"
-              class="curve-chart__line"
+              :class="['curve-chart__line', index > 0 ? 'is-benchmark' : '']"
             />
             <polyline
               v-if="item.afternoonPolyline"
               :points="item.afternoonPolyline"
               :stroke="item.color"
-              class="curve-chart__line"
+              :class="['curve-chart__line', index > 0 ? 'is-benchmark' : '']"
             />
           </g>
         </template>
         <template v-else>
           <polyline
-            v-for="item in chart.lines"
+            v-for="(item, index) in chart.lines"
             :key="item.name"
             :points="item.polyline"
             :stroke="item.color"
-            class="curve-chart__line"
+            :class="['curve-chart__line', index > 0 ? 'is-benchmark' : '']"
           />
         </template>
 
@@ -804,27 +804,30 @@ const benchmarkLine = computed(() => {
   background: transparent;
 }
 
+/* 层次：午休底色 < 网格 < 零线 < 基准线 < 主曲线，取值见 main.css 的 --chart-* token。 */
 .curve-chart__grid {
   stroke: var(--chart-grid);
-  stroke-width: 1;
+  stroke-width: var(--chart-stroke-grid);
+  vector-effect: non-scaling-stroke;
 }
 
 .curve-chart__zero {
   stroke: var(--chart-zero-line);
-  stroke-width: 1.25;
+  stroke-width: var(--chart-stroke-zero);
   stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
 }
 
 .curve-chart__break-zone {
-  fill: rgba(255, 255, 255, 0.022);
+  fill: var(--chart-break-fill);
   pointer-events: none;
 }
 
 .curve-chart__break-border {
-  stroke: var(--border-subtle);
-  stroke-width: 1;
+  stroke: var(--chart-grid);
+  stroke-width: var(--chart-stroke-grid);
   stroke-dasharray: 2 3;
-  opacity: 0.85;
+  vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
 
@@ -839,10 +842,14 @@ const benchmarkLine = computed(() => {
 
 .curve-chart__line {
   fill: none;
-  stroke-width: 1.75;
+  stroke-width: var(--chart-stroke-primary);
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+.curve-chart__line.is-benchmark {
+  stroke-width: var(--chart-stroke-benchmark);
 }
 
 .curve-chart__last-point {
@@ -852,8 +859,9 @@ const benchmarkLine = computed(() => {
 }
 
 .curve-chart__crosshair {
-  stroke: rgba(241, 239, 233, 0.35);
-  stroke-width: 1.25;
+  stroke: var(--chart-crosshair);
+  stroke-width: var(--chart-stroke-zero);
+  vector-effect: non-scaling-stroke;
   stroke-dasharray: 4 4;
   pointer-events: none;
 }
@@ -908,8 +916,7 @@ const benchmarkLine = computed(() => {
   width: max-content;
   white-space: nowrap;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-container);
+  border-radius: var(--radius-panel);
   box-shadow: var(--shadow-overlay);
   padding: 8px 12px;
   display: flex;
@@ -920,7 +927,7 @@ const benchmarkLine = computed(() => {
 .tooltip-header {
   font-size: 12px;
   color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-default);
   padding-bottom: 4px;
   white-space: nowrap;
 }

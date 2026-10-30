@@ -53,10 +53,11 @@ export function formatPercent(
   return `${sign}${value.toFixed(2)}%`
 }
 
+/** 净值统一 4 位小数，同列小数点对齐（与曲线读数的 toFixed(4) 一致）。 */
 export function formatNav(value: number | null | undefined, fallback = '—'): string {
   if (value === null || value === undefined) return fallback
   return value.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 4,
     maximumFractionDigits: 4,
   })
 }
