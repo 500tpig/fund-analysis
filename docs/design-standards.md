@@ -11,13 +11,13 @@
 - 涨跌固定 A 股口径：涨 `--market-up-strong` #E0787B（红）、跌 `--market-down-strong` #54C397（绿）、
   平 `--color-flat` #85827A。系统状态单独一套，不复用涨跌色：`--status-live` #79A7BD、
   `--status-warning` #D6924D、`--status-error` #D87979。
-- 深色画布实测对比度（底色 `--bg-surface` #101310）：主文字 16.3:1、次要 7.8:1、三级 4.9:1、
-  涨 6.4:1、跌 8.6:1、金 8.7:1，全部达到 WCAG AA。三级文字接近下限，12 px 小字改用
+- 深色画布实测对比度（底色 `--bg-surface` #101310）：主文字 16.3:1、次要 7.8:1、三级 6.3:1（`#98958D`）、
+  涨 6.4:1、跌 8.6:1、金 8.7:1，全部达到 WCAG AA。12 px 小字优先使用
   `--text-secondary`；新颜色先加进 `:root`／`@theme`，不在页面里直接写色值。
 
 ## 层次与表面
 
-- 层次用表面色阶表达：`--bg-canvas` #0A0C0B → `--bg-surface` #101310 → `--bg-elevated` #161A17。
+- 层次用表面色阶表达（由暗到亮）：`--bg-sunken` #030404 → `--bg-canvas` #0A0C0B → `--bg-surface` #101310 → `--bg-surface-hover` #161A17 → `--bg-elevated` #1C201D → `--bg-elevated-hover` #222723。
   同一元素不同时用细描边与宽阴影；弹层用 `--shadow-overlay`。
 - 圆角只用三档：控件 `--radius-control` 8 px、容器与面板 `--radius-container`／`--radius-panel` 10 px、
   手机底部抽屉顶部 18 px（`main.css:2587` 的 ≤768 px 规则）。不新增档位。

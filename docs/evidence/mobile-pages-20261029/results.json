@@ -1,7 +1,7 @@
 {
   "date": "2026-10-29",
   "scope": "docs/mobile-ux-batch2-plan.md 2.3",
-  "baseline_commit": "f1b2288",
+  "baseline_commit": "ab1133d",
   "environment": "agent-browser Chromium；本轮 frontend/dist 构建；隔离 SQLite 持仓库与 fixture 模拟库；识图与行情使用测试 provider；未访问真实库、外部识图服务或生产服务",
   "build_index_sha256": "426070b580e593c7a61f0addf9621ccdcd39275052524eb7b250eabcf0f8704b",
   "measurement_method": {
