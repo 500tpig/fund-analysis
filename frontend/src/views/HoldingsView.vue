@@ -806,7 +806,7 @@ useHotkeys((event) => {
     <Teleport to="body">
       <div
         v-if="deleteTarget"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim-bg)] p-4"
         role="presentation"
         @keydown.esc="deleteTarget = null"
         @click.self="deleteTarget = null"

@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
     >
       <div
         v-if="show"
-        class="fixed inset-0 z-[70] bg-black/50"
+        class="fixed inset-0 z-[70] bg-[var(--scrim-bg)]"
         @click="close"
       />
     </Transition>

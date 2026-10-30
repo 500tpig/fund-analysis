@@ -1,0 +1,247 @@
+{
+  "baseline": "e99e744 (includes de711d7)",
+  "checked": 30,
+  "same": true,
+  "rows": [
+    {
+      "pair": [
+        "text-primary",
+        "bg-surface"
+      ],
+      "before": 16.27,
+      "after": 16.27
+    },
+    {
+      "pair": [
+        "text-primary",
+        "bg-canvas"
+      ],
+      "before": 17.06,
+      "after": 17.06
+    },
+    {
+      "pair": [
+        "text-primary",
+        "bg-elevated"
+      ],
+      "before": 14.34,
+      "after": 14.34
+    },
+    {
+      "pair": [
+        "text-secondary",
+        "bg-surface"
+      ],
+      "before": 7.78,
+      "after": 7.78
+    },
+    {
+      "pair": [
+        "text-secondary",
+        "bg-canvas"
+      ],
+      "before": 8.16,
+      "after": 8.16
+    },
+    {
+      "pair": [
+        "text-secondary",
+        "bg-elevated"
+      ],
+      "before": 6.86,
+      "after": 6.86
+    },
+    {
+      "pair": [
+        "text-tertiary",
+        "bg-surface"
+      ],
+      "before": 6.25,
+      "after": 6.25
+    },
+    {
+      "pair": [
+        "text-tertiary",
+        "bg-canvas"
+      ],
+      "before": 6.56,
+      "after": 6.56
+    },
+    {
+      "pair": [
+        "market-up-strong",
+        "bg-surface"
+      ],
+      "before": 6.36,
+      "after": 6.36
+    },
+    {
+      "pair": [
+        "market-down-strong",
+        "bg-surface"
+      ],
+      "before": 8.58,
+      "after": 8.58
+    },
+    {
+      "pair": [
+        "brand-accent",
+        "bg-surface"
+      ],
+      "before": 8.7,
+      "after": 8.7
+    },
+    {
+      "pair": [
+        "status-live",
+        "bg-surface"
+      ],
+      "before": 7.19,
+      "after": 7.19
+    },
+    {
+      "pair": [
+        "status-warning",
+        "bg-surface"
+      ],
+      "before": 7.2,
+      "after": 7.2
+    },
+    {
+      "pair": [
+        "status-error",
+        "bg-surface"
+      ],
+      "before": 6.17,
+      "after": 6.17
+    },
+    {
+      "pair": [
+        "chart-line-primary",
+        "bg-surface"
+      ],
+      "before": 9.01,
+      "after": 9.01
+    },
+    {
+      "pair": [
+        "action-primary-text",
+        "action-primary-bg"
+      ],
+      "before": 16.27,
+      "after": 16.27
+    },
+    {
+      "pair": [
+        "text-primary",
+        "bg-surface-hover"
+      ],
+      "before": 15.29,
+      "after": 15.29
+    },
+    {
+      "pair": [
+        "text-secondary",
+        "bg-surface-hover"
+      ],
+      "before": 7.32,
+      "after": 7.32
+    },
+    {
+      "pair": [
+        "text-tertiary",
+        "bg-elevated"
+      ],
+      "before": 5.51,
+      "after": 5.51
+    },
+    {
+      "pair": [
+        "text-tertiary",
+        "bg-surface-hover"
+      ],
+      "before": 5.88,
+      "after": 5.88
+    },
+    {
+      "pair": [
+        "text-primary",
+        "bg-elevated-hover"
+      ],
+      "before": 13.21,
+      "after": 13.21
+    },
+    {
+      "pair": [
+        "text-secondary",
+        "bg-elevated-hover"
+      ],
+      "before": 6.32,
+      "after": 6.32
+    },
+    {
+      "pair": [
+        "text-tertiary",
+        "bg-elevated-hover"
+      ],
+      "before": 5.08,
+      "after": 5.08
+    },
+    {
+      "pair": [
+        "market-up-strong",
+        "bg-surface-hover"
+      ],
+      "before": 5.98,
+      "after": 5.98
+    },
+    {
+      "pair": [
+        "market-down-strong",
+        "bg-surface-hover"
+      ],
+      "before": 8.06,
+      "after": 8.06
+    },
+    {
+      "pair": [
+        "bg-canvas",
+        "bg-sunken"
+      ],
+      "before": 1.05,
+      "after": 1.05
+    },
+    {
+      "pair": [
+        "bg-surface",
+        "bg-canvas"
+      ],
+      "before": 1.05,
+      "after": 1.05
+    },
+    {
+      "pair": [
+        "bg-surface-hover",
+        "bg-surface"
+      ],
+      "before": 1.06,
+      "after": 1.06
+    },
+    {
+      "pair": [
+        "bg-elevated",
+        "bg-surface-hover"
+      ],
+      "before": 1.07,
+      "after": 1.07
+    },
+    {
+      "pair": [
+        "bg-elevated-hover",
+        "bg-elevated"
+      ],
+      "before": 1.09,
+      "after": 1.09
+    }
+  ]
+}

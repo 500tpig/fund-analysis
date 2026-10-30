@@ -1174,8 +1174,8 @@ onMounted(() => {
 }
 
 .sim-side--buy {
-  background: var(--brand-accent-muted);
-  color: var(--text-primary);
+  background: var(--status-info-bg);
+  color: var(--status-info);
 }
 
 .sim-side--sell {
@@ -1331,7 +1331,7 @@ onMounted(() => {
   border: 0;
   border-radius: var(--radius-control);
   background: none;
-  color: var(--brand-accent);
+  color: var(--text-secondary);
   font-size: 13px;
   line-height: 20px;
   cursor: pointer;

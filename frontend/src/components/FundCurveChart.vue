@@ -832,7 +832,7 @@ const benchmarkLine = computed(() => {
 }
 
 .curve-chart__break-text {
-  fill: var(--text-disabled);
+  fill: var(--text-secondary);
   font-size: 12px;
   letter-spacing: 0.12em;
   font-family: var(--font-ui);
@@ -853,7 +853,7 @@ const benchmarkLine = computed(() => {
 }
 
 .curve-chart__last-point {
-  stroke: var(--bg-sunken);
+  stroke: var(--chart-surface);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
@@ -867,7 +867,7 @@ const benchmarkLine = computed(() => {
 }
 
 .curve-chart__hover-point {
-  stroke: var(--bg-base);
+  stroke: var(--chart-surface);
   stroke-width: 2;
   pointer-events: none;
 }

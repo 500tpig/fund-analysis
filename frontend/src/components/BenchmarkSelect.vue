@@ -193,7 +193,7 @@ onBeforeUnmount(() => {
 
 .benchmark-select__trigger:hover {
   color: var(--text-primary);
-  background: rgba(243, 239, 230, 0.06);
+  background: var(--bg-surface-hover);
 }
 
 .benchmark-select__chevron {
@@ -238,7 +238,7 @@ onBeforeUnmount(() => {
 }
 
 .benchmark-select__option.is-selected {
-  color: var(--brand-accent);
+  color: var(--text-primary);
   font-weight: 500;
 }
 

@@ -779,9 +779,11 @@ function selectCurveTab(value: string): void {
             <span class="accuracy-section__label">平均偏差</span>
             <span
               class="accuracy-section__value"
-              :class="fund.accuracy.bias_pct_points > 0 ? 'value-rise' : fund.accuracy.bias_pct_points < 0 ? 'value-fall' : ''"
             >
-              {{ fund.accuracy.bias_pct_points >= 0 ? '+' : '' }}{{ fund.accuracy.bias_pct_points.toFixed(2) }} 百分点
+              {{ fund.accuracy.bias_pct_points > 0 ? '+' : '' }}{{ fund.accuracy.bias_pct_points.toFixed(2) }} 百分点
+              <template v-if="fund.accuracy.bias_pct_points !== 0">
+                {{ fund.accuracy.bias_pct_points > 0 ? '偏高' : '偏低' }}
+              </template>
             </span>
           </div>
           <div class="accuracy-section__item">
@@ -869,7 +871,7 @@ function selectCurveTab(value: string): void {
           :href="fund.source_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="underline hover:text-(--brand-accent)"
+          class="underline hover:text-(--text-primary)"
         >
           {{ fund.source_url }}
         </a>
@@ -940,6 +942,12 @@ function selectCurveTab(value: string): void {
   .fund-profile-section__value {
     font-size: 13px;
     line-height: 20px;
+  }
+
+  .fund-profile-section a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
   }
 
   .curve-touch-hint {

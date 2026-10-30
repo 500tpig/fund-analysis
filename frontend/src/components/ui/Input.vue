@@ -59,7 +59,7 @@ function onInput(e: Event) {
       :aria-label="ariaLabel"
       v-bind="$attrs"
       :class="[
-        'w-full rounded-(--radius-control) border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)]',
+        'w-full rounded-(--radius-control) border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]',
         'hover:border-[var(--border-strong)]',
         size === 'sm' ? 'h-9 text-[13px] px-3' : 'h-9 text-[14px] px-3.5',
         $slots.prefix ? 'pl-9' : '',

@@ -6,19 +6,27 @@
 
 ## 颜色语义
 
-- 暖金 `--brand-accent` #C9AE70 只用于品牌、焦点与基金曲线（曲线线色 `--chart-line-primary` #CDB16F），
+- 暖金 `--brand-accent`（深色 #C9AE70）只用于品牌、焦点与基金曲线（深色曲线线色 `--chart-line-primary` #CDB16F），
   不做通用强调色或大面积背景。
-- 涨跌固定 A 股口径：涨 `--market-up-strong` #E0787B（红）、跌 `--market-down-strong` #54C397（绿）、
+- 外观跟随系统 `prefers-color-scheme`，浅色采用中性灰白、深金品牌／基金曲线与深灰实底主按钮。
+  不提供应用内切换或外观持久化；两套颜色都定义在 `main.css` 的主题 token 块，组件只引用 token。
+- 涨跌固定 A 股口径，深色基线为：涨 `--market-up-strong` #E0787B（红）、跌 `--market-down-strong` #54C397（绿）、
   平 `--color-flat` #85827A。系统状态单独一套，不复用涨跌色：`--status-live` #79A7BD、
   `--status-warning` #D6924D、`--status-error` #D87979。
 - 深色画布实测对比度（底色 `--bg-surface` #101310）：主文字 16.3:1、次要 7.8:1、三级 6.3:1（`#98958D`）、
   涨 6.4:1、跌 8.6:1、金 8.7:1，全部达到 WCAG AA。12 px 小字优先使用
-  `--text-secondary`；新颜色先加进 `:root`／`@theme`，不在页面里直接写色值。
+  `--text-secondary`；新颜色先加进主题 token 块，不在页面里直接写色值，也不在 `@theme` 另存一套色值。
+- 浅色涨跌保留红涨绿跌与正负号，使用各自的深色调。普通文字、状态文字与状态底色、涨跌及三级文字
+  对实际背景至少 4.5:1，涨跌与三级文字保留 0.5 的对比度余量；基金曲线、基准线、十字线和焦点环至少 3:1。
+  含透明度的色值先与实际底色合成，再计算对比度。
+- 「估」使用信息色。平均偏差使用中性色并保留正负号与百分点，正值标「偏高」、负值标「偏低」，零值只显示数值。
 
 ## 层次与表面
 
 - 层次用表面色阶表达（由暗到亮）：`--bg-sunken` #030404 → `--bg-canvas` #0A0C0B → `--bg-surface` #101310 → `--bg-surface-hover` #161A17 → `--bg-elevated` #1C201D → `--bg-elevated-hover` #222723。
   同一元素不同时用细描边与宽阴影；弹层用 `--shadow-overlay`。
+- 浅色用浅灰画布、白色面板、灰色嵌套区域与悬停面分层；浮层用白色与较轻的 `--shadow-overlay`。
+  浅色单独校验层次关系，不套用深色的逐层变亮规则。
 - 圆角只用三档：控件 `--radius-control` 8 px、容器与面板 `--radius-container`／`--radius-panel` 10 px、
   手机底部抽屉顶部 18 px（`main.css:2587` 的 ≤768 px 规则）。不新增档位。
 
@@ -53,6 +61,8 @@
 ## 每批交付的验收清单
 
 - 四视口无横向溢出、无小于 12 px 文字、无小于 44×44 px 触控元素，桌面布局无退化。
+- 浅／深两主题均覆盖四页及表单、菜单、抽屉、加载、失败和空状态；系统外观切换即时生效，首帧与原生控件外观一致。
+  `check-contrast.mjs` 分主题输出结果，缺失 token 或任一项不达标时失败。
 - 动效取自 token、只动 `transform` 与 `opacity`、reduced-motion 可关。
 - `pnpm typecheck`、`pnpm lint`、`pnpm build` 与 `frontend/scripts` 全部脚本通过。
 - 真机项（安全区、软键盘、返回手势、Safari）在生产站点验收，不用浏览器结果替代。

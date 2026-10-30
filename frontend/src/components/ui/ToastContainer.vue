@@ -54,7 +54,7 @@ import {
         />
         <Info
           v-else
-          class="h-4 w-4 shrink-0 text-[var(--brand-accent)]"
+          class="h-4 w-4 shrink-0 text-[var(--status-info)]"
           :stroke-width="1.75"
         />
         <span class="leading-normal text-[var(--text-primary)]">{{ item.content }}</span>

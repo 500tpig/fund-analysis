@@ -270,7 +270,7 @@ function pnlState(value: number | null | undefined): HeroMetric['state'] {
 
 function badgeClass(badge: string): string {
   if (badge === '延迟') return 'is-warning'
-  if (badge === '估') return 'is-accent'
+  if (badge === '估') return 'is-info'
   return ''
 }
 
@@ -747,7 +747,7 @@ function closeMobileSearch() {
 
     <div class="funds-split">
       <section
-        class="funds-blotter blotter flex min-h-0 flex-1 flex-col"
+        class="funds-blotter blotter flex min-h-0 min-w-0 flex-1 flex-col"
         :class="tablePressing ? 'is-pressing' : ''"
         @mousedown="tablePressing = true"
         @mouseup="tablePressing = false"

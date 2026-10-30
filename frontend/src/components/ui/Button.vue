@@ -27,13 +27,13 @@ const shaking = ref(false)
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'primary':
-      return 'bg-[var(--action-primary-bg)] text-[var(--action-primary-text)] hover:bg-[#F4F1E8]'
+      return 'bg-[var(--action-primary-bg)] text-[var(--action-primary-text)] hover:bg-[var(--action-primary-hover)]'
     case 'ghost':
       return 'bg-transparent text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]'
     case 'outline':
       return 'bg-transparent text-[var(--text-secondary)] shadow-[inset_0_0_0_1px_var(--border-default)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]'
     case 'danger':
-      return 'bg-[rgba(216,121,121,0.12)] text-[var(--status-error)] hover:bg-[rgba(216,121,121,0.2)]'
+      return 'bg-[var(--status-error-bg)] text-[var(--status-error)] hover:bg-[var(--status-error-hover)]'
     case 'secondary':
     default:
       return 'bg-[var(--action-secondary-bg)] text-[var(--text-primary)] shadow-[inset_0_0_0_1px_var(--border-default)] hover:bg-[var(--bg-elevated-hover)]'

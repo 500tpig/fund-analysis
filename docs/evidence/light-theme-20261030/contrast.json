@@ -1,0 +1,1263 @@
+{
+  "themes": {
+    "dark": {
+      "rows": [
+        {
+          "label": "主文字 / 面板",
+          "fg": "text-primary #F1EFE9",
+          "bg": "bg-surface #101310",
+          "value": 16.27,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 画布",
+          "fg": "text-primary #F1EFE9",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 17.06,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 浮层",
+          "fg": "text-primary #F1EFE9",
+          "bg": "bg-elevated #1C201D",
+          "value": 14.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 面板",
+          "fg": "text-secondary #AAA79F",
+          "bg": "bg-surface #101310",
+          "value": 7.78,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 画布",
+          "fg": "text-secondary #AAA79F",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 8.16,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 浮层",
+          "fg": "text-secondary #AAA79F",
+          "bg": "bg-elevated #1C201D",
+          "value": 6.86,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 面板",
+          "fg": "text-tertiary #98958D",
+          "bg": "bg-surface #101310",
+          "value": 6.25,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 画布",
+          "fg": "text-tertiary #98958D",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 6.56,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "涨 / 面板",
+          "fg": "market-up-strong #E0787B",
+          "bg": "bg-surface #101310",
+          "value": 6.36,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "跌 / 面板",
+          "fg": "market-down-strong #54C397",
+          "bg": "bg-surface #101310",
+          "value": 8.58,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "品牌金 / 面板",
+          "fg": "brand-accent #C9AE70",
+          "bg": "bg-surface #101310",
+          "value": 8.7,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "状态文字 / 面板",
+          "fg": "status-live #79A7BD",
+          "bg": "bg-surface #101310",
+          "value": 7.19,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "警告文字 / 面板",
+          "fg": "status-warning #D6924D",
+          "bg": "bg-surface #101310",
+          "value": 7.2,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "错误文字 / 面板",
+          "fg": "status-error #D87979",
+          "bg": "bg-surface #101310",
+          "value": 6.17,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "曲线主色 / 面板",
+          "fg": "chart-line-primary #CDB16F",
+          "bg": "bg-surface #101310",
+          "value": 9.01,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "主按钮文字 / 底色",
+          "fg": "action-primary-text #101310",
+          "bg": "action-primary-bg #F1EFE9",
+          "value": 16.27,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 悬停面",
+          "fg": "text-primary #F1EFE9",
+          "bg": "bg-surface-hover #161A17",
+          "value": 15.29,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 悬停面",
+          "fg": "text-secondary #AAA79F",
+          "bg": "bg-surface-hover #161A17",
+          "value": 7.32,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 浮层",
+          "fg": "text-tertiary #98958D",
+          "bg": "bg-elevated #1C201D",
+          "value": 5.51,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 悬停面",
+          "fg": "text-tertiary #98958D",
+          "bg": "bg-surface-hover #161A17",
+          "value": 5.88,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 浮层悬停",
+          "fg": "text-primary #F1EFE9",
+          "bg": "bg-elevated-hover #222723",
+          "value": 13.21,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 浮层悬停",
+          "fg": "text-secondary #AAA79F",
+          "bg": "bg-elevated-hover #222723",
+          "value": 6.32,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 浮层悬停",
+          "fg": "text-tertiary #98958D",
+          "bg": "bg-elevated-hover #222723",
+          "value": 5.08,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "涨 / 悬停面",
+          "fg": "market-up-strong #E0787B",
+          "bg": "bg-surface-hover #161A17",
+          "value": 5.98,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "跌 / 悬停面",
+          "fg": "market-down-strong #54C397",
+          "bg": "bg-surface-hover #161A17",
+          "value": 8.06,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主按钮文字 / 悬停底色",
+          "fg": "action-primary-text #101310",
+          "bg": "action-primary-hover #F4F1E8",
+          "value": 16.56,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "信息文字 / 信息底色",
+          "fg": "status-info #79A7BD",
+          "bg": "status-info-bg #1D2525",
+          "value": 6.01,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "警告文字 / 警告底色",
+          "fg": "status-warning #D6924D",
+          "bg": "status-warning-bg #28221B",
+          "value": 6.05,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "错误文字 / 错误底色",
+          "fg": "status-error #D87979",
+          "bg": "status-error-bg #281F1D",
+          "value": 5.32,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "危险按钮文字 / 悬停底色",
+          "fg": "status-error #D87979",
+          "bg": "status-error-hover #30211F",
+          "value": 5.08,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 中性标记",
+          "fg": "text-tertiary #98958D",
+          "bg": "status-muted-bg #1C1E1B",
+          "value": 5.61,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "选区文字 / 选区底色",
+          "fg": "text-primary #F1EFE9",
+          "bg": "selection-bg #35434B",
+          "value": 8.88,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-canvas",
+          "fg": "brand-accent #C9AE70",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 9.13,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-strong / bg-canvas",
+          "fg": "market-up-strong #E0787B",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 6.67,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-strong / bg-canvas",
+          "fg": "market-down-strong #54C397",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 9,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-muted / bg-canvas",
+          "fg": "market-up-muted #C96669",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 5.22,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-muted / bg-canvas",
+          "fg": "market-down-muted #429E7C",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 5.99,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-canvas",
+          "fg": "status-info #79A7BD",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 7.54,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-canvas",
+          "fg": "status-warning #D6924D",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 7.55,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-canvas",
+          "fg": "status-error #D87979",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 6.48,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-surface",
+          "fg": "brand-accent #C9AE70",
+          "bg": "bg-surface #101310",
+          "value": 8.7,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-muted / bg-surface",
+          "fg": "market-up-muted #C96669",
+          "bg": "bg-surface #101310",
+          "value": 4.98,
+          "min": 4.5,
+          "status": "THIN"
+        },
+        {
+          "label": "market-down-muted / bg-surface",
+          "fg": "market-down-muted #429E7C",
+          "bg": "bg-surface #101310",
+          "value": 5.71,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-surface",
+          "fg": "status-info #79A7BD",
+          "bg": "bg-surface #101310",
+          "value": 7.19,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-elevated",
+          "fg": "brand-accent #C9AE70",
+          "bg": "bg-elevated #1C201D",
+          "value": 7.67,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-strong / bg-elevated",
+          "fg": "market-up-strong #E0787B",
+          "bg": "bg-elevated #1C201D",
+          "value": 5.61,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-strong / bg-elevated",
+          "fg": "market-down-strong #54C397",
+          "bg": "bg-elevated #1C201D",
+          "value": 7.56,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-elevated",
+          "fg": "status-info #79A7BD",
+          "bg": "bg-elevated #1C201D",
+          "value": 6.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-elevated",
+          "fg": "status-warning #D6924D",
+          "bg": "bg-elevated #1C201D",
+          "value": 6.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-elevated",
+          "fg": "status-error #D87979",
+          "bg": "bg-elevated #1C201D",
+          "value": 5.44,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-surface-hover",
+          "fg": "brand-accent #C9AE70",
+          "bg": "bg-surface-hover #161A17",
+          "value": 8.18,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-muted / bg-surface-hover",
+          "fg": "market-up-muted #C96669",
+          "bg": "bg-surface-hover #161A17",
+          "value": 4.68,
+          "min": 4.5,
+          "status": "THIN"
+        },
+        {
+          "label": "market-down-muted / bg-surface-hover",
+          "fg": "market-down-muted #429E7C",
+          "bg": "bg-surface-hover #161A17",
+          "value": 5.37,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-surface-hover",
+          "fg": "status-info #79A7BD",
+          "bg": "bg-surface-hover #161A17",
+          "value": 6.76,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-surface-hover",
+          "fg": "status-warning #D6924D",
+          "bg": "bg-surface-hover #161A17",
+          "value": 6.76,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-surface-hover",
+          "fg": "status-error #D87979",
+          "bg": "bg-surface-hover #161A17",
+          "value": 5.8,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-elevated-hover",
+          "fg": "brand-accent #C9AE70",
+          "bg": "bg-elevated-hover #222723",
+          "value": 7.07,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-strong / bg-elevated-hover",
+          "fg": "market-up-strong #E0787B",
+          "bg": "bg-elevated-hover #222723",
+          "value": 5.17,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-strong / bg-elevated-hover",
+          "fg": "market-down-strong #54C397",
+          "bg": "bg-elevated-hover #222723",
+          "value": 6.97,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-elevated-hover",
+          "fg": "status-info #79A7BD",
+          "bg": "bg-elevated-hover #222723",
+          "value": 5.84,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-elevated-hover",
+          "fg": "status-warning #D6924D",
+          "bg": "bg-elevated-hover #222723",
+          "value": 5.84,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-elevated-hover",
+          "fg": "status-error #D87979",
+          "bg": "bg-elevated-hover #222723",
+          "value": 5.01,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "chart-line-primary / bg-canvas",
+          "fg": "chart-line-primary #CDB16F",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 9.45,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-line-primary / 休市带 (bg-canvas)",
+          "fg": "chart-line-primary #CDB16F",
+          "bg": "chart-break-fill rgba(241, 239, 233, 0.02)",
+          "value": 9.16,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / bg-canvas",
+          "fg": "chart-benchmark rgba(170, 167, 159, 0.78)",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 5.31,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / 休市带 (bg-canvas)",
+          "fg": "chart-benchmark rgba(170, 167, 159, 0.78)",
+          "bg": "chart-break-fill rgba(241, 239, 233, 0.02)",
+          "value": 5.21,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-crosshair / bg-canvas",
+          "fg": "chart-crosshair rgba(241, 239, 233, 0.4)",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 3.44,
+          "min": 3,
+          "status": "THIN"
+        },
+        {
+          "label": "chart-crosshair / 休市带 (bg-canvas)",
+          "fg": "chart-crosshair rgba(241, 239, 233, 0.4)",
+          "bg": "chart-break-fill rgba(241, 239, 233, 0.02)",
+          "value": 3.48,
+          "min": 3,
+          "status": "THIN"
+        },
+        {
+          "label": "chart-line-primary / 休市带 (bg-surface)",
+          "fg": "chart-line-primary #CDB16F",
+          "bg": "chart-break-fill rgba(241, 239, 233, 0.02)",
+          "value": 8.67,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / bg-surface",
+          "fg": "chart-benchmark rgba(170, 167, 159, 0.78)",
+          "bg": "bg-surface #101310",
+          "value": 5.16,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / 休市带 (bg-surface)",
+          "fg": "chart-benchmark rgba(170, 167, 159, 0.78)",
+          "bg": "chart-break-fill rgba(241, 239, 233, 0.02)",
+          "value": 5.03,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-crosshair / bg-surface",
+          "fg": "chart-crosshair rgba(241, 239, 233, 0.4)",
+          "bg": "bg-surface #101310",
+          "value": 3.48,
+          "min": 3,
+          "status": "THIN"
+        },
+        {
+          "label": "chart-crosshair / 休市带 (bg-surface)",
+          "fg": "chart-crosshair rgba(241, 239, 233, 0.4)",
+          "bg": "chart-break-fill rgba(241, 239, 233, 0.02)",
+          "value": 3.49,
+          "min": 3,
+          "status": "THIN"
+        },
+        {
+          "label": "层级 bg-sunken < bg-canvas",
+          "fg": "bg-canvas #0A0C0B",
+          "bg": "bg-sunken #030404",
+          "value": 1.05,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-canvas < bg-surface",
+          "fg": "bg-surface #101310",
+          "bg": "bg-canvas #0A0C0B",
+          "value": 1.05,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-surface < bg-surface-hover",
+          "fg": "bg-surface-hover #161A17",
+          "bg": "bg-surface #101310",
+          "value": 1.06,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-surface-hover < bg-elevated",
+          "fg": "bg-elevated #1C201D",
+          "bg": "bg-surface-hover #161A17",
+          "value": 1.07,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-elevated < bg-elevated-hover",
+          "fg": "bg-elevated-hover #222723",
+          "bg": "bg-elevated #1C201D",
+          "value": 1.09,
+          "min": 1.04,
+          "status": "OK"
+        }
+      ],
+      "failed": 0
+    },
+    "light": {
+      "rows": [
+        {
+          "label": "主文字 / 面板",
+          "fg": "text-primary #20252B",
+          "bg": "bg-surface #FFFFFF",
+          "value": 15.43,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 画布",
+          "fg": "text-primary #20252B",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 14.02,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 浮层",
+          "fg": "text-primary #20252B",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 15.43,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 面板",
+          "fg": "text-secondary #4F5863",
+          "bg": "bg-surface #FFFFFF",
+          "value": 7.22,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 画布",
+          "fg": "text-secondary #4F5863",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 6.56,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 浮层",
+          "fg": "text-secondary #4F5863",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 7.22,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 面板",
+          "fg": "text-tertiary #59636F",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.11,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 画布",
+          "fg": "text-tertiary #59636F",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.55,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "涨 / 面板",
+          "fg": "market-up-strong #B33640",
+          "bg": "bg-surface #FFFFFF",
+          "value": 5.97,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "跌 / 面板",
+          "fg": "market-down-strong #176B4B",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.48,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "品牌金 / 面板",
+          "fg": "brand-accent #785B1E",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "状态文字 / 面板",
+          "fg": "status-live #2C647D",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.51,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "警告文字 / 面板",
+          "fg": "status-warning #895313",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "错误文字 / 面板",
+          "fg": "status-error #9F343D",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.92,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "曲线主色 / 面板",
+          "fg": "chart-line-primary #876521",
+          "bg": "bg-surface #FFFFFF",
+          "value": 5.37,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "主按钮文字 / 底色",
+          "fg": "action-primary-text #FFFFFF",
+          "bg": "action-primary-bg #272D34",
+          "value": 13.9,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 悬停面",
+          "fg": "text-primary #20252B",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 13.02,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 悬停面",
+          "fg": "text-secondary #4F5863",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 6.09,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 浮层",
+          "fg": "text-tertiary #59636F",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 6.11,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 悬停面",
+          "fg": "text-tertiary #59636F",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.15,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主文字 / 浮层悬停",
+          "fg": "text-primary #20252B",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 13.49,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "次要文字 / 浮层悬停",
+          "fg": "text-secondary #4F5863",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 6.31,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 浮层悬停",
+          "fg": "text-tertiary #59636F",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 5.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "涨 / 悬停面",
+          "fg": "market-up-strong #B33640",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.04,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "跌 / 悬停面",
+          "fg": "market-down-strong #176B4B",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.47,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "主按钮文字 / 悬停底色",
+          "fg": "action-primary-text #FFFFFF",
+          "bg": "action-primary-hover #151A20",
+          "value": 17.49,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "信息文字 / 信息底色",
+          "fg": "status-info #2C647D",
+          "bg": "status-info-bg #EAF1F6",
+          "value": 5.71,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "警告文字 / 警告底色",
+          "fg": "status-warning #895313",
+          "bg": "status-warning-bg #F7EEDB",
+          "value": 5.5,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "错误文字 / 错误底色",
+          "fg": "status-error #9F343D",
+          "bg": "status-error-bg #F8EBEC",
+          "value": 5.96,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "危险按钮文字 / 悬停底色",
+          "fg": "status-error #9F343D",
+          "bg": "status-error-hover #F0DDE0",
+          "value": 5.32,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "三级文字 / 中性标记",
+          "fg": "text-tertiary #59636F",
+          "bg": "status-muted-bg #E9ECF0",
+          "value": 5.15,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "选区文字 / 选区底色",
+          "fg": "text-primary #20252B",
+          "bg": "selection-bg #D3E3EC",
+          "value": 11.73,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-canvas",
+          "fg": "brand-accent #785B1E",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.76,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-strong / bg-canvas",
+          "fg": "market-up-strong #B33640",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.42,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-strong / bg-canvas",
+          "fg": "market-down-strong #176B4B",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.89,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-muted / bg-canvas",
+          "fg": "market-up-muted #A83C45",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.62,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-muted / bg-canvas",
+          "fg": "market-down-muted #2B674D",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 6.06,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-canvas",
+          "fg": "status-info #2C647D",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.91,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-canvas",
+          "fg": "status-warning #895313",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 5.76,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-canvas",
+          "fg": "status-error #9F343D",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 6.29,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-surface",
+          "fg": "brand-accent #785B1E",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.34,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-muted / bg-surface",
+          "fg": "market-up-muted #A83C45",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.18,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-muted / bg-surface",
+          "fg": "market-down-muted #2B674D",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.67,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-surface",
+          "fg": "status-info #2C647D",
+          "bg": "bg-surface #FFFFFF",
+          "value": 6.51,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-elevated",
+          "fg": "brand-accent #785B1E",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 6.34,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-strong / bg-elevated",
+          "fg": "market-up-strong #B33640",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 5.97,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-strong / bg-elevated",
+          "fg": "market-down-strong #176B4B",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 6.48,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-elevated",
+          "fg": "status-info #2C647D",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 6.51,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-elevated",
+          "fg": "status-warning #895313",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 6.34,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-elevated",
+          "fg": "status-error #9F343D",
+          "bg": "bg-elevated #FFFFFF",
+          "value": 6.92,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-surface-hover",
+          "fg": "brand-accent #785B1E",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.35,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-muted / bg-surface-hover",
+          "fg": "market-up-muted #A83C45",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.22,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-muted / bg-surface-hover",
+          "fg": "market-down-muted #2B674D",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.63,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-surface-hover",
+          "fg": "status-info #2C647D",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.49,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-surface-hover",
+          "fg": "status-warning #895313",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.35,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-surface-hover",
+          "fg": "status-error #9F343D",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 5.84,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "焦点环 / bg-elevated-hover",
+          "fg": "brand-accent #785B1E",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 5.54,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "market-up-strong / bg-elevated-hover",
+          "fg": "market-up-strong #B33640",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 5.22,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "market-down-strong / bg-elevated-hover",
+          "fg": "market-down-strong #176B4B",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 5.66,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-info / bg-elevated-hover",
+          "fg": "status-info #2C647D",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 5.69,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-warning / bg-elevated-hover",
+          "fg": "status-warning #895313",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 5.55,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "status-error / bg-elevated-hover",
+          "fg": "status-error #9F343D",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 6.05,
+          "min": 4.5,
+          "status": "OK"
+        },
+        {
+          "label": "chart-line-primary / bg-canvas",
+          "fg": "chart-line-primary #876521",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 4.88,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-line-primary / 休市带 (bg-canvas)",
+          "fg": "chart-line-primary #876521",
+          "bg": "chart-break-fill #E9EDF1",
+          "value": 4.56,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / bg-canvas",
+          "fg": "chart-benchmark #5F6C7B",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 4.87,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / 休市带 (bg-canvas)",
+          "fg": "chart-benchmark #5F6C7B",
+          "bg": "chart-break-fill #E9EDF1",
+          "value": 4.56,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-crosshair / bg-canvas",
+          "fg": "chart-crosshair #6D7A8A",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 3.97,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-crosshair / 休市带 (bg-canvas)",
+          "fg": "chart-crosshair #6D7A8A",
+          "bg": "chart-break-fill #E9EDF1",
+          "value": 3.72,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-line-primary / 休市带 (bg-surface)",
+          "fg": "chart-line-primary #876521",
+          "bg": "chart-break-fill #E9EDF1",
+          "value": 4.56,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / bg-surface",
+          "fg": "chart-benchmark #5F6C7B",
+          "bg": "bg-surface #FFFFFF",
+          "value": 5.36,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-benchmark / 休市带 (bg-surface)",
+          "fg": "chart-benchmark #5F6C7B",
+          "bg": "chart-break-fill #E9EDF1",
+          "value": 4.56,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-crosshair / bg-surface",
+          "fg": "chart-crosshair #6D7A8A",
+          "bg": "bg-surface #FFFFFF",
+          "value": 4.37,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "chart-crosshair / 休市带 (bg-surface)",
+          "fg": "chart-crosshair #6D7A8A",
+          "bg": "chart-break-fill #E9EDF1",
+          "value": 3.72,
+          "min": 3,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-canvas < bg-surface",
+          "fg": "bg-surface #FFFFFF",
+          "bg": "bg-canvas #F3F4F6",
+          "value": 1.1,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-sidebar < bg-canvas",
+          "fg": "bg-canvas #F3F4F6",
+          "bg": "bg-sidebar #EBEDF0",
+          "value": 1.07,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-sunken < bg-canvas",
+          "fg": "bg-canvas #F3F4F6",
+          "bg": "bg-sunken #E4E7EB",
+          "value": 1.13,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-surface-hover < bg-surface",
+          "fg": "bg-surface #FFFFFF",
+          "bg": "bg-surface-hover #E9ECF0",
+          "value": 1.19,
+          "min": 1.04,
+          "status": "OK"
+        },
+        {
+          "label": "层级 bg-elevated-hover < bg-elevated",
+          "fg": "bg-elevated #FFFFFF",
+          "bg": "bg-elevated-hover #EDF0F3",
+          "value": 1.14,
+          "min": 1.04,
+          "status": "OK"
+        }
+      ],
+      "failed": 0
+    }
+  },
+  "failed": 0
+}
